@@ -29,18 +29,118 @@ import {
   useWellnessStore,
   type CompletedSession,
 } from '@/features/wellness/store';
+import { defineStrings, useLocale, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    title: 'Activity',
+    empty: 'No sessions yet',
+    emptyBody: 'Finish a session and it is logged here, with the plan it belonged to.',
+    goToPlan: "Go to today's plan",
+    session: 'session',
+    sessions: 'sessions',
+    minUnit: 'min',
+    day: 'day',
+    days: 'days',
+    completed: 'Completed',
+    timeTrained: 'Time trained',
+    streak: 'Current streak',
+    byPlan: 'BY PLAN',
+    rowMinutes: '{min} min',
+  },
+  fr: {
+    title: 'Activité',
+    empty: 'Aucune séance pour le moment',
+    emptyBody: 'Terminez une séance et elle sera notée ici, avec le programme dont elle fait partie.',
+    goToPlan: 'Voir le programme du jour',
+    session: 'séance',
+    sessions: 'séances',
+    minUnit: 'min',
+    day: 'jour',
+    days: 'jours',
+    completed: 'Terminées',
+    timeTrained: "Temps d'entraînement",
+    streak: 'Série en cours',
+    byPlan: 'PAR PROGRAMME',
+    rowMinutes: '{min} min',
+  },
+  tw: {
+    title: 'Dwumadie',
+    empty: 'Ɛkyɛfa biara nni hɔ',
+    emptyBody: 'Wie ɛkyɛfa bi na yɛbɛkyerɛw no ha, ne nhyehyɛeɛ a ɛwɔ mu.',
+    goToPlan: 'Kɔ ɛnnɛ nhyehyɛeɛ no so',
+    session: 'ɛkyɛfa',
+    sessions: 'ɛkyɛfa',
+    minUnit: 'simma',
+    day: 'da',
+    days: 'nna',
+    completed: 'Awie',
+    timeTrained: 'Bere a woayɛ apɔmuhyɛ',
+    streak: 'Nna a woatoa so',
+    byPlan: 'NHYEHYƐEƐ BIARA',
+    rowMinutes: 'simma {min}',
+  },
+  gaa: {
+    title: 'Nitsumɔ',
+    empty: 'Bɔ ko bɛ kɛbashi ŋmɛnɛ',
+    emptyBody: 'Gbe bɔ ko naa ni wɔŋmaa yɛ biɛ, kɛ toiŋjɔlɛmɔ ni eyɔɔ mli lɛ.',
+    goToPlan: 'Ya ŋmɛnɛ toiŋjɔlɛmɔ lɛ nɔ',
+    session: 'bɔ',
+    sessions: 'bɔi',
+    minUnit: 'min',
+    day: 'gbi',
+    days: 'gbii',
+    completed: 'Egbe naa',
+    timeTrained: 'Be ni otsu',
+    streak: 'Gbii ni otsa nɔ',
+    byPlan: 'TOIŊJƆLƐMƆ FƐƐ',
+    rowMinutes: 'minitii {min}',
+  },
+  ee: {
+    title: 'Dɔwɔwɔ',
+    empty: 'Akpa aɖeke meli haɖe o',
+    emptyBody: 'Wu akpa aɖe nu eye míaŋlɔe ɖe afii kple ɖoɖo si me wòle.',
+    goToPlan: 'Yi egbe ƒe ɖoɖoa gbɔ',
+    session: 'akpa',
+    sessions: 'akpawo',
+    minUnit: 'miniti',
+    day: 'ŋkeke',
+    days: 'ŋkekewo',
+    completed: 'Wu enu',
+    timeTrained: 'Ɣeyiɣi si nèzã',
+    streak: 'Ŋkeke siwo nèyi edzi',
+    byPlan: 'LE ƉOƉO ƊESIAƊE ME',
+    rowMinutes: 'miniti {min}',
+  },
+  ha: {
+    title: 'Ayyuka',
+    empty: 'Babu zama tukuna',
+    emptyBody: 'Gama zama ɗaya kuma za a rubuta shi a nan, tare da shirin da yake ciki.',
+    goToPlan: 'Je zuwa shirin yau',
+    session: 'zama',
+    sessions: 'zamomi',
+    minUnit: 'minti',
+    day: 'rana',
+    days: 'kwanaki',
+    completed: 'An gama',
+    timeTrained: 'Lokacin motsa jiki',
+    streak: 'Jerin kwanaki',
+    byPlan: 'TA KOWANE SHIRI',
+    rowMinutes: 'minti {min}',
+  },
+});
 
 /** "September 2026" — the group heading. */
-function monthLabel(at: number): string {
-  return new Date(at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+function monthLabel(at: number, locale: string): string {
+  return new Date(at).toLocaleDateString(locale, { month: 'long', year: 'numeric' });
 }
 
 /** "Mon 8 Sept · 6:30 PM" — one row's stamp. */
-function rowStamp(at: number): string {
+function rowStamp(at: number, locale: string): string {
   const date = new Date(at);
-  const day = date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  const day = date.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' });
   const time = date
-    .toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true })
+    .toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: true })
     .toUpperCase();
   return `${day} · ${time}`;
 }
@@ -48,6 +148,8 @@ function rowStamp(at: number): string {
 export default function WellnessActivity() {
   const t = useTokens();
   const { d } = useDesignScale();
+  const tr = useT(S);
+  const locale = useLocale();
 
   const history = useWellnessStore((s) => s.history);
   const rows = historyNewestFirst(history);
@@ -58,7 +160,7 @@ export default function WellnessActivity() {
   // Grouped in render order, so the list stays newest-first within each month.
   const months: { label: string; rows: CompletedSession[] }[] = [];
   for (const row of rows) {
-    const label = monthLabel(row.finishedAt);
+    const label = monthLabel(row.finishedAt, locale);
     const last = months[months.length - 1];
     if (last && last.label === label) last.rows.push(row);
     else months.push({ label, rows: [row] });
@@ -90,7 +192,7 @@ export default function WellnessActivity() {
 
   return (
     <FormScreen gap={16} contentStyle={{ paddingBottom: d(60) }}>
-      <TitleAppBar title="Activity" />
+      <TitleAppBar title={tr('title')} />
 
       {rows.length === 0 ? (
         <View style={{ gap: d(16), paddingTop: d(40) }}>
@@ -108,7 +210,7 @@ export default function WellnessActivity() {
             <Icon name="award" size={d(40)} tone="tertiary" />
           </View>
           <Text variant="headingM" center style={{ fontSize: d(18), lineHeight: d(24) }}>
-            No sessions yet
+            {tr('empty')}
           </Text>
           <Text
             variant="bodyM"
@@ -116,16 +218,20 @@ export default function WellnessActivity() {
             center
             style={{ fontSize: d(14), lineHeight: d(21) }}
           >
-            Finish a session and it is logged here, with the plan it belonged to.
+            {tr('emptyBody')}
           </Text>
-          <Button label="Go to today's plan" size="large" onPress={() => router.replace('/wellness')} />
+          <Button label={tr('goToPlan')} size="large" onPress={() => router.replace('/wellness')} />
         </View>
       ) : (
         <>
           <View style={{ flexDirection: 'row', gap: d(12) }}>
-            {stat(String(rows.length), rows.length === 1 ? 'session' : 'sessions', 'Completed')}
-            {stat(String(minutes), 'min', 'Time trained')}
-            {stat(String(streak), streak === 1 ? 'day' : 'days', 'Current streak')}
+            {stat(
+              String(rows.length),
+              rows.length === 1 ? tr('session') : tr('sessions'),
+              tr('completed'),
+            )}
+            {stat(String(minutes), tr('minUnit'), tr('timeTrained'))}
+            {stat(String(streak), streak === 1 ? tr('day') : tr('days'), tr('streak'))}
           </View>
 
           {totals.length > 1 ? (
@@ -138,7 +244,7 @@ export default function WellnessActivity() {
               }}
             >
               <Text variant="labelXS" tone="tertiary" style={{ fontSize: d(11), lineHeight: d(14) }}>
-                BY PLAN
+                {tr('byPlan')}
               </Text>
               {totals.map(({ programme, done }) => (
                 <View
@@ -202,11 +308,11 @@ export default function WellnessActivity() {
                         tone="tertiary"
                         style={{ fontSize: d(12), lineHeight: d(16) }}
                       >
-                        {programme.title} · {rowStamp(row.finishedAt)}
+                        {programme.title} · {rowStamp(row.finishedAt, locale)}
                       </Text>
                     </View>
                     <Text variant="labelS" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-                      {row.durationMin} min
+                      {tr('rowMinutes', { min: row.durationMin })}
                     </Text>
                   </View>
                 );

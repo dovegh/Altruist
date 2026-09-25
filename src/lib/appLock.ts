@@ -1,13 +1,16 @@
 /**
  * App lock — the trigger behind the App Lock screen.
  *
- * Rule: if biometric unlock is on and the app has been in the background for
- * longer than the grace period, the next foreground shows the lock screen.
+ * Rule: if biometric unlock is on, coming back to the app after it went to the
+ * background — for any length of time — shows the lock screen. (The owner
+ * chose this over a grace period.) Only a real trip to the background counts:
+ * pulling down Control Centre or a notification makes the app `inactive`, not
+ * `background`, and does not lock.
  *
- * The grace period matters. Locking on every backgrounding punishes the normal
- * act of checking a text message mid-order, and users respond by turning the
- * feature off — which is strictly worse for the thing it protects. Thirty
- * seconds covers app-switching without covering "I put my phone on the table".
+ * Trips the app itself sends you on — the photo picker, camera, share sheet,
+ * provider sign-in, Settings, a phone or mail link — are wrapped in
+ * `leaveAppFor`, so finishing one does not land on a lock screen halfway
+ * through uploading a prescription.
  *
  * What this protects is specific: prescription images are health data under the
  * Data Protection Act 2012 (Act 843), and the phone's own lock screen is not a
@@ -18,9 +21,15 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BIOMETRIC_KEY = 'altruist.biometricUnlock';
-const GRACE_MS = 30_000;
-
 let backgroundedAt: number | null = null;
+/** Whether the lock screen is up, so a second trip away does not stack another. */
+let lockShowing = false;
+export const setLockShowing = (showing: boolean) => {
+  lockShowing = showing;
+};
+export const isLockShowing = () => lockShowing;
+/** Set while the app has sent the person elsewhere on purpose. */
+let expectingReturnUntil = 0;
 
 export async function isBiometricEnabled(): Promise<boolean> {
   try {
@@ -72,14 +81,14 @@ export async function openBiometricSettings(): Promise<void> {
   if (Platform.OS === 'android') {
     for (const action of ['android.settings.BIOMETRIC_ENROLL', 'android.settings.SECURITY_SETTINGS']) {
       try {
-        await Linking.sendIntent(action);
+        await leaveAppFor(() => Linking.sendIntent(action));
         return;
       } catch {
         // Not on this Android version; try the next one.
       }
     }
   }
-  await Linking.openSettings().catch(() => {});
+  await leaveAppFor(() => Linking.openSettings()).catch(() => {});
 }
 
 export function markBackgrounded(): void {
@@ -89,10 +98,27 @@ export function markBackgrounded(): void {
 /** Call on foreground. True when the lock screen should be shown. */
 export async function shouldLock(): Promise<boolean> {
   if (backgroundedAt === null) return false;
-  const away = Date.now() - backgroundedAt;
   backgroundedAt = null;
-  if (away < GRACE_MS) return false;
+  if (Date.now() < expectingReturnUntil) {
+    expectingReturnUntil = 0;
+    return false;
+  }
   return (await isBiometricEnabled()) && (await canUseBiometrics());
+}
+
+/** True when a cold start should open on the lock screen. */
+export async function shouldLockOnLaunch(): Promise<boolean> {
+  return (await isBiometricEnabled()) && (await canUseBiometrics());
+}
+
+/**
+ * Runs something that takes the person out of the app (picker, camera, share
+ * sheet, browser, Settings, a phone call) without locking them out when they
+ * come back from it. The allowance lasts ten minutes and one return.
+ */
+export async function leaveAppFor<T>(run: () => Promise<T> | T): Promise<T> {
+  expectingReturnUntil = Date.now() + 10 * 60_000;
+  return await run();
 }
 
 /** Runs the OS prompt. Returns true when the user is through. */

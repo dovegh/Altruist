@@ -30,8 +30,121 @@ import {
   type AvatarPreset,
 } from '@/components/avatars';
 import { setAvatarPreset, uploadAvatar } from '@/lib/api';
+import { leaveAppFor } from '@/lib/appLock';
 import { initialsOf } from '@/lib/profile';
 import { useProfile, useProfileStore } from '@/features/profile/store';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    photosOffTitle: 'Photo access is off',
+    photosOffMessage: 'Turn it on in Settings to use a photo as your avatar.',
+    openSettings: 'Open settings',
+    notNow: 'Not now',
+    title: 'Choose an avatar',
+    previewPhoto: 'Preview: your photo',
+    previewPreset: 'Preview: {name}',
+    previewNone: 'Preview: no avatar chosen',
+    people: 'PEOPLE',
+    fruity: 'FRUITY',
+    yourPhoto: 'Your photo',
+    ownPhoto: 'YOUR OWN PHOTO',
+    uploading: 'Uploading…',
+    uploadDifferent: 'Upload a different photo',
+    upload: 'Upload a photo',
+    save: 'Save avatar',
+  },
+  fr: {
+    photosOffTitle: "L'accès aux photos est désactivé",
+    photosOffMessage: 'Activez-le dans les Réglages pour utiliser une photo comme avatar.',
+    openSettings: 'Ouvrir les réglages',
+    notNow: 'Plus tard',
+    title: 'Choisir un avatar',
+    previewPhoto: 'Aperçu : votre photo',
+    previewPreset: 'Aperçu : {name}',
+    previewNone: 'Aperçu : aucun avatar choisi',
+    people: 'PERSONNES',
+    fruity: 'FRUITS',
+    yourPhoto: 'Votre photo',
+    ownPhoto: 'VOTRE PROPRE PHOTO',
+    uploading: 'Envoi…',
+    uploadDifferent: 'Envoyer une autre photo',
+    upload: 'Envoyer une photo',
+    save: "Enregistrer l'avatar",
+  },
+  tw: {
+    photosOffTitle: 'Mfonini kwan ayɛ mum',
+    photosOffMessage: 'Bue wɔ Nhyehyɛeɛ mu na fa mfonini yɛ wo avatar.',
+    openSettings: 'Bue nhyehyɛeɛ',
+    notNow: 'Ɛnnɛ deɛ, daabi',
+    title: 'Yi avatar',
+    previewPhoto: 'Hwɛ kan: wo mfonini',
+    previewPreset: 'Hwɛ kan: {name}',
+    previewNone: 'Hwɛ kan: wonyii avatar biara',
+    people: 'NNIPA',
+    fruity: 'NNUABA',
+    yourPhoto: 'Wo mfonini',
+    ownPhoto: 'WO ANKASA MFONINI',
+    uploading: 'Ɛrekɔ so…',
+    uploadDifferent: 'Fa mfonini foforɔ to so',
+    upload: 'Fa mfonini to so',
+    save: 'Kora avatar',
+  },
+  gaa: {
+    photosOffTitle: 'Mfonirii gbɛ egbɔ',
+    photosOffMessage: 'Bue yɛ Toiŋjɔlɛmɔi mli koni okɛ mfoniri afee o avatar.',
+    openSettings: 'Bue toiŋjɔlɛmɔi',
+    notNow: 'Jeee amrɔ nɛɛ',
+    title: 'Hala avatar',
+    previewPhoto: 'Kwɛ klɛŋklɛŋ: o mfoniri',
+    previewPreset: 'Kwɛ klɛŋklɛŋ: {name}',
+    previewNone: 'Kwɛ klɛŋklɛŋ: ohalaaa avatar ko',
+    people: 'GBƆMƐI',
+    fruity: 'YIBII',
+    yourPhoto: 'O mfoniri',
+    ownPhoto: 'O DIŊŊ O MFONIRI',
+    uploading: 'Eyaa…',
+    uploadDifferent: 'Kɛ mfoniri kroko ya',
+    upload: 'Kɛ mfoniri ya',
+    save: 'To avatar lɛ',
+  },
+  ee: {
+    photosOffTitle: 'Wotu fotowo ƒe mɔ',
+    photosOffMessage: 'Ʋu eme le Ɖoɖowo me be nàzã foto abe wò avatar ene.',
+    openSettings: 'Ʋu ɖoɖowo',
+    notNow: 'Menye fifia o',
+    title: 'Tia avatar',
+    previewPhoto: 'Kpɔe do ŋgɔ: wò foto',
+    previewPreset: 'Kpɔe do ŋgɔ: {name}',
+    previewNone: 'Kpɔe do ŋgɔ: mètia avatar aɖeke o',
+    people: 'AMEWO',
+    fruity: 'ATIKUTSETSEWO',
+    yourPhoto: 'Wò foto',
+    ownPhoto: 'WÒ ŊUTƆ WÒ FOTO',
+    uploading: 'Le eɖom ɖa…',
+    uploadDifferent: 'Ɖo foto bubu ɖa',
+    upload: 'Ɖo foto ɖa',
+    save: 'Dzra avatar ɖo',
+  },
+  ha: {
+    photosOffTitle: 'An kashe damar hotuna',
+    photosOffMessage: 'Kunna shi a cikin Saituna don amfani da hoto a matsayin avatar.',
+    openSettings: 'Buɗe saituna',
+    notNow: 'Ba yanzu ba',
+    title: 'Zaɓi avatar',
+    previewPhoto: 'Duba: hotonka',
+    previewPreset: 'Duba: {name}',
+    previewNone: 'Duba: ba a zaɓi avatar ba',
+    people: 'MUTANE',
+    fruity: "'YA'YAN ITACE",
+    yourPhoto: 'Hotonka',
+    ownPhoto: 'HOTONKA NA KANKA',
+    uploading: 'Ana ɗorawa…',
+    uploadDifferent: 'Ɗora wani hoto',
+    upload: 'Ɗora hoto',
+    save: 'Ajiye avatar',
+  },
+});
 
 type Choice = 'photo' | AvatarPreset;
 
@@ -45,6 +158,7 @@ function leave() {
 const TILE = 72;
 
 export default function ChooseAvatar() {
+  const tr = useT(S);
   const t = useTokens();
   const { d } = useDesignScale();
   const profile = useProfile();
@@ -85,23 +199,23 @@ export default function ChooseAvatar() {
       showDialog({
         icon: 'image',
         tone: 'warning',
-        title: 'Photo access is off',
-        message: 'Turn it on in Settings to use a photo as your avatar.',
+        title: tr('photosOffTitle'),
+        message: tr('photosOffMessage'),
         actions: [
-          { label: 'Open settings', onPress: () => void Linking.openSettings() },
-          { label: 'Not now', variant: 'tertiary' },
+          { label: tr('openSettings'), onPress: () => void leaveAppFor(() => Linking.openSettings()) },
+          { label: tr('notNow'), variant: 'tertiary' },
         ],
       });
       return;
     }
-    const result = await ImagePicker.launchImageLibraryAsync({
+    const result = await leaveAppFor(() => ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
       // A profile picture is shown at 72pt at most. Anything sharper is upload
       // time on a phone network for pixels nobody sees.
       quality: 0.5,
-    });
+    }));
     const uri = result.canceled ? undefined : result.assets?.[0]?.uri;
     if (!uri) return;
 
@@ -167,7 +281,7 @@ export default function ChooseAvatar() {
   return (
     <View style={{ flex: 1, backgroundColor: t.colors.bg.canvas }}>
       <FormScreen gap={20}>
-        <TitleAppBar title="Choose an avatar" />
+        <TitleAppBar title={tr('title')} />
 
         {/* Preview — the choice at profile size, before it is saved. */}
         <View style={{ alignItems: 'center', gap: d(12), paddingVertical: d(8) }}>
@@ -178,20 +292,20 @@ export default function ChooseAvatar() {
             size={112}
             label={
               selected === 'photo'
-                ? 'Preview: your photo'
+                ? tr('previewPhoto')
                 : selected
-                  ? `Preview: ${avatarPresetLabel(selected)}`
-                  : 'Preview: no avatar chosen'
+                  ? tr('previewPreset', { name: avatarPresetLabel(selected) })
+                  : tr('previewNone')
             }
           />
         </View>
 
         {([
-          ['people', 'PEOPLE'],
-          ['fruit', 'FRUITY'],
+          ['people', 'people'],
+          ['fruit', 'fruity'],
         ] as const).map(([group, heading]) => (
           <React.Fragment key={group}>
-            <SectionLabel>{heading}</SectionLabel>
+            <SectionLabel>{tr(heading)}</SectionLabel>
             <View
               accessibilityRole="radiogroup"
               style={{ flexDirection: 'row', flexWrap: 'wrap', gap: d(16) }}
@@ -199,8 +313,8 @@ export default function ChooseAvatar() {
               {group === 'people' && profile.avatarUrl
                 ? tile(
                     'photo',
-                    'Your photo',
-                    <Avatar initials={initials} uri={profile.avatarUrl} size={inner} label="Your photo" />,
+                    tr('yourPhoto'),
+                    <Avatar initials={initials} uri={profile.avatarUrl} size={inner} label={tr('yourPhoto')} />,
                   )
                 : null}
               {AVATAR_PRESETS.filter((a) => a.group === group).map((a) =>
@@ -210,10 +324,10 @@ export default function ChooseAvatar() {
           </React.Fragment>
         ))}
 
-        <SectionLabel>YOUR OWN PHOTO</SectionLabel>
+        <SectionLabel>{tr('ownPhoto')}</SectionLabel>
 
         <Button
-          label={uploading ? 'Uploading…' : profile.avatarUrl ? 'Upload a different photo' : 'Upload a photo'}
+          label={uploading ? tr('uploading') : profile.avatarUrl ? tr('uploadDifferent') : tr('upload')}
           variant="secondary"
           size="large"
           iconLeading="image"
@@ -227,7 +341,7 @@ export default function ChooseAvatar() {
 
       <StickyFooter>
         <Button
-          label="Save avatar"
+          label={tr('save')}
           size="large"
           loading={saving}
           disabled={busy || !selected || selected === current}

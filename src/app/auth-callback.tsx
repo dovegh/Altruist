@@ -29,6 +29,64 @@ import { Text } from '@/components/ui/Text';
 import { Icon } from '@/components/ui/Icon';
 import { NetworkError, isProviderSignInOpen, redeemAuthCode } from '@/lib/api';
 import { setSession } from '@/lib/session';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    confirmedTitle: 'Email confirmed',
+    confirmedBody: 'Sign in to continue.',
+    offlineTitle: 'Could not reach Altruist',
+    offlineBody: 'Check your connection and open the link again.',
+    refusedTitle: 'That link has expired',
+    refusedBody: 'Sign in and we will send you a new one.',
+    signIn: 'Sign in',
+  },
+  fr: {
+    confirmedTitle: 'E-mail confirmé',
+    confirmedBody: 'Connectez-vous pour continuer.',
+    offlineTitle: 'Impossible de joindre Altruist',
+    offlineBody: 'Vérifiez votre connexion et rouvrez le lien.',
+    refusedTitle: 'Ce lien a expiré',
+    refusedBody: 'Connectez-vous et nous vous en enverrons un nouveau.',
+    signIn: 'Se connecter',
+  },
+  tw: {
+    confirmedTitle: 'Yɛasi email no so dua',
+    confirmedBody: 'Kɔ mu na kɔ so.',
+    offlineTitle: 'Yɛantumi anka Altruist',
+    offlineBody: 'Hwɛ wo intanɛt na bue link no bio.',
+    refusedTitle: 'Link no atwam',
+    refusedBody: 'Kɔ mu na yɛde foforɔ bɛbrɛ wo.',
+    signIn: 'Kɔ mu',
+  },
+  gaa: {
+    confirmedTitle: 'Akpɛlɛ email lɛ nɔ',
+    confirmedBody: 'Bote mli ni oya nɔ.',
+    offlineTitle: 'Ashɛɛɛ Altruist nɔ',
+    offlineBody: 'Kwɛ o intanɛt ni ogbele link lɛ ekoŋŋ.',
+    refusedTitle: 'Link lɛ egbo',
+    refusedBody: 'Bote mli ni wɔbaatsu ehee kɛba.',
+    signIn: 'Bote mli',
+  },
+  ee: {
+    confirmedTitle: 'Woka email la dzi',
+    confirmedBody: 'Ge ɖe eme nàyi edzi.',
+    offlineTitle: 'Míete ŋu ɖo Altruist gbɔ o',
+    offlineBody: 'Kpɔ wò intanɛt eye nàgaʋu link la.',
+    refusedTitle: 'Link la yi',
+    refusedBody: 'Ge ɖe eme eye míaɖo yeye ɖe wò.',
+    signIn: 'Ge ɖe eme',
+  },
+  ha: {
+    confirmedTitle: 'An tabbatar da imel',
+    confirmedBody: 'Shiga don ci gaba.',
+    offlineTitle: 'Ba a iya kaiwa ga Altruist ba',
+    offlineBody: 'Duba haɗin intanet ɗinka ka sake buɗe hanyar.',
+    refusedTitle: 'Wannan hanyar ta ƙare',
+    refusedBody: 'Shiga za mu aiko maka da sabuwa.',
+    signIn: 'Shiga',
+  },
+});
 
 type Outcome =
   | { kind: 'working' }
@@ -37,6 +95,7 @@ type Outcome =
   | { kind: 'refused'; message: string };
 
 export default function AuthCallback() {
+  const tr = useT(S);
   const { d } = useDesignScale();
   const params = useLocalSearchParams<{ code?: string; error_description?: string }>();
   const [outcome, setOutcome] = useState<Outcome>({ kind: 'working' });
@@ -78,18 +137,18 @@ export default function AuthCallback() {
   const copy = {
     'confirmed-elsewhere': {
       icon: 'check' as const,
-      title: 'Email confirmed',
-      body: 'Sign in to continue.',
+      title: tr('confirmedTitle'),
+      body: tr('confirmedBody'),
     },
     offline: {
       icon: 'danger' as const,
-      title: 'Could not reach Altruist',
-      body: 'Check your connection and open the link again.',
+      title: tr('offlineTitle'),
+      body: tr('offlineBody'),
     },
     refused: {
       icon: 'danger' as const,
-      title: 'That link has expired',
-      body: 'Sign in and we will send you a new one.',
+      title: tr('refusedTitle'),
+      body: tr('refusedBody'),
     },
   }[outcome.kind];
 
@@ -110,7 +169,7 @@ export default function AuthCallback() {
         </Text>
       </View>
 
-      <Button label="Sign in" size="large" onPress={() => router.replace('/login')} />
+      <Button label={tr('signIn')} size="large" onPress={() => router.replace('/login')} />
     </FormScreen>
   );
 }

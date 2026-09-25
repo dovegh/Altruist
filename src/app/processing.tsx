@@ -24,8 +24,61 @@ import { uploadPrescription } from '@/lib/api';
 import { describeFailure } from '@/components/ui/FormMessage';
 import { usePrescriptionStore, simulateReview } from '@/features/prescriptions/store';
 import { usePartnerPharmacy } from '@/features/profile/store';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    notSent: 'Not sent',
+    notSentBody: '{failure} Your prescription has not reached the pharmacy.',
+    tryAgain: 'Try again',
+    cancel: 'Cancel',
+    sending: 'Sending to the pharmacy',
+    sendingBody: 'Sending your prescription to {pharmacy}.',
+  },
+  fr: {
+    notSent: 'Non envoyée',
+    notSentBody: "{failure} Votre ordonnance n'est pas parvenue à la pharmacie.",
+    tryAgain: 'Réessayer',
+    cancel: 'Annuler',
+    sending: 'Envoi à la pharmacie',
+    sendingBody: 'Envoi de votre ordonnance à {pharmacy}.',
+  },
+  tw: {
+    notSent: 'Ankɔ',
+    notSentBody: '{failure} Wo nnuro krataa no nnuruu nnuro adetɔnbea hɔ.',
+    tryAgain: 'San bɔ mmɔden',
+    cancel: 'Gyae',
+    sending: 'Ɛrekɔ nnuro adetɔnbea',
+    sendingBody: 'Yɛresoma wo nnuro krataa akɔma {pharmacy}.',
+  },
+  gaa: {
+    notSent: 'Eyaaa',
+    notSentBody: '{failure} O tsofa wolo lɛ shɛko tsofa shĩa lɛ.',
+    tryAgain: 'Ka ekoŋŋ',
+    cancel: 'Kpa',
+    sending: 'Eyaa tsofa shĩa lɛ',
+    sendingBody: 'Wɔmiikɛ o tsofa wolo lɛ ya {pharmacy}.',
+  },
+  ee: {
+    notSent: 'Meɖoe o',
+    notSentBody: '{failure} Wò atikeŋɔŋlɔ meɖo atikedzraƒe o.',
+    tryAgain: 'Gatee kpɔ',
+    cancel: 'Ɖe asi le eŋu',
+    sending: 'Le eɖom ɖe atikedzraƒe',
+    sendingBody: 'Míele wò atikeŋɔŋlɔ ɖom ɖe {pharmacy}.',
+  },
+  ha: {
+    notSent: 'Ba a aika ba',
+    notSentBody: '{failure} Takardar maganinka ba ta kai ga kantin magani ba.',
+    tryAgain: 'Sake gwadawa',
+    cancel: 'Soke',
+    sending: 'Ana aikawa zuwa kantin magani',
+    sendingBody: 'Ana aika takardar maganinka zuwa {pharmacy}.',
+  },
+});
 
 export default function Processing() {
+  const tr = useT(S);
   const pharmacy = usePartnerPharmacy();
   const cancelled = useRef(false);
   const { uri, for: forParam } = useLocalSearchParams<{ uri?: string; for?: string }>();
@@ -65,12 +118,12 @@ export default function Processing() {
         gap={24}
         paddingTop={200}
         titleSize={24}
-        title="Not sent"
-        body={`${failure} Your prescription has not reached the pharmacy.`}
+        title={tr('notSent')}
+        body={tr('notSentBody', { failure })}
         actions={
           <>
             <Button
-              label="Try again"
+              label={tr('tryAgain')}
               size="large"
               onPress={() => {
                 setFailure(null);
@@ -78,7 +131,7 @@ export default function Processing() {
               }}
             />
             <Button
-              label="Cancel"
+              label={tr('cancel')}
               variant="tertiary"
               size="large"
               onPress={() => (router.canGoBack() ? router.back() : router.replace('/prescriptions'))}
@@ -95,11 +148,11 @@ export default function Processing() {
       gap={24}
       paddingTop={250}
       titleSize={24}
-      title="Sending to the pharmacy"
-      body={`Sending your prescription to ${pharmacy.name}.`}
+      title={tr('sending')}
+      body={tr('sendingBody', { pharmacy: pharmacy.name })}
       actions={
         <Button
-          label="Cancel"
+          label={tr('cancel')}
           variant="tertiary"
           size="medium"
           fullWidth={false}

@@ -12,6 +12,58 @@ import { useTokens } from '@/theme/ThemeProvider';
 import { useDesignScale } from '@/theme/useDesignScale';
 import { Text } from './Text';
 import { Icon, type IconName } from './Icon';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    oneItem: '{label}, 1 item',
+    manyItems: '{label}, {count} items',
+    yourProfile: 'Your profile',
+    goBack: 'Go back',
+    viewAll: 'View all',
+    actionA11y: '{action} {title}',
+  },
+  fr: {
+    oneItem: '{label}, 1 article',
+    manyItems: '{label}, {count} articles',
+    yourProfile: 'Votre profil',
+    goBack: 'Retour',
+    viewAll: 'Tout voir',
+    actionA11y: '{action} : {title}',
+  },
+  tw: {
+    oneItem: '{label}, adeɛ 1',
+    manyItems: '{label}, nneɛma {count}',
+    yourProfile: 'Wo ho nsɛm',
+    goBack: 'San kɔ akyi',
+    viewAll: 'Hwɛ ne nyinaa',
+    actionA11y: '{action} {title}',
+  },
+  gaa: {
+    oneItem: '{label}, nɔ kome',
+    manyItems: '{label}, nibii {count}',
+    yourProfile: 'Bo he saji',
+    goBack: 'Ku sɛɛ',
+    viewAll: 'Kwɛmɔ fɛɛ',
+    actionA11y: '{action} {title}',
+  },
+  ee: {
+    oneItem: '{label}, nu 1',
+    manyItems: '{label}, nu {count}',
+    yourProfile: 'Wò nyatakakawo',
+    goBack: 'Trɔ yi megbe',
+    viewAll: 'Kpɔ wo katã',
+    actionA11y: '{action} {title}',
+  },
+  ha: {
+    oneItem: '{label}, abu 1',
+    manyItems: '{label}, abubuwa {count}',
+    yourProfile: 'Bayananka',
+    goBack: 'Koma baya',
+    viewAll: 'Duba duka',
+    actionA11y: '{action} {title}',
+  },
+});
 
 export function RoundAction({
   icon,
@@ -27,13 +79,20 @@ export function RoundAction({
 }) {
   const t = useTokens();
   const { d } = useDesignScale();
+  const tr = useT(S);
   const count = badge && badge > 0 ? badge : 0;
   return (
     <Pressable
       accessibilityRole="button"
       // The count belongs in the label, not only in the dot — a screen reader
       // gets nothing from a 18pt mint circle.
-      accessibilityLabel={count ? `${label}, ${count} item${count === 1 ? '' : 's'}` : label}
+      accessibilityLabel={
+        count
+          ? count === 1
+            ? tr('oneItem', { label })
+            : tr('manyItems', { label, count })
+          : label
+      }
       onPress={onPress}
       style={({ pressed }) => ({
         width: d(44),
@@ -91,11 +150,12 @@ export function ProfileAppBar({
 }: Common & { greeting: string; name: string; onAvatarPress?: () => void }) {
   const t = useTokens();
   const { d } = useDesignScale();
+  const tr = useT(S);
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: d(12), height: d(56) }}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Your profile"
+        accessibilityLabel={tr('yourProfile')}
         onPress={onAvatarPress}
         style={{
           width: d(44),
@@ -140,10 +200,11 @@ export function TitleAppBar({
   showBack = true,
 }: Common & { title: string; onBack?: () => void; showBack?: boolean }) {
   const { d } = useDesignScale();
+  const tr = useT(S);
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: d(12), height: d(56) }}>
       {showBack ? (
-        <RoundAction icon="arrow-left" label="Go back" onPress={onBack ?? (() => router.back())} />
+        <RoundAction icon="arrow-left" label={tr('goBack')} onPress={onBack ?? (() => router.back())} />
       ) : null}
       <Text variant="headingL" numberOfLines={1} style={{ flex: 1, fontSize: d(20), lineHeight: d(26) }}>
         {title}
@@ -158,7 +219,7 @@ export function TitleAppBar({
 /** Section Header — title plus an optional "View all" pill. */
 export function SectionHeader({
   title,
-  action = 'View all',
+  action: actionProp,
   onAction,
 }: {
   title: string;
@@ -167,6 +228,8 @@ export function SectionHeader({
 }) {
   const t = useTokens();
   const { d } = useDesignScale();
+  const tr = useT(S);
+  const action = actionProp ?? tr('viewAll');
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: d(12), height: d(40) }}>
       <Text variant="headingL" style={{ flex: 1, fontSize: d(20), lineHeight: d(26) }}>
@@ -175,7 +238,7 @@ export function SectionHeader({
       {onAction ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`${action} ${title}`}
+          accessibilityLabel={tr('actionA11y', { action, title })}
           onPress={onAction}
           style={{
             flexDirection: 'row',

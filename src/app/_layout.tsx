@@ -1,5 +1,5 @@
 import 'react-native-gesture-handler';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, AppState, type AppStateStatus } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -27,9 +27,11 @@ import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
 import { useWellnessSync } from '@/features/wellness/sync';
 import { useAccountSync } from '@/features/account/session';
 import { useAuthGuard } from '@/features/account/guard';
+import { useWellnessReminders } from '@/features/wellness/reminders';
 import { DialogHost } from '@/components/ui/Dialog';
+import { Wordmark } from '@/components/Wordmark';
 import { motion } from '@/theme/tokens';
-import { markBackgrounded, shouldLock } from '@/lib/appLock';
+import { markBackgrounded, shouldLock, isLockShowing, isBiometricEnabled } from '@/lib/appLock';
 import { getToken } from '@/lib/session';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -47,8 +49,8 @@ const queryClient = new QueryClient({
 });
 
 /**
- * Shows the App Lock screen when the app returns from the background after the
- * grace period, and only for a signed-in user who turned biometric unlock on.
+ * Shows the App Lock screen whenever the app returns from the background, for
+ * a signed-in user who turned biometric unlock on (see lib/appLock).
  * Lives at the root so it covers every screen, including the ones a deep link
  * opens directly.
  */
@@ -60,7 +62,9 @@ function useAppLockGate() {
       const wasActive = previous.current === 'active';
       previous.current = next;
 
-      if (next.match(/inactive|background/) && wasActive) {
+      // Only a real trip to the background. `inactive` is Control Centre, a
+      // notification, the Face ID sheet itself — none of those should lock.
+      if (next === 'background') {
         markBackgrounded();
         return;
       }
@@ -68,11 +72,49 @@ function useAppLockGate() {
       if (next === 'active' && !wasActive) {
         // Nothing to lock if there is no session behind it.
         if (!(await getToken())) return;
-        if (await shouldLock()) router.push('/app-lock');
+        if ((await shouldLock()) && !isLockShowing()) router.push('/app-lock');
       }
     });
     return () => sub.remove();
   }, []);
+}
+
+/**
+ * Covers the screen whenever the app is not in front, for people who turned
+ * biometric unlock on. The app switcher shows a snapshot of the last frame;
+ * without this, that snapshot is someone's prescription.
+ */
+function PrivacyShield() {
+  const { t } = useTheme();
+  const [state, setState] = useState<AppStateStatus>(AppState.currentState);
+  const [protect, setProtect] = useState(false);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (next) => {
+      setState(next);
+      if (next !== 'active') void isBiometricEnabled().then(setProtect);
+    });
+    return () => sub.remove();
+  }, []);
+
+  if (state === 'active' || !protect) return null;
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: t.colors.bg.brandCanvas,
+      }}
+    >
+      <Wordmark width={190} />
+    </View>
+  );
 }
 
 function RootNavigator() {
@@ -84,6 +126,17 @@ function RootNavigator() {
   useAuthGuard();
   // Wellness is offline-first; this is what eventually gets it uploaded.
   useWellnessSync();
+  // Daily plan and hydration reminders, when the person turned them on.
+  useWellnessReminders();
+
+  // Hide the native splash only once this navigator has drawn its first frame.
+  // Hiding when fonts loaded (before the theme was ready) left a blank frame
+  // between the native splash and the identical JS one — the iOS "jump".
+  useEffect(() => {
+    if (!ready) return;
+    const frame = requestAnimationFrame(() => SplashScreen.hide());
+    return () => cancelAnimationFrame(frame);
+  }, [ready]);
 
   if (!ready) return null;
 
@@ -111,6 +164,7 @@ function RootNavigator() {
         <Stack.Screen name="(tabs)" />
       </Stack>
       <DialogHost />
+      <PrivacyShield />
     </View>
   );
 }
@@ -128,20 +182,6 @@ export default function RootLayout() {
     PlusJakartaSans_700Bold,
     PlusJakartaSans_800ExtraBold,
   });
-  const [hidden, setHidden] = useState(false);
-
-  // SDK 57: hide() is the current API — hideAsync() is kept only for back-compat.
-  const onReady = useCallback(() => {
-    if ((fontsLoaded || fontError) && !hidden) {
-      SplashScreen.hide();
-      setHidden(true);
-    }
-  }, [fontsLoaded, fontError, hidden]);
-
-  useEffect(() => {
-    onReady();
-  }, [onReady]);
-
   // RN has no reliable synthetic bolding — every weight is a concrete family,
   // so the app must not render type until the files are in memory.
   if (!fontsLoaded && !fontError) return null;

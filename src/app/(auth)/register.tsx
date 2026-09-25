@@ -21,8 +21,91 @@ import { Text } from '@/components/ui/Text';
 import { Icon } from '@/components/ui/Icon';
 import { DeclinedError, NetworkError, signUp } from '@/lib/api';
 import { setSession } from '@/lib/session';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    networkError: 'Could not reach Altruist. Check your connection and try again.',
+    serverError: 'Something went wrong on our side. Try again in a moment.',
+    title: 'Create your account',
+    nameLabel: 'Full name',
+    namePlaceholder: 'Your full name',
+    phoneLabel: 'Phone number',
+    emailLabel: 'Email address',
+    passwordLabel: 'Password',
+    consent:
+      'By creating an account you agree to the Altruist Terms of Service and Privacy Policy. Altruist is a technology platform and does not provide medical advice or dispense medication.',
+    create: 'Create account',
+  },
+  fr: {
+    networkError: 'Impossible de joindre Altruist. Vérifiez votre connexion et réessayez.',
+    serverError: 'Un problème est survenu de notre côté. Réessayez dans un instant.',
+    title: 'Créez votre compte',
+    nameLabel: 'Nom complet',
+    namePlaceholder: 'Votre nom complet',
+    phoneLabel: 'Numéro de téléphone',
+    emailLabel: 'Adresse e-mail',
+    passwordLabel: 'Mot de passe',
+    consent:
+      "En créant un compte, vous acceptez les Conditions d'utilisation et la Politique de confidentialité d'Altruist. Altruist est une plateforme technologique : elle ne donne pas d'avis médical et ne délivre pas de médicaments.",
+    create: 'Créer le compte',
+  },
+  tw: {
+    networkError: 'Yɛantumi anka Altruist. Hwɛ wo intanɛt na san sɔ hwɛ.',
+    serverError: 'Biribi ankɔ yie wɔ yɛn fam. San sɔ hwɛ nkyɛ kakra.',
+    title: 'Bue wo akontaa',
+    nameLabel: 'Wo din nyinaa',
+    namePlaceholder: 'Wo din nyinaa',
+    phoneLabel: 'Fon nɔma',
+    emailLabel: 'Email address',
+    passwordLabel: 'Ahintasɛm',
+    consent:
+      'Sɛ wobue akontaa a, na wopene Altruist Terms of Service ne Privacy Policy so. Altruist yɛ mfiridwuma; ɛmma ayaresa ho afotuo na ɛntɔn nnuro.',
+    create: 'Bue akontaa',
+  },
+  gaa: {
+    networkError: 'Ashɛɛɛ Altruist nɔ. Kwɛ o intanɛt ni oka ekoŋŋ.',
+    serverError: 'Nɔko tɔ̃ yɛ wɔ gbɛfaŋ. Ka ekoŋŋ yɛ be fioo sɛɛ.',
+    title: 'Fee o akɔŋt',
+    nameLabel: 'O gbɛi muu',
+    namePlaceholder: 'O gbɛi muu',
+    phoneLabel: 'Tɛlifoŋ nɔmba',
+    emailLabel: 'Email address',
+    passwordLabel: 'Password',
+    consent:
+      'Kɛ ofee akɔŋt lɛ, okpɛlɛ Altruist Terms of Service kɛ Privacy Policy lɛ nɔ. Altruist ji tɛknoloji nɔ; ekɛɛɛ helatsamɔ ŋaawoo ni ehɔɔɔ tsofai.',
+    create: 'Fee akɔŋt',
+  },
+  ee: {
+    networkError: 'Míete ŋu ɖo Altruist gbɔ o. Kpɔ wò intanɛt eye nàgate kpɔ.',
+    serverError: 'Nane gblẽ le mía gbɔ. Gate kpɔ le ɣeyiɣi kpui aɖe megbe.',
+    title: 'Ʋu wò akɔnta',
+    nameLabel: 'Wò ŋkɔ bliboa',
+    namePlaceholder: 'Wò ŋkɔ bliboa',
+    phoneLabel: 'Fon xexlẽdzesi',
+    emailLabel: 'Email address',
+    passwordLabel: 'Nyaʋiʋli',
+    consent:
+      'Ne èʋu akɔnta la, èlɔ̃ ɖe Altruist ƒe Terms of Service kple Privacy Policy dzi. Altruist nye mɔ̃ɖaŋu; metsɔa atikewɔwɔ ƒe aɖaŋu o eye medzraa atike o.',
+    create: 'Ʋu akɔnta',
+  },
+  ha: {
+    networkError: 'Ba a iya kaiwa ga Altruist ba. Duba haɗin intanet ɗinka ka sake gwadawa.',
+    serverError: 'Wani abu ya faru a ɓangarenmu. Sake gwadawa nan da ɗan lokaci.',
+    title: 'Ƙirƙiri asusunka',
+    nameLabel: 'Cikakken suna',
+    namePlaceholder: 'Cikakken sunanka',
+    phoneLabel: 'Lambar waya',
+    emailLabel: 'Adireshin imel',
+    passwordLabel: 'Kalmar sirri',
+    consent:
+      'Ta hanyar ƙirƙirar asusu ka yarda da Sharuɗɗan Sabis da Manufar Sirri na Altruist. Altruist dandalin fasaha ne; ba ya ba da shawarar likita kuma ba ya ba da magani.',
+    create: 'Ƙirƙiri asusu',
+  },
+});
 
 export default function Register() {
+  const tr = useT(S);
   const t = useTokens();
   const { d } = useDesignScale();
   const [name, setName] = useState('');
@@ -40,10 +123,10 @@ export default function Register() {
   /** Turns any thrown failure into the one sentence to put on screen. */
   const describe = (e: unknown): string => {
     if (e instanceof NetworkError) {
-      return 'Could not reach Altruist. Check your connection and try again.';
+      return tr('networkError');
     }
     if (e instanceof DeclinedError) return e.message;
-    return 'Something went wrong on our side. Try again in a moment.';
+    return tr('serverError');
   };
 
   const createAccount = async () => {
@@ -77,19 +160,19 @@ export default function Register() {
 
       <View style={{ gap: d(10) }}>
         <Text variant="displayS" style={{ fontSize: d(28), lineHeight: d(32) }}>
-          Create your account
+          {tr('title')}
         </Text>
       </View>
 
       <InputField
-        label="Full name"
+        label={tr('nameLabel')}
         value={name}
         onChangeText={setName}
-        placeholder="Your full name"
+        placeholder={tr('namePlaceholder')}
         autoComplete="name"
       />
       <InputField
-        label="Phone number"
+        label={tr('phoneLabel')}
         value={phone}
         onChangeText={setPhone}
         placeholder="+233 XX XXX XXXX"
@@ -97,7 +180,7 @@ export default function Register() {
         autoComplete="tel"
       />
       <InputField
-        label="Email address"
+        label={tr('emailLabel')}
         value={email}
         onChangeText={setEmail}
         placeholder="you@example.com"
@@ -106,7 +189,7 @@ export default function Register() {
         autoComplete="email"
       />
       <InputField
-        label="Password"
+        label={tr('passwordLabel')}
         value={password}
         onChangeText={setPassword}
         placeholder="••••••••••"
@@ -115,9 +198,7 @@ export default function Register() {
       />
 
       <Text variant="bodyS" tone="tertiary" style={{ fontSize: d(13), lineHeight: d(19) }}>
-        By creating an account you agree to the Altruist Terms of Service and Privacy Policy.
-        Altruist is a technology platform and does not provide medical advice or dispense
-        medication.
+        {tr('consent')}
       </Text>
 
       {error ? (
@@ -140,7 +221,7 @@ export default function Register() {
       ) : null}
 
       <Button
-        label="Create account"
+        label={tr('create')}
         size="large"
         loading={busy}
         disabled={!canSubmit || busy}

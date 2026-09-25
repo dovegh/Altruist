@@ -16,6 +16,46 @@ import { useDesignScale } from '@/theme/useDesignScale';
 import { Text } from './Text';
 import { Icon } from './Icon';
 import { RxBadge } from './Product';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    rowA11y: '{name}. {pack}. {price}. {rx}',
+    rxA11y: 'Prescription required',
+    otcA11y: 'Over the counter',
+    addToCart: 'Add {name} to cart',
+  },
+  fr: {
+    rowA11y: '{name}. {pack}. {price}. {rx}',
+    rxA11y: 'Ordonnance requise',
+    otcA11y: 'En vente libre',
+    addToCart: 'Ajouter {name} au panier',
+  },
+  tw: {
+    rowA11y: '{name}. {pack}. {price}. {rx}',
+    rxA11y: 'Ɛhia nnuro krataa',
+    otcA11y: 'Nnuro krataa nhia',
+    addToCart: 'Fa {name} gu kɛntɛn mu',
+  },
+  gaa: {
+    rowA11y: '{name}. {pack}. {price}. {rx}',
+    rxA11y: 'Esa tsofa wolo',
+    otcA11y: 'Tsofa wolo behiaŋ',
+    addToCart: 'Fɔ {name} kɛntɛŋ lɛ mli',
+  },
+  ee: {
+    rowA11y: '{name}. {pack}. {price}. {rx}',
+    rxA11y: 'Atike ŋɔŋlɔ hiã',
+    otcA11y: 'Atike ŋɔŋlɔ mehiã o',
+    addToCart: 'Tsɔ {name} de kusi me',
+  },
+  ha: {
+    rowA11y: '{name}. {pack}. {price}. {rx}',
+    rxA11y: 'Ana buƙatar takardar likita',
+    otcA11y: 'Ba a buƙatar takardar likita',
+    addToCart: 'Saka {name} a kwando',
+  },
+});
 
 export function SearchResultRow({
   name,
@@ -37,13 +77,17 @@ export function SearchResultRow({
 }) {
   const t = useTokens();
   const { d } = useDesignScale();
+  const tr = useT(S);
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${name}. ${pack}. ${price}. ${
-        requiresPrescription ? 'Prescription required' : 'Over the counter'
-      }`}
+      accessibilityLabel={tr('rowA11y', {
+        name,
+        pack,
+        price,
+        rx: requiresPrescription ? tr('rxA11y') : tr('otcA11y'),
+      })}
       onPress={onPress}
       style={({ pressed }) => ({
         flexDirection: 'row',
@@ -97,7 +141,7 @@ export function SearchResultRow({
         </Text>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Add ${name} to cart`}
+          accessibilityLabel={tr('addToCart', { name })}
           hitSlop={8}
           onPress={onAdd}
           style={({ pressed }) => ({

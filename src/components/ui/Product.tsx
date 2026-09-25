@@ -17,6 +17,94 @@ import { useTokens } from '@/theme/ThemeProvider';
 import { useDesignScale } from '@/theme/useDesignScale';
 import { Text } from './Text';
 import { Icon } from './Icon';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    rxRequired: 'RX REQUIRED',
+    rxOnly: 'RX ONLY',
+    overCounter: 'OVER THE COUNTER',
+    otc: 'OTC',
+    rxA11y: 'Prescription required',
+    otcA11y: 'Over the counter',
+    inStock: 'In stock',
+    outOfStock: 'Out of stock',
+    cardA11y: '{name}. {pack}. {price}. {rx}. {stock}',
+    save: 'Save {name}',
+    addToCart: 'Add {name} to cart',
+    search: 'Search medicines, vitamins, brands',
+  },
+  fr: {
+    rxRequired: 'ORDONNANCE REQUISE',
+    rxOnly: 'SUR ORDONNANCE',
+    overCounter: 'EN VENTE LIBRE',
+    otc: 'VENTE LIBRE',
+    rxA11y: 'Ordonnance requise',
+    otcA11y: 'En vente libre',
+    inStock: 'En stock',
+    outOfStock: 'Rupture de stock',
+    cardA11y: '{name}. {pack}. {price}. {rx}. {stock}',
+    save: 'Enregistrer {name}',
+    addToCart: 'Ajouter {name} au panier',
+    search: 'Rechercher médicaments, vitamines, marques',
+  },
+  tw: {
+    rxRequired: 'ƐHIA NNURO KRATAA',
+    rxOnly: 'RX NKOA',
+    overCounter: 'NNURO KRATAA NHIA',
+    otc: 'OTC',
+    rxA11y: 'Ɛhia nnuro krataa',
+    otcA11y: 'Nnuro krataa nhia',
+    inStock: 'Ɛwɔ hɔ',
+    outOfStock: 'Asa',
+    cardA11y: '{name}. {pack}. {price}. {rx}. {stock}',
+    save: 'Kora {name}',
+    addToCart: 'Fa {name} gu kɛntɛn mu',
+    search: 'Hwehwɛ nnuro, vitamin, ne brand',
+  },
+  gaa: {
+    rxRequired: 'ESA TSOFA WOLO',
+    rxOnly: 'RX PƐ',
+    overCounter: 'TSOFA WOLO BEHIAŊ',
+    otc: 'OTC',
+    rxA11y: 'Esa tsofa wolo',
+    otcA11y: 'Tsofa wolo behiaŋ',
+    inStock: 'Eyɛ',
+    outOfStock: 'Eta',
+    cardA11y: '{name}. {pack}. {price}. {rx}. {stock}',
+    save: 'Toɔ {name}',
+    addToCart: 'Fɔ {name} kɛntɛŋ lɛ mli',
+    search: 'Taomɔ tsofai, vitamin, kɛ brand',
+  },
+  ee: {
+    rxRequired: 'ATIKE ŊƆŊLƆ HIÃ',
+    rxOnly: 'RX ƉEƉE',
+    overCounter: 'ATIKE ŊƆŊLƆ MEHIÃ O',
+    otc: 'OTC',
+    rxA11y: 'Atike ŋɔŋlɔ hiã',
+    otcA11y: 'Atike ŋɔŋlɔ mehiã o',
+    inStock: 'Eli',
+    outOfStock: 'Eva to',
+    cardA11y: '{name}. {pack}. {price}. {rx}. {stock}',
+    save: 'Dzra {name} ɖo',
+    addToCart: 'Tsɔ {name} de kusi me',
+    search: 'Di atikewo, vitamin, kple brand',
+  },
+  ha: {
+    rxRequired: 'ANA BUƘATAR TAKARDAR LIKITA',
+    rxOnly: 'RX KAƊAI',
+    overCounter: 'BA A BUƘATAR TAKARDA',
+    otc: 'OTC',
+    rxA11y: 'Ana buƙatar takardar likita',
+    otcA11y: 'Ba a buƙatar takardar likita',
+    inStock: 'Akwai',
+    outOfStock: 'Ya ƙare',
+    cardA11y: '{name}. {pack}. {price}. {rx}. {stock}',
+    save: 'Ajiye {name}',
+    addToCart: 'Saka {name} a kwando',
+    search: 'Nemi magunguna, bitamin, alamu',
+  },
+});
 
 export type RxSize = 'full' | 'compact';
 
@@ -29,15 +117,16 @@ export function RxBadge({
 }) {
   const t = useTokens();
   const { d } = useDesignScale();
+  const tr = useT(S);
 
   // Wording is fixed by type and size — never passed in.
   const label = requiresPrescription
     ? size === 'full'
-      ? 'RX REQUIRED'
-      : 'RX ONLY'
+      ? tr('rxRequired')
+      : tr('rxOnly')
     : size === 'full'
-      ? 'OVER THE COUNTER'
-      : 'OTC';
+      ? tr('overCounter')
+      : tr('otc');
 
   const bg = requiresPrescription ? t.colors.bg.warningSubtle : t.colors.bg.successSubtle;
   const fg = requiresPrescription ? t.colors.text.warning : t.colors.text.success;
@@ -45,7 +134,7 @@ export function RxBadge({
   return (
     <View
       accessibilityRole="text"
-      accessibilityLabel={requiresPrescription ? 'Prescription required' : 'Over the counter'}
+      accessibilityLabel={requiresPrescription ? tr('rxA11y') : tr('otcA11y')}
       style={{
         flexDirection: 'row',
         alignItems: 'center',
@@ -104,7 +193,25 @@ export function FilterChip({
   );
 }
 
-export function ProductCard({
+/**
+ * A small version of a product photo. The catalogue's images come from
+ * Shopify's CDN at their original size — up to ~1900px wide — to fill a card
+ * about 160pt wide; loading hundreds of those is most of why the catalogue was
+ * slow. The CDN resizes on request (`width`), so ask for roughly 2× the tile.
+ */
+export function productThumbnail(url: string | undefined, width = 360): string | undefined {
+  if (!url) return url;
+  try {
+    const u = new URL(url);
+    if (u.hostname !== 'cdn.shopify.com') return url;
+    u.searchParams.set('width', String(width));
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+
+export const ProductCard = React.memo(function ProductCard({
   name,
   pack,
   price,
@@ -127,13 +234,19 @@ export function ProductCard({
 }) {
   const t = useTokens();
   const { d } = useDesignScale();
+  const tr = useT(S);
+  const thumbnail = productThumbnail(imageUrl);
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${name}. ${pack}. ${price}. ${
-        requiresPrescription ? 'Prescription required' : 'Over the counter'
-      }. ${inStock ? 'In stock' : 'Out of stock'}`}
+      accessibilityLabel={tr('cardA11y', {
+        name,
+        pack,
+        price,
+        rx: requiresPrescription ? tr('rxA11y') : tr('otcA11y'),
+        stock: inStock ? tr('inStock') : tr('outOfStock'),
+      })}
       onPress={onPress}
       style={({ pressed }) => ({
         flex: 1,
@@ -168,9 +281,13 @@ export function ProductCard({
           <View style={{ opacity: 0.35 }}>
             <Icon name="prescription" size={d(36)} color={t.colors.text.onBrand} />
           </View>
-          {imageUrl ? (
+          {thumbnail ? (
             <Image
-              source={{ uri: imageUrl }}
+              source={{ uri: thumbnail }}
+              // Kept in memory and on disk: scrolling back up, or opening the
+              // catalogue again, does not download the same photos twice.
+              cachePolicy="memory-disk"
+              recyclingKey={thumbnail}
               // Fills the tile. These are catalogue shots on white with generous
               // margins, so the crop takes background rather than product on
               // almost all of them — and a grid of uniformly filled tiles reads
@@ -183,7 +300,7 @@ export function ProductCard({
         </View>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Save ${name}`}
+          accessibilityLabel={tr('save', { name })}
           hitSlop={10}
           style={{ position: 'absolute', right: d(12), top: d(13) }}
         >
@@ -211,7 +328,7 @@ export function ProductCard({
           </Text>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`Add ${name} to cart`}
+            accessibilityLabel={tr('addToCart', { name })}
             onPress={onAdd}
             hitSlop={8}
             style={({ pressed }) => ({
@@ -229,21 +346,22 @@ export function ProductCard({
       ) : (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Text variant="labelS" tone="danger" style={{ flex: 1, fontSize: d(12), lineHeight: d(16) }}>
-            Out of stock
+            {tr('outOfStock')}
           </Text>
         </View>
       )}
     </Pressable>
   );
-}
+});
 
 export function SearchField({ onPress }: { onPress?: () => void }) {
   const t = useTokens();
   const { d } = useDesignScale();
+  const tr = useT(S);
   return (
     <Pressable
       accessibilityRole="search"
-      accessibilityLabel="Search medicines, vitamins, brands"
+      accessibilityLabel={tr('search')}
       onPress={onPress}
       style={{
         flexDirection: 'row',
@@ -259,7 +377,7 @@ export function SearchField({ onPress }: { onPress?: () => void }) {
     >
       <Icon name="search" size={d(20)} tone="primary" />
       <Text variant="bodyM" tone="placeholder" style={{ flex: 1, fontSize: d(14), lineHeight: d(21) }}>
-        Search medicines, vitamins, brands
+        {tr('search')}
       </Text>
     </Pressable>
   );

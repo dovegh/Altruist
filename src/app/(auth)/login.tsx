@@ -37,8 +37,115 @@ import {
   type OAuthProvider,
 } from '@/lib/api';
 import { setSession } from '@/lib/session';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    networkError: 'Could not reach Altruist. Check your connection and try again.',
+    serverError: 'Something went wrong on our side. Try again in a moment.',
+    unconfirmed: 'Confirm your email first. Check your inbox for the link.',
+    continueWith: 'Continue with {provider}',
+    opening: 'Opening…',
+    title: 'Welcome back',
+    subtitle: 'Sign in to track prescriptions and reorder in a tap.',
+    emailLabel: 'Email address',
+    passwordLabel: 'Password',
+    resendConfirmation: 'Send the confirmation link again',
+    forgot: 'Forgot password?',
+    signIn: 'Sign in',
+    orContinue: 'or continue with',
+    newTo: 'New to Altruist?',
+    createAccount: 'Create an account',
+  },
+  fr: {
+    networkError: 'Impossible de joindre Altruist. Vérifiez votre connexion et réessayez.',
+    serverError: 'Un problème est survenu de notre côté. Réessayez dans un instant.',
+    unconfirmed: "Confirmez d'abord votre e-mail. Le lien se trouve dans votre boîte de réception.",
+    continueWith: 'Continuer avec {provider}',
+    opening: 'Ouverture…',
+    title: 'Bon retour',
+    subtitle: 'Connectez-vous pour suivre vos ordonnances et recommander en un geste.',
+    emailLabel: 'Adresse e-mail',
+    passwordLabel: 'Mot de passe',
+    resendConfirmation: 'Renvoyer le lien de confirmation',
+    forgot: 'Mot de passe oublié ?',
+    signIn: 'Se connecter',
+    orContinue: 'ou continuer avec',
+    newTo: 'Nouveau sur Altruist ?',
+    createAccount: 'Créer un compte',
+  },
+  tw: {
+    networkError: 'Yɛantumi anka Altruist. Hwɛ wo intanɛt na san sɔ hwɛ.',
+    serverError: 'Biribi ankɔ yie wɔ yɛn fam. San sɔ hwɛ nkyɛ kakra.',
+    unconfirmed: 'Di kan si wo email so dua. Hwɛ wo inbox mu ma link no.',
+    continueWith: 'Kɔ so wɔ {provider} so',
+    opening: 'Ɛrebue…',
+    title: 'Akwaaba bio',
+    subtitle: 'Kɔ mu na hwɛ wo nnuro nkrataa na tɔ bio ntɛm.',
+    emailLabel: 'Email address',
+    passwordLabel: 'Ahintasɛm',
+    resendConfirmation: 'San de link a wode si so dua no kɔ',
+    forgot: 'Wo werɛ afi wo ahintasɛm?',
+    signIn: 'Kɔ mu',
+    orContinue: 'anaa kɔ so wɔ',
+    newTo: 'Woyɛ foforɔ wɔ Altruist?',
+    createAccount: 'Bue akontaa',
+  },
+  gaa: {
+    networkError: 'Ashɛɛɛ Altruist nɔ. Kwɛ o intanɛt ni oka ekoŋŋ.',
+    serverError: 'Nɔko tɔ̃ yɛ wɔ gbɛfaŋ. Ka ekoŋŋ yɛ be fioo sɛɛ.',
+    unconfirmed: 'Kpɛlɛ o email lɛ nɔ klɛŋklɛŋ. Kwɛ o inbox lɛ mli ha link lɛ.',
+    continueWith: 'Ya nɔ kɛ {provider}',
+    opening: 'Egbeleɔ…',
+    title: 'Oba ekoŋŋ',
+    subtitle: 'Bote mli koni okwɛ o tsofa woloi ni ohe ekoŋŋ oya.',
+    emailLabel: 'Email address',
+    passwordLabel: 'Password',
+    resendConfirmation: 'Tsu kpɛlɛmɔ link lɛ ekoŋŋ',
+    forgot: 'Ohiɛ kpa o password nɔ?',
+    signIn: 'Bote mli',
+    orContinue: 'loo ya nɔ kɛ',
+    newTo: 'Oji mɔ hee yɛ Altruist?',
+    createAccount: 'Fee akɔŋt',
+  },
+  ee: {
+    networkError: 'Míete ŋu ɖo Altruist gbɔ o. Kpɔ wò intanɛt eye nàgate kpɔ.',
+    serverError: 'Nane gblẽ le mía gbɔ. Gate kpɔ le ɣeyiɣi kpui aɖe megbe.',
+    unconfirmed: 'Ka wò email dzi gbã. Kpɔ wò inbox me hena link la.',
+    continueWith: 'Yi edzi kple {provider}',
+    opening: 'Míele eʋum…',
+    title: 'Woezɔ ake',
+    subtitle: 'Ge ɖe eme nàkpɔ wò atikeŋɔŋlɔwo eye nàgaƒle nu kabakaba.',
+    emailLabel: 'Email address',
+    passwordLabel: 'Nyaʋiʋli',
+    resendConfirmation: 'Gaɖo link si nàtsɔ aka edzi la ɖa',
+    forgot: 'Nyaʋiʋli ŋlɔ be wò?',
+    signIn: 'Ge ɖe eme',
+    orContinue: 'alo yi edzi kple',
+    newTo: 'Èle yeye le Altruist?',
+    createAccount: 'Ʋu akɔnta',
+  },
+  ha: {
+    networkError: 'Ba a iya kaiwa ga Altruist ba. Duba haɗin intanet ɗinka ka sake gwadawa.',
+    serverError: 'Wani abu ya faru a ɓangarenmu. Sake gwadawa nan da ɗan lokaci.',
+    unconfirmed: 'Ka fara tabbatar da imel ɗinka. Duba akwatin saƙonka don hanyar.',
+    continueWith: 'Ci gaba da {provider}',
+    opening: 'Ana buɗewa…',
+    title: 'Barka da dawowa',
+    subtitle: 'Shiga don bibiyar takardun magani da sake yin oda cikin sauƙi.',
+    emailLabel: 'Adireshin imel',
+    passwordLabel: 'Kalmar sirri',
+    resendConfirmation: 'Sake aika hanyar tabbatarwa',
+    forgot: 'Ka manta kalmar sirri?',
+    signIn: 'Shiga',
+    orContinue: 'ko ci gaba da',
+    newTo: 'Sabo a Altruist?',
+    createAccount: 'Ƙirƙiri asusu',
+  },
+});
 
 export default function Login() {
+  const tr = useT(S);
   const t = useTokens();
   const { name: themeName } = useTheme();
   const { d } = useDesignScale();
@@ -55,10 +162,10 @@ export default function Login() {
   /** Turns any thrown failure into the one sentence to put on screen. */
   const describe = (e: unknown): string => {
     if (e instanceof NetworkError) {
-      return 'Could not reach Altruist. Check your connection and try again.';
+      return tr('networkError');
     }
     if (e instanceof DeclinedError) return e.message;
-    return 'Something went wrong on our side. Try again in a moment.';
+    return tr('serverError');
   };
 
   const withSession = async (run: () => Promise<{ userId: string }>, mode: 'password' | OAuthProvider) => {
@@ -75,7 +182,7 @@ export default function Login() {
       if (isUnconfirmedEmail(e)) {
         setUnconfirmed(true);
         setError(
-          'Confirm your email first. Check your inbox for the link.',
+          tr('unconfirmed'),
         );
       } else {
         setError(describe(e));
@@ -103,7 +210,7 @@ export default function Login() {
   const social = (label: string, provider: OAuthProvider, mark: React.ReactNode) => (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Continue with ${label}`}
+      accessibilityLabel={tr('continueWith', { provider: label })}
       accessibilityState={{ disabled: busy !== null }}
       disabled={busy !== null}
       onPress={() => withSession(() => signInWithProvider(provider), provider)}
@@ -123,7 +230,7 @@ export default function Login() {
     >
       {mark}
       <Text variant="labelM" style={{ fontSize: d(14), lineHeight: d(18) }}>
-        {busy === provider ? 'Opening…' : label}
+        {busy === provider ? tr('opening') : label}
       </Text>
     </Pressable>
   );
@@ -134,15 +241,15 @@ export default function Login() {
 
       <View style={{ gap: d(10) }}>
         <Text variant="displayS" style={{ fontSize: d(28), lineHeight: d(32) }}>
-          Welcome back
+          {tr('title')}
         </Text>
         <Text variant="bodyL" tone="secondary" style={{ fontSize: d(16), lineHeight: d(24) }}>
-          Sign in to track prescriptions and reorder in a tap.
+          {tr('subtitle')}
         </Text>
       </View>
 
       <InputField
-        label="Email address"
+        label={tr('emailLabel')}
         value={email}
         onChangeText={setEmail}
         placeholder="you@example.com"
@@ -151,7 +258,7 @@ export default function Login() {
         autoComplete="email"
       />
       <InputField
-        label="Password"
+        label={tr('passwordLabel')}
         value={password}
         onChangeText={setPassword}
         placeholder="••••••••••"
@@ -182,7 +289,7 @@ export default function Login() {
 
       {unconfirmed ? (
         <Button
-          label="Send the confirmation link again"
+          label={tr('resendConfirmation')}
           variant="tertiary"
           size="large"
           loading={resending}
@@ -202,12 +309,12 @@ export default function Login() {
           tone="brand"
           style={{ textAlign: 'right', fontSize: d(14), lineHeight: d(18) }}
         >
-          Forgot password?
+          {tr('forgot')}
         </Text>
       </Pressable>
 
       <Button
-        label="Sign in"
+        label={tr('signIn')}
         size="large"
         loading={busy === 'password'}
         disabled={!canSubmit || busy !== null}
@@ -218,7 +325,7 @@ export default function Login() {
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: d(14), height: d(20) }}>
         <View style={{ flex: 1, height: 1, backgroundColor: t.colors.border.subtle }} />
         <Text variant="caption" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-          or continue with
+          {tr('orContinue')}
         </Text>
         <View style={{ flex: 1, height: 1, backgroundColor: t.colors.border.subtle }} />
       </View>
@@ -239,9 +346,9 @@ export default function Login() {
           center
           style={{ fontSize: d(14), lineHeight: d(21) }}
         >
-          New to Altruist?{'  '}
+          {tr('newTo')}{'  '}
           <Text variant="labelM" tone="brand" style={{ fontSize: d(14) }}>
-            Create an account
+            {tr('createAccount')}
           </Text>
         </Text>
       </Pressable>

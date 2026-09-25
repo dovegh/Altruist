@@ -26,10 +26,83 @@ import { MedicalDisclaimer } from '@/components/ui/Disclaimer';
 import { Text } from '@/components/ui/Text';
 import { Icon } from '@/components/ui/Icon';
 import { ARTICLES, ARTICLE_CATEGORIES, cardMeta } from '@/lib/articles';
+import { defineStrings, useT } from '@/i18n';
+
+// Category names come from the article library and stay as they are; only the
+// "All" chip is ours.
+const S = defineStrings({
+  en: {
+    title: 'Health tips',
+    all: 'All',
+    featuredA11y: 'This week. {title}. {minutes} minute read, reviewed by a pharmacist.',
+    thisWeek: 'THIS WEEK',
+    featuredMeta: '{minutes} min read · Reviewed by a pharmacist',
+    latest: 'LATEST',
+    empty: 'Nothing in {category} yet.',
+    disclaimer:
+      'These articles are reviewed by a registered pharmacist but are not a diagnosis. Speak to a clinician about your own treatment.',
+  },
+  fr: {
+    title: 'Conseils santé',
+    all: 'Tout',
+    featuredA11y: 'Cette semaine. {title}. {minutes} minutes de lecture, relu par un pharmacien.',
+    thisWeek: 'CETTE SEMAINE',
+    featuredMeta: '{minutes} min de lecture · Relu par un pharmacien',
+    latest: 'RÉCENTS',
+    empty: 'Rien dans {category} pour le moment.',
+    disclaimer:
+      'Ces articles sont relus par un pharmacien agréé mais ne constituent pas un diagnostic. Parlez de votre traitement à un professionnel de santé.',
+  },
+  tw: {
+    title: 'Apɔmuden ho afotuo',
+    all: 'Ne nyinaa',
+    featuredA11y: 'Nnawɔtwe yi. {title}. Simma {minutes} kenkan, nnuro ho ɔbenfoɔ ahwɛ mu.',
+    thisWeek: 'NNAWƆTWE YI',
+    featuredMeta: 'Simma {minutes} kenkan · Nnuro ho ɔbenfoɔ ahwɛ mu',
+    latest: 'FOFORƆ',
+    empty: 'Biribiara nni {category} mu seesei.',
+    disclaimer:
+      'Nnuro ho ɔbenfoɔ a wɔagye no atom na ɔhwɛ nsɛm yi mu, nanso ɛnyɛ yareɛ ho nhwehwɛmu. Kasa kyerɛ dɔkota fa wo ayaresa ho.',
+  },
+  gaa: {
+    title: 'Hewalɛ he ŋaawoo',
+    all: 'Fɛɛ',
+    featuredA11y: 'Otsi nɛɛ. {title}. Minitii {minutes} kanemɔ, tsofatsɛ kwɛ mli.',
+    thisWeek: 'OTSI NƐƐ',
+    featuredMeta: 'Minitii {minutes} kanemɔ · Tsofatsɛ kwɛ mli',
+    latest: 'HEE',
+    empty: 'Nɔ ko bɛ {category} mli kɛbashi ŋmɛnɛ.',
+    disclaimer:
+      'Tsofatsɛ ni akpɛlɛ enɔ lɛ kwɛɔ saji nɛɛ amli, shi jeee hela he taomɔ ni. Gba datrɛfonyo yɛ otsamɔ he.',
+  },
+  ee: {
+    title: 'Lãmesẽ ŋuti aɖaŋuwo',
+    all: 'Katã',
+    featuredA11y: 'Kwasiɖa sia. {title}. Miniti {minutes} xexlẽ, atikewɔla ye dzro eme.',
+    thisWeek: 'KWASIƉA SIA',
+    featuredMeta: 'Miniti {minutes} xexlẽ · Atikewɔla ye dzro eme',
+    latest: 'YEYEWO',
+    empty: 'Naneke mele {category} me haɖe o.',
+    disclaimer:
+      'Atikewɔla si woɖo la dzroa nyati siawo me, gake menye dɔléle ƒe nyanya o. Ƒo nu kple dɔyɔla tso wò atikewɔwɔ ŋu.',
+  },
+  ha: {
+    title: 'Shawarwarin lafiya',
+    all: 'Duka',
+    featuredA11y: 'Wannan makon. {title}. Karatun minti {minutes}, likitan magunguna ya duba.',
+    thisWeek: 'WANNAN MAKON',
+    featuredMeta: 'Karatun minti {minutes} · Likitan magunguna ya duba',
+    latest: 'SABBI',
+    empty: 'Babu komai a {category} tukuna.',
+    disclaimer:
+      'Likitan magunguna mai rajista yana duba waɗannan labaran amma ba ganewar cuta ba ne. Yi magana da likita game da maganinka.',
+  },
+});
 
 export default function HealthTips() {
   const t = useTokens();
   const { d } = useDesignScale();
+  const tr = useT(S);
   const [category, setCategory] = useState('All');
 
   const featured = ARTICLES.find((a) => a.featured) ?? ARTICLES[0];
@@ -40,18 +113,21 @@ export default function HealthTips() {
 
   return (
     <FormScreen gap={16} contentStyle={{ paddingBottom: d(60) }}>
-      <TitleAppBar title="Health tips" />
+      <TitleAppBar title={tr('title')} />
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: d(8) }}>
         {ARTICLE_CATEGORIES.map((c) => (
-          <FilterChip key={c} label={c} selected={category === c} onPress={() => setCategory(c)} />
+          <FilterChip key={c} label={c === 'All' ? tr('all') : c} selected={category === c} onPress={() => setCategory(c)} />
         ))}
       </ScrollView>
 
       {/* Featured — mint, r28 */}
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`This week. ${featured.headline ?? featured.title}. ${featured.minutes} minute read, reviewed by a pharmacist.`}
+        accessibilityLabel={tr('featuredA11y', {
+          title: featured.headline ?? featured.title,
+          minutes: featured.minutes,
+        })}
         onPress={() => open(featured.id)}
         style={({ pressed }) => ({
           gap: d(14),
@@ -76,7 +152,7 @@ export default function HealthTips() {
         >
           <Icon name="star" size={d(13)} tone="warning" />
           <Text variant="labelXS" style={{ fontSize: d(11), lineHeight: d(14) }}>
-            THIS WEEK
+            {tr('thisWeek')}
           </Text>
         </View>
 
@@ -102,13 +178,13 @@ export default function HealthTips() {
             color={t.colors.text.onBrand}
             style={{ opacity: 0.8, fontSize: d(12), lineHeight: d(16) }}
           >
-            {featured.minutes} min read · Reviewed by a pharmacist
+            {tr('featuredMeta', { minutes: featured.minutes })}
           </Text>
         </View>
       </Pressable>
 
       <Text variant="labelXS" tone="tertiary" style={{ fontSize: d(11), lineHeight: d(14) }}>
-        LATEST
+        {tr('latest')}
       </Text>
 
       {visible.map((a) => (
@@ -155,11 +231,11 @@ export default function HealthTips() {
 
       {visible.length === 0 ? (
         <Text variant="bodyM" tone="tertiary" style={{ fontSize: d(14), lineHeight: d(21) }}>
-          Nothing in {category} yet.
+          {tr('empty', { category })}
         </Text>
       ) : null}
 
-      <MedicalDisclaimer body="These articles are reviewed by a registered pharmacist but are not a diagnosis. Speak to a clinician about your own treatment." />
+      <MedicalDisclaimer body={tr('disclaimer')} />
     </FormScreen>
   );
 }

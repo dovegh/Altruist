@@ -24,6 +24,91 @@ import { useProfile, usePartnerPharmacy } from '@/features/profile/store';
 import { firstName, initialsOf } from '@/lib/profile';
 import { fixtureMessages, messageTime, type Message } from '@/lib/support';
 import { Linking } from 'react-native';
+import { defineStrings, useLocale, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    goBack: 'Go back',
+    replies: '{name} · usually replies in 10 min',
+    call: 'Call the pharmacy',
+    orderA11y: 'About order {id}. {item}, delivered {date}.',
+    aboutOrder: 'About order {id}',
+    orderMeta: '{item} · delivered {date}',
+    bubbleA11y: '{who}: {text}. {time}',
+    you: 'You',
+    attach: 'Attach a photo',
+    placeholder: 'Write a message',
+    send: 'Send message',
+  },
+  fr: {
+    goBack: 'Retour',
+    replies: '{name} · répond généralement en 10 min',
+    call: 'Appeler la pharmacie',
+    orderA11y: 'À propos de la commande {id}. {item}, livrée le {date}.',
+    aboutOrder: 'À propos de la commande {id}',
+    orderMeta: '{item} · livrée le {date}',
+    bubbleA11y: '{who} : {text}. {time}',
+    you: 'Vous',
+    attach: 'Joindre une photo',
+    placeholder: 'Écrire un message',
+    send: 'Envoyer le message',
+  },
+  tw: {
+    goBack: 'San kɔ akyi',
+    replies: '{name} · taa bua wɔ simma 10 mu',
+    call: 'Frɛ nnuro adetɔnfoɔ no',
+    orderA11y: 'Ɛfa oda {id} ho. {item}, wɔde baa {date}.',
+    aboutOrder: 'Ɛfa oda {id} ho',
+    orderMeta: '{item} · wɔde baa {date}',
+    bubbleA11y: '{who}: {text}. {time}',
+    you: 'Wo',
+    attach: 'Fa mfonini ka ho',
+    placeholder: 'Kyerɛw nkra',
+    send: 'Fa nkra no kɔ',
+  },
+  gaa: {
+    goBack: 'Ku sɛɛ',
+    replies: '{name} · haa hetoo yɛ minitii 10 mli',
+    call: 'Tswa tsofa hejɔɔ he lɛ',
+    orderA11y: 'Kɔɔ oda {id} he. {item}, akɛba {date}.',
+    aboutOrder: 'Kɔɔ oda {id} he',
+    orderMeta: '{item} · akɛba {date}',
+    bubbleA11y: '{who}: {text}. {time}',
+    you: 'Bo',
+    attach: 'Fɔ mfoniri he',
+    placeholder: 'Ŋma sane',
+    send: 'Tsu sane lɛ',
+  },
+  ee: {
+    goBack: 'Trɔ yi megbe',
+    replies: '{name} · ɖoa eŋu le miniti 10 me zi geɖe',
+    call: 'Yɔ atikedzraƒea',
+    orderA11y: 'Ku ɖe ɖoɖo {id} ŋu. {item}, wova ɖee {date}.',
+    aboutOrder: 'Ku ɖe ɖoɖo {id} ŋu',
+    orderMeta: '{item} · wova ɖee {date}',
+    bubbleA11y: '{who}: {text}. {time}',
+    you: 'Wò',
+    attach: 'Tsɔ foto kpee',
+    placeholder: 'Ŋlɔ gbedasi',
+    send: 'Ɖo gbedasia ɖa',
+  },
+  ha: {
+    goBack: 'Koma baya',
+    replies: '{name} · yakan amsa cikin minti 10',
+    call: 'Kira kantin maganin',
+    orderA11y: 'Game da oda {id}. {item}, an kawo {date}.',
+    aboutOrder: 'Game da oda {id}',
+    orderMeta: '{item} · an kawo {date}',
+    bubbleA11y: '{who}: {text}. {time}',
+    you: 'Kai',
+    attach: 'Haɗa hoto',
+    placeholder: 'Rubuta saƙo',
+    send: 'Aika saƙo',
+  },
+});
+
+// The order this thread is about (fixture).
+const ORDER = { id: 'CJ4901TUZ0', item: 'Amoxicillin 500mg', delivered: new Date(2026, 7, 23) };
 
 
 
@@ -31,6 +116,8 @@ export default function SupportConversation() {
   const t = useTokens();
   const { d } = useDesignScale();
   const insets = useSafeAreaInsets();
+  const tr = useT(S);
+  const locale = useLocale();
   const [draft, setDraft] = useState('');
   const profile = useProfile();
   const pharmacy = usePartnerPharmacy();
@@ -65,7 +152,7 @@ export default function SupportConversation() {
       >
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Go back"
+          accessibilityLabel={tr('goBack')}
           onPress={() => router.back()}
           style={({ pressed }) => ({
             width: d(40),
@@ -87,13 +174,13 @@ export default function SupportConversation() {
             {pharmacy.name}
           </Text>
           <Text variant="caption" tone="brand" style={{ fontSize: d(12), lineHeight: d(16) }}>
-            {pharmacy.superintendent.short} · usually replies in 10 min
+            {tr('replies', { name: pharmacy.superintendent.short })}
           </Text>
         </View>
 
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Call the pharmacy"
+          accessibilityLabel={tr('call')}
           onPress={() => Linking.openURL(`tel:${pharmacy.phone.replace(/\s+/g, '')}`)}
           style={({ pressed }) => ({
             width: d(40),
@@ -116,7 +203,11 @@ export default function SupportConversation() {
         {/* Order context */}
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="About order CJ4901TUZ0. Amoxicillin 500mg, delivered 23 August."
+          accessibilityLabel={tr('orderA11y', {
+            id: ORDER.id,
+            item: ORDER.item,
+            date: ORDER.delivered.toLocaleDateString(locale, { day: 'numeric', month: 'long' }),
+          })}
           onPress={() => router.push('/order-tracking')}
           style={({ pressed }) => ({
             flexDirection: 'row',
@@ -132,10 +223,13 @@ export default function SupportConversation() {
           <Icon name="prescription" size={d(18)} tone="primary" />
           <View style={{ flex: 1, gap: d(2) }}>
             <Text variant="labelS" style={{ fontSize: d(12), lineHeight: d(16) }}>
-              About order CJ4901TUZ0
+              {tr('aboutOrder', { id: ORDER.id })}
             </Text>
             <Text variant="caption" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-              Amoxicillin 500mg · delivered 23 Aug
+              {tr('orderMeta', {
+                item: ORDER.item,
+                date: ORDER.delivered.toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
+              })}
             </Text>
           </View>
           <Icon name="chevron-right" size={d(16)} tone="tertiary" />
@@ -147,7 +241,11 @@ export default function SupportConversation() {
             <View key={m.id} style={{ alignItems: mine ? 'flex-end' : 'flex-start' }}>
               <View
                 accessibilityRole="text"
-                accessibilityLabel={`${mine ? 'You' : pharmacy.name}: ${m.text}. ${messageTime(m.at)}`}
+                accessibilityLabel={tr('bubbleA11y', {
+                  who: mine ? tr('you') : pharmacy.name,
+                  text: m.text,
+                  time: messageTime(m.at),
+                })}
                 style={{
                   maxWidth: d(262),
                   gap: d(6),
@@ -193,7 +291,7 @@ export default function SupportConversation() {
       >
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Attach a photo"
+          accessibilityLabel={tr('attach')}
           // The camera flow already exists for prescriptions; a photo of a
           // label or a damaged box is the same capture, so it reuses it.
           onPress={() => router.push('/prescription-upload')}
@@ -223,9 +321,9 @@ export default function SupportConversation() {
           <TextInput
             value={draft}
             onChangeText={setDraft}
-            placeholder="Write a message"
+            placeholder={tr('placeholder')}
             placeholderTextColor={t.colors.text.tertiary}
-            accessibilityLabel="Write a message"
+            accessibilityLabel={tr('placeholder')}
             onSubmitEditing={send}
             returnKeyType="send"
             style={{
@@ -240,7 +338,7 @@ export default function SupportConversation() {
 
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Send message"
+          accessibilityLabel={tr('send')}
           accessibilityState={{ disabled: !draft.trim() }}
           disabled={!draft.trim()}
           onPress={send}

@@ -16,8 +16,43 @@ import { FormScreen, FeatureIcon } from '@/components/ui/FormScreen';
 import { Button } from '@/components/ui/Button';
 import { Text } from '@/components/ui/Text';
 import { Icon } from '@/components/ui/Icon';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    title: 'Password updated',
+    body: 'You are signed out on all other devices. Sign in again with your new password.',
+    back: 'Back to sign in',
+  },
+  fr: {
+    title: 'Mot de passe mis à jour',
+    body: 'Vous êtes déconnecté de tous vos autres appareils. Reconnectez-vous avec votre nouveau mot de passe.',
+    back: 'Retour à la connexion',
+  },
+  tw: {
+    title: 'Yɛasesa ahintasɛm no',
+    body: 'Yɛayi wo afi mfiri afoforɔ nyinaa so. Fa wo ahintasɛm foforɔ no kɔ mu bio.',
+    back: 'San kɔ kɔ mu',
+  },
+  gaa: {
+    title: 'Atsake password lɛ',
+    body: 'Ajie bo yɛ nii krokomɛi fɛɛ anɔ. Kɛ o password hee lɛ bote mli ekoŋŋ.',
+    back: 'Kua sɛɛ kɛya bote mli',
+  },
+  ee: {
+    title: 'Wotrɔ nyaʋiʋli la',
+    body: 'Míeɖe wò le mɔ̃ bubuawo katã dzi. Tsɔ nyaʋiʋli yeye la ge ɖe eme ake.',
+    back: 'Trɔ yi gedeɖeme',
+  },
+  ha: {
+    title: 'An sabunta kalmar sirri',
+    body: 'An fitar da kai daga duk sauran na’urori. Sake shiga da sabuwar kalmar sirrinka.',
+    back: 'Koma wurin shiga',
+  },
+});
 
 export default function PasswordChanged() {
+  const tr = useT(S);
   const t = useTokens();
   const { d } = useDesignScale();
 
@@ -31,14 +66,14 @@ export default function PasswordChanged() {
 
       <View style={{ gap: d(10) }}>
         <Text variant="displayS" style={{ fontSize: d(28), lineHeight: d(32) }}>
-          Password updated
+          {tr('title')}
         </Text>
         <Text variant="bodyL" tone="secondary" style={{ fontSize: d(16), lineHeight: d(24) }}>
-          You are signed out on all other devices. Sign in again with your new password.
+          {tr('body')}
         </Text>
       </View>
 
-      <Button label="Back to sign in" size="large" onPress={() => router.replace('/login')} />
+      <Button label={tr('back')} size="large" onPress={() => router.replace('/login')} />
     </FormScreen>
   );
 }

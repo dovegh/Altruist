@@ -40,12 +40,17 @@
  * instead of leaving a hole. A bad connection is the normal case for this, not
  * an edge one.
  *
- * Auto-advance is deliberately absent: content that moves on its own fails
- * WCAG 2.2.2 unless it can be paused, and a banner that slides away mid-read is
- * the most complained-about carousel behaviour there is.
+ * Auto-advance: every 5s, looping from the last banner back to the first.
+ * WCAG 2.2.2 allows content that moves on its own only if it can be paused,
+ * so it stops the moment a finger touches the strip and waits a full
+ * interval after the last touch before moving again — nothing slides away
+ * mid-read. It never runs with a screen reader or Reduce Motion on, on a
+ * tab that is not showing, or with the app in the background.
  */
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  AccessibilityInfo,
+  AppState,
   View,
   Pressable,
   ScrollView,
@@ -53,6 +58,7 @@ import {
   type NativeScrollEvent,
 } from 'react-native';
 import { Image } from 'expo-image';
+import { useIsFocused } from 'expo-router';
 import Animated, {
   Easing,
   ReduceMotion,
@@ -66,6 +72,16 @@ import { motion, radius } from '@/theme/tokens';
 import { Text } from './Text';
 import { Icon } from './Icon';
 import type { Promotion } from '@/lib/promotions';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: { cardA11y: '{alt} Offer from {advertiser}. {n} of {total}.' },
+  fr: { cardA11y: '{alt} Offre de {advertiser}. {n} sur {total}.' },
+  tw: { cardA11y: '{alt} Efi {advertiser} hɔ. {n} wɔ {total} mu.' },
+  gaa: { cardA11y: '{alt} Kɛjɛ {advertiser} ŋɔɔ. {n} yɛ {total} mli.' },
+  ee: { cardA11y: '{alt} Tso {advertiser} gbɔ. {n} le {total} me.' },
+  ha: { cardA11y: '{alt} Tayi daga {advertiser}. {n} cikin {total}.' },
+});
 
 /** Gutter either side of the strip, matching the screen's 24pt padding. */
 const GUTTER = 24;
@@ -184,6 +200,9 @@ function ComposedBanner({ promo, width }: { promo: Promotion; width: number }) {
   );
 }
 
+/** How long each banner stays before the strip moves on. */
+const AUTO_ADVANCE_MS = 5000;
+
 export function PromoCarousel({
   promotions,
   onPress,
@@ -193,6 +212,7 @@ export function PromoCarousel({
 }) {
   const t = useTokens();
   const { d, width } = useDesignScale();
+  const tr = useT(S);
   const [index, setIndex] = useState(0);
   /** Ids whose artwork failed to load — they fall back rather than blank out. */
   const [broken, setBroken] = useState<Record<string, true>>({});
@@ -208,6 +228,62 @@ export function PromoCarousel({
     },
     [step],
   );
+
+  // --- Auto-advance -----------------------------------------------------
+  const focused = useIsFocused();
+  const [appActive, setAppActive] = useState(AppState.currentState === 'active');
+  const [stillOnly, setStillOnly] = useState(false);
+  const [touching, setTouching] = useState(false);
+  /** Bumped on every touch, so the timer restarts a full interval later. */
+  const [lastTouch, setLastTouch] = useState(0);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (s) => setAppActive(s === 'active'));
+    return () => sub.remove();
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    const check = async () => {
+      const [reader, reduce] = await Promise.all([
+        AccessibilityInfo.isScreenReaderEnabled(),
+        AccessibilityInfo.isReduceMotionEnabled(),
+      ]);
+      if (alive) setStillOnly(reader || reduce);
+    };
+    void check();
+    const a = AccessibilityInfo.addEventListener('screenReaderChanged', check);
+    const b = AccessibilityInfo.addEventListener('reduceMotionChanged', check);
+    return () => {
+      alive = false;
+      a.remove();
+      b.remove();
+    };
+  }, []);
+
+  const autoplay =
+    promotions.length > 1 && focused && appActive && !stillOnly && !touching;
+
+  useEffect(() => {
+    if (!autoplay) return;
+    const timer = setInterval(() => {
+      setIndex((current) => {
+        const next = (current + 1) % promotions.length;
+        scroller.current?.scrollTo({ x: next * step, animated: true });
+        return next;
+      });
+    }, AUTO_ADVANCE_MS);
+    return () => clearInterval(timer);
+  }, [autoplay, promotions.length, step, lastTouch]);
+
+  const holdStill = useCallback(() => {
+    setTouching(true);
+    setLastTouch(Date.now());
+  }, []);
+  const letGo = useCallback(() => {
+    setTouching(false);
+    setLastTouch(Date.now());
+  }, []);
 
   // Development only: a creative losing more than a quarter of itself to the
   // crop is almost certainly the wrong shape for this slot, and the person who
@@ -244,7 +320,14 @@ export function PromoCarousel({
         decelerationRate="fast"
         disableIntervalMomentum
         onMomentumScrollEnd={onScroll}
-        onScrollEndDrag={onScroll}
+        onScrollBeginDrag={holdStill}
+        onScrollEndDrag={(e) => {
+          onScroll(e);
+          letGo();
+        }}
+        onTouchStart={holdStill}
+        onTouchEnd={letGo}
+        onTouchCancel={letGo}
         contentContainerStyle={{ gap: d(12), paddingRight: d(GUTTER) }}
       >
         {promotions.map((promo, i) => {
@@ -256,9 +339,12 @@ export function PromoCarousel({
               // The banner's words are pixels. This is the only thing a screen
               // reader gets, so it carries the message, the advertiser and the
               // position in the strip.
-              accessibilityLabel={`${promo.alt} Offer from ${promo.advertiser}. ${i + 1} of ${
-                promotions.length
-              }.`}
+              accessibilityLabel={tr('cardA11y', {
+                alt: promo.alt,
+                advertiser: promo.advertiser,
+                n: i + 1,
+                total: promotions.length,
+              })}
               onPress={() => onPress(promo)}
               style={({ pressed }) => ({ opacity: pressed ? 0.92 : 1 })}
             >

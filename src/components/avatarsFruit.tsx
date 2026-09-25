@@ -15,6 +15,94 @@
  */
 import React from 'react';
 import { Circle, Defs, ClipPath, Ellipse, G, Path, Rect } from 'react-native-svg';
+import { defineStrings, translate } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    mango: 'Cool mango in sunglasses',
+    pineapple: 'Happy pineapple',
+    orange: 'Orange with heart eyes',
+    watermelon: 'Watermelon king',
+    avocado: 'Sleepy avocado',
+    coconut: 'Coconut with a straw',
+    strawberry: 'Winking strawberry',
+    lemon: 'Sour lemon',
+    grapes: 'Bunch of grapes',
+    cocoa: 'Cocoa pod',
+    apple: 'Green apple with a plaster',
+    capsule: 'Smiling capsule',
+  },
+  fr: {
+    mango: 'Mangue cool avec des lunettes de soleil',
+    pineapple: 'Ananas joyeux',
+    orange: 'Orange aux yeux en cœur',
+    watermelon: 'Pastèque royale',
+    avocado: 'Avocat endormi',
+    coconut: 'Noix de coco avec une paille',
+    strawberry: "Fraise qui fait un clin d'œil",
+    lemon: 'Citron acide',
+    grapes: 'Grappe de raisin',
+    cocoa: 'Cabosse de cacao',
+    apple: 'Pomme verte avec un pansement',
+    capsule: 'Gélule souriante',
+  },
+  tw: {
+    mango: 'Mango a ɔhyɛ owia ahwehwɛniwa',
+    pineapple: "Aborɔbɛ a n'ani agye",
+    orange: "Ankaa a n'aniwa yɛ akoma",
+    watermelon: 'Ɛfrɛ hene',
+    avocado: 'Paya a nna reko no',
+    coconut: 'Kube a straw wɔ mu',
+    strawberry: "Strawberry a ɔbɔ n'ani",
+    lemon: 'Ankaatwadeɛ a ɛyɛ nkan',
+    grapes: 'Bobe kuo',
+    cocoa: 'Kookoo aba',
+    apple: 'Aprɛ ahabammono a plaster wɔ ho',
+    capsule: 'Aduro kapsul a ɔserew',
+  },
+  gaa: {
+    mango: 'Mango ni wo hulu ahwehwɛ',
+    pineapple: 'Blɔfo ŋmɛŋmɛ ni miishɛɛ',
+    orange: 'Akutu ni ehiŋmɛi tamɔ tsui',
+    watermelon: 'Watermelon maŋtsɛ',
+    avocado: 'Pia ni wɔ miiŋɔ lɛ',
+    coconut: 'Kube ni straw yɛ mli',
+    strawberry: 'Strawberry ni miiŋmɛ ehiŋmɛi',
+    lemon: 'Lemon ni ŋmɛŋ',
+    grapes: 'Grapes ni abua naa',
+    cocoa: 'Kookoo yibii',
+    apple: 'Apple ni ŋmɔtoo ni plaster yɛ nɔ',
+    capsule: 'Tsofa kapsul ni miishɛ',
+  },
+  ee: {
+    mango: 'Mango si do ŋkuɖɔ',
+    pineapple: 'Blefoŋeti si kpɔ dzidzɔ',
+    orange: 'Aŋɔ si ƒe ŋku le abe dzi ene',
+    watermelon: 'Ʋatromɛlon fia',
+    avocado: 'Avoka si le alɔ̃ dɔm',
+    coconut: 'Ne si me straw le',
+    strawberry: 'Strawberry si le ŋku ƒom',
+    lemon: 'Lemon si le vevem',
+    grapes: 'Grapes ƒe ha',
+    cocoa: 'Kokoa ƒe ku',
+    apple: 'Apple gbemɔ si ŋu plaster le',
+    capsule: 'Kapsul si le alɔgbɔnu kom',
+  },
+  ha: {
+    mango: 'Mangwaro mai tabarau',
+    pineapple: 'Abarba mai farin ciki',
+    orange: 'Lemu mai idanu kamar zuciya',
+    watermelon: 'Sarkin kankana',
+    avocado: 'Avocado mai barci',
+    coconut: 'Kwakwa da bututu',
+    strawberry: 'Strawberry mai kashe ido',
+    lemon: 'Lemun tsami',
+    grapes: 'Tarin inabi',
+    cocoa: 'Kwafon koko',
+    apple: 'Tuffa kore mai filasta',
+    capsule: 'Kwayar magani mai murmushi',
+  },
+});
 
 export type FruitPreset =
   | 'mango'
@@ -30,19 +118,27 @@ export type FruitPreset =
   | 'apple'
   | 'capsule';
 
+// `label` is a getter so it reads in the current language wherever it is used.
+const fruit = (id: FruitPreset) => ({
+  id,
+  get label() {
+    return translate(S, id);
+  },
+});
+
 export const FRUIT_PRESETS: { id: FruitPreset; label: string }[] = [
-  { id: 'mango', label: 'Cool mango in sunglasses' },
-  { id: 'pineapple', label: 'Happy pineapple' },
-  { id: 'orange', label: 'Orange with heart eyes' },
-  { id: 'watermelon', label: 'Watermelon king' },
-  { id: 'avocado', label: 'Sleepy avocado' },
-  { id: 'coconut', label: 'Coconut with a straw' },
-  { id: 'strawberry', label: 'Winking strawberry' },
-  { id: 'lemon', label: 'Sour lemon' },
-  { id: 'grapes', label: 'Bunch of grapes' },
-  { id: 'cocoa', label: 'Cocoa pod' },
-  { id: 'apple', label: 'Green apple with a plaster' },
-  { id: 'capsule', label: 'Smiling capsule' },
+  fruit('mango'),
+  fruit('pineapple'),
+  fruit('orange'),
+  fruit('watermelon'),
+  fruit('avocado'),
+  fruit('coconut'),
+  fruit('strawberry'),
+  fruit('lemon'),
+  fruit('grapes'),
+  fruit('cocoa'),
+  fruit('apple'),
+  fruit('capsule'),
 ];
 
 // --- Palette -------------------------------------------------------------------

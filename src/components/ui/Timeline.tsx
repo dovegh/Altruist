@@ -29,6 +29,16 @@ import { useDesignScale } from '@/theme/useDesignScale';
 import { Appear, Pulse } from './Motion';
 import { Text } from './Text';
 import { Icon, type IconName } from './Icon';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: { complete: 'complete', current: 'current', upcoming: 'upcoming' },
+  fr: { complete: 'terminé', current: 'en cours', upcoming: 'à venir' },
+  tw: { complete: 'awie', current: 'ɛrekɔ so', upcoming: 'ɛreba' },
+  gaa: { complete: 'egbe naa', current: 'emiiya nɔ', upcoming: 'baaba' },
+  ee: { complete: 'wu enu', current: 'le edzi yim', upcoming: 'gbɔna' },
+  ha: { complete: 'an gama', current: 'ana ciki', upcoming: 'mai zuwa' },
+});
 
 /** Only the live step breathes; the rest are static. */
 function Dot({ pulsing, children }: { pulsing: boolean; children: React.ReactNode }) {
@@ -61,6 +71,7 @@ export function OrderTimelineStep({
 }: TimelineStep & { last?: boolean }) {
   const t = useTokens();
   const { d } = useDesignScale();
+  const tr = useT(S);
 
   const dotFill =
     state === 'complete'
@@ -79,7 +90,7 @@ export function OrderTimelineStep({
   return (
     <View
       accessibilityRole="text"
-      accessibilityLabel={[title, subtitle, timestamp, state].filter(Boolean).join('. ')}
+      accessibilityLabel={[title, subtitle, timestamp, tr(state)].filter(Boolean).join('. ')}
       style={{ flexDirection: 'row', gap: d(16), minHeight: d(92) }}
     >
       <View style={{ width: d(40), alignItems: 'center', gap: d(6) }}>

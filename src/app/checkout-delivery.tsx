@@ -32,8 +32,79 @@ import { cedis } from '@/lib/money';
 import { useCart } from '@/features/cart/useCart';
 import { SPEEDS, useAddresses, useCheckoutStore, useCheckoutSelection } from '@/features/checkout/store';
 import { usePartnerPharmacy } from '@/features/profile/store';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    title: 'Checkout',
+    deliverTo: 'DELIVER TO',
+    otherAddress: 'Use a different address',
+    deliveryOption: 'DELIVERY OPTION',
+    prescription: 'PRESCRIPTION',
+    verified: 'Prescription verified',
+    verifiedMeta: 'TrxID {ids} · approved by {name}',
+    total: 'Total',
+    continue: 'Continue',
+  },
+  fr: {
+    title: 'Paiement',
+    deliverTo: 'LIVRER À',
+    otherAddress: 'Utiliser une autre adresse',
+    deliveryOption: 'MODE DE LIVRAISON',
+    prescription: 'ORDONNANCE',
+    verified: 'Ordonnance vérifiée',
+    verifiedMeta: 'TrxID {ids} · approuvée par {name}',
+    total: 'Total',
+    continue: 'Continuer',
+  },
+  tw: {
+    title: 'Tua ka',
+    deliverTo: 'DE KƆ',
+    otherAddress: 'Fa address foforɔ',
+    deliveryOption: 'SƐNEA WƆDE BƐBA',
+    prescription: 'NNURO KRATAA',
+    verified: 'Wɔahwɛ nnuro krataa no',
+    verifiedMeta: 'TrxID {ids} · {name} na wapene so',
+    total: 'Ne nyinaa',
+    continue: 'Toa so',
+  },
+  gaa: {
+    title: 'Wo nyɔmɔ',
+    deliverTo: 'KƐYA',
+    otherAddress: 'Kɛ address kroko tsu nii',
+    deliveryOption: 'BƆ NI AKƐBAA',
+    prescription: 'TSOFA WOLO',
+    verified: 'Akwɛ tsofa wolo lɛ',
+    verifiedMeta: 'TrxID {ids} · {name} kpɛlɛ nɔ',
+    total: 'Fɛɛ',
+    continue: 'Ya nɔ',
+  },
+  ee: {
+    title: 'Xe fe',
+    deliverTo: 'KƆE YI',
+    otherAddress: 'Zã adrɛs bubu',
+    deliveryOption: 'ALESI WOAKƆE VƐ',
+    prescription: 'ATIKE ŊƆŊLƆ',
+    verified: 'Wokpɔ atike ŋɔŋlɔ la',
+    verifiedMeta: 'TrxID {ids} · {name} ye lɔ̃ ɖe edzi',
+    total: 'Katã',
+    continue: 'Yi edzi',
+  },
+  ha: {
+    title: 'Biya',
+    deliverTo: 'KAI ZUWA',
+    otherAddress: 'Yi amfani da wani adireshi',
+    deliveryOption: 'HANYAR ISARWA',
+    prescription: 'TAKARDAR MAGANI',
+    verified: 'An tabbatar da takardar magani',
+    verifiedMeta: 'TrxID {ids} · {name} ya amince',
+    total: 'Jimla',
+    continue: 'Ci gaba',
+  },
+});
 
 export default function CheckoutDelivery() {
+  const tr = useT(S);
   const pharmacy = usePartnerPharmacy();
   const t = useTokens();
   const { d } = useDesignScale();
@@ -59,10 +130,10 @@ export default function CheckoutDelivery() {
   return (
     <View style={{ flex: 1, backgroundColor: t.colors.bg.canvas }}>
       <FormScreen gap={16}>
-        <TitleAppBar title="Checkout" />
+        <TitleAppBar title={tr('title')} />
         <CheckoutSteps step={1} />
 
-        <SectionLabel>DELIVER TO</SectionLabel>
+        <SectionLabel>{tr('deliverTo')}</SectionLabel>
         {ADDRESSES.map((a) => (
           <OptionCard
             key={a.id}
@@ -73,14 +144,14 @@ export default function CheckoutDelivery() {
           />
         ))}
         <Button
-          label="Use a different address"
+          label={tr('otherAddress')}
           variant="tertiary"
           size="medium"
           iconLeading="add"
           onPress={() => router.push('/addresses')}
         />
 
-        <SectionLabel>DELIVERY OPTION</SectionLabel>
+        <SectionLabel>{tr('deliveryOption')}</SectionLabel>
         {SPEEDS.map((s) => (
           <OptionCard
             key={s.id}
@@ -93,7 +164,7 @@ export default function CheckoutDelivery() {
 
         {hasPrescriptionItem ? (
           <>
-            <SectionLabel>PRESCRIPTION</SectionLabel>
+            <SectionLabel>{tr('prescription')}</SectionLabel>
             <View
               style={{
                 flexDirection: 'row',
@@ -108,10 +179,13 @@ export default function CheckoutDelivery() {
               <Icon name="shield-check" size={d(20)} tone="brand" />
               <View style={{ flex: 1, gap: d(3) }}>
                 <Text variant="labelM" style={{ fontSize: d(14), lineHeight: d(18) }}>
-                  Prescription verified
+                  {tr('verified')}
                 </Text>
                 <Text variant="caption" tone="secondary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-                  TrxID {prescriptionIds.join(', ')} · approved by {pharmacy.superintendent.short}
+                  {tr('verifiedMeta', {
+                    ids: prescriptionIds.join(', '),
+                    name: pharmacy.superintendent.short,
+                  })}
                 </Text>
               </View>
               <StatusPill status="VERIFIED" />
@@ -124,14 +198,14 @@ export default function CheckoutDelivery() {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: d(14) }}>
           <View style={{ gap: d(1) }}>
             <Text variant="caption" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-              Total
+              {tr('total')}
             </Text>
             <Text variant="numericL" style={{ fontSize: d(28), lineHeight: d(32) }}>
               {cedis(total)}
             </Text>
           </View>
           <Button
-            label="Continue"
+            label={tr('continue')}
             size="large"
             iconTrailing="arrow-right"
             style={{ flex: 1 }}

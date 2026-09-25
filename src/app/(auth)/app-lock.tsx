@@ -27,9 +27,50 @@ import { FormScreen, FeatureIcon } from '@/components/ui/FormScreen';
 import { Button } from '@/components/ui/Button';
 import { Text } from '@/components/ui/Text';
 import { Icon } from '@/components/ui/Icon';
-import { authenticate } from '@/lib/appLock';
+import { authenticate, setLockShowing } from '@/lib/appLock';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    title: 'Altruist is locked',
+    body: 'Unlock to see your prescriptions and orders.',
+    unlock: 'Unlock',
+    usePassword: 'Use password instead',
+  },
+  fr: {
+    title: 'Altruist est verrouillé',
+    body: 'Déverrouillez pour voir vos ordonnances et vos commandes.',
+    unlock: 'Déverrouiller',
+    usePassword: 'Utiliser le mot de passe',
+  },
+  tw: {
+    title: 'Altruist ato mu',
+    body: 'Bue na hwɛ wo nnuro nkrataa ne nneɛma a woato.',
+    unlock: 'Bue',
+    usePassword: 'Fa ahintasɛm mmom',
+  },
+  gaa: {
+    title: 'Altruist ŋmɛ naa',
+    body: 'Gbele koni ona o tsofa woloi kɛ nɔ ni ohe.',
+    unlock: 'Gbele',
+    usePassword: 'Kɛ password lɛ tsu nii',
+  },
+  ee: {
+    title: 'Altruist tu ʋɔ',
+    body: 'Ʋu be nàkpɔ wò atikeŋɔŋlɔwo kple nudodowo.',
+    unlock: 'Ʋu',
+    usePassword: 'Zã wò nyaʋiʋli boŋ',
+  },
+  ha: {
+    title: 'An kulle Altruist',
+    body: 'Buɗe don ganin takardun maganinka da odarka.',
+    unlock: 'Buɗe',
+    usePassword: 'Yi amfani da kalmar sirri',
+  },
+});
 
 export default function AppLock() {
+  const tr = useT(S);
   const { d } = useDesignScale();
   const [busy, setBusy] = useState(false);
 
@@ -37,7 +78,11 @@ export default function AppLock() {
 
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => true);
-    return () => sub.remove();
+    setLockShowing(true);
+    return () => {
+      sub.remove();
+      setLockShowing(false);
+    };
   }, []);
 
   const signInWithPassword = async () => {
@@ -51,7 +96,10 @@ export default function AppLock() {
     const ok = await authenticate();
     setBusy(false);
     // Only a successful check dismisses the gate.
-    if (ok) router.back();
+    if (ok) {
+      if (router.canGoBack()) router.back();
+      else router.replace('/home');
+    }
   };
 
   // Prompt immediately — making the user tap first adds a step without adding
@@ -72,7 +120,7 @@ export default function AppLock() {
 
       <View style={{ gap: d(10) }}>
         <Text variant="displayS" center style={{ fontSize: d(28), lineHeight: d(32) }}>
-          Altruist is locked
+          {tr('title')}
         </Text>
         <Text
           variant="bodyL"
@@ -80,13 +128,13 @@ export default function AppLock() {
           center
           style={{ fontSize: d(16), lineHeight: d(24) }}
         >
-          Unlock to see your prescriptions and orders.
+          {tr('body')}
         </Text>
       </View>
 
-      <Button label="Unlock" size="large" loading={busy} disabled={leaving} onPress={unlock} />
+      <Button label={tr('unlock')} size="large" loading={busy} disabled={leaving} onPress={unlock} />
       <Button
-        label="Use password instead"
+        label={tr('usePassword')}
         variant="tertiary"
         size="large"
         loading={leaving}

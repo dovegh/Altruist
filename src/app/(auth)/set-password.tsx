@@ -21,19 +21,107 @@ import { Button } from '@/components/ui/Button';
 import { Text } from '@/components/ui/Text';
 import { Icon } from '@/components/ui/Icon';
 import { DeclinedError, NetworkError, updatePassword } from '@/lib/api';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    networkError: 'Could not reach Altruist. Check your connection and try again.',
+    serverError: 'Something went wrong on our side. Try again in a moment.',
+    title: 'Set a new password',
+    newLabel: 'New password',
+    confirmLabel: 'Confirm password',
+    mismatch: 'Passwords do not match.',
+    ruleLength: 'At least 10 characters',
+    ruleNumber: 'One number',
+    ruleSymbol: 'One symbol',
+    ruleMet: '{rule}: met',
+    ruleNotMet: '{rule}: not met',
+    save: 'Update password',
+  },
+  fr: {
+    networkError: 'Impossible de joindre Altruist. Vérifiez votre connexion et réessayez.',
+    serverError: 'Un problème est survenu de notre côté. Réessayez dans un instant.',
+    title: 'Choisissez un nouveau mot de passe',
+    newLabel: 'Nouveau mot de passe',
+    confirmLabel: 'Confirmez le mot de passe',
+    mismatch: 'Les mots de passe ne correspondent pas.',
+    ruleLength: 'Au moins 10 caractères',
+    ruleNumber: 'Un chiffre',
+    ruleSymbol: 'Un symbole',
+    ruleMet: '{rule} : respecté',
+    ruleNotMet: '{rule} : non respecté',
+    save: 'Mettre à jour le mot de passe',
+  },
+  tw: {
+    networkError: 'Yɛantumi anka Altruist. Hwɛ wo intanɛt na san sɔ hwɛ.',
+    serverError: 'Biribi ankɔ yie wɔ yɛn fam. San sɔ hwɛ nkyɛ kakra.',
+    title: 'Yɛ ahintasɛm foforɔ',
+    newLabel: 'Ahintasɛm foforɔ',
+    confirmLabel: 'San kyerɛw ahintasɛm no',
+    mismatch: 'Ahintasɛm no nyɛ pɛ.',
+    ruleLength: 'Nkyerɛwde 10 anaa nea ɛboro saa',
+    ruleNumber: 'Nɔma baako',
+    ruleSymbol: 'Agyiraeɛ baako',
+    ruleMet: '{rule}: ɛyɛ',
+    ruleNotMet: '{rule}: ɛnyɛ yie',
+    save: 'Sesa ahintasɛm',
+  },
+  gaa: {
+    networkError: 'Ashɛɛɛ Altruist nɔ. Kwɛ o intanɛt ni oka ekoŋŋ.',
+    serverError: 'Nɔko tɔ̃ yɛ wɔ gbɛfaŋ. Ka ekoŋŋ yɛ be fioo sɛɛ.',
+    title: 'Fee password hee',
+    newLabel: 'Password hee',
+    confirmLabel: 'Ŋma password lɛ ekoŋŋ',
+    mismatch: 'Password lɛ kɛ ekome kpaaa gbee.',
+    ruleLength: 'Okadi 10 loo fe nakai',
+    ruleNumber: 'Nɔmba kome',
+    ruleSymbol: 'Okadi kome',
+    ruleMet: '{rule}: eye',
+    ruleNotMet: '{rule}: eyeee',
+    save: 'Tsake password',
+  },
+  ee: {
+    networkError: 'Míete ŋu ɖo Altruist gbɔ o. Kpɔ wò intanɛt eye nàgate kpɔ.',
+    serverError: 'Nane gblẽ le mía gbɔ. Gate kpɔ le ɣeyiɣi kpui aɖe megbe.',
+    title: 'Ɖo nyaʋiʋli yeye',
+    newLabel: 'Nyaʋiʋli yeye',
+    confirmLabel: 'Gaŋlɔ nyaʋiʋli la',
+    mismatch: 'Nyaʋiʋliawo mesɔ o.',
+    ruleLength: 'Nuŋlɔdzesi 10 ya teti',
+    ruleNumber: 'Xexlẽdzesi ɖeka',
+    ruleSymbol: 'Dzesi ɖeka',
+    ruleMet: '{rule}: esɔ',
+    ruleNotMet: '{rule}: mesɔ o',
+    save: 'Trɔ nyaʋiʋli',
+  },
+  ha: {
+    networkError: 'Ba a iya kaiwa ga Altruist ba. Duba haɗin intanet ɗinka ka sake gwadawa.',
+    serverError: 'Wani abu ya faru a ɓangarenmu. Sake gwadawa nan da ɗan lokaci.',
+    title: 'Saita sabuwar kalmar sirri',
+    newLabel: 'Sabuwar kalmar sirri',
+    confirmLabel: 'Tabbatar da kalmar sirri',
+    mismatch: 'Kalmomin sirrin ba su yi daidai ba.',
+    ruleLength: 'Aƙalla haruffa 10',
+    ruleNumber: 'Lamba ɗaya',
+    ruleSymbol: 'Alama ɗaya',
+    ruleMet: '{rule}: an cika',
+    ruleNotMet: '{rule}: ba a cika ba',
+    save: 'Sabunta kalmar sirri',
+  },
+});
 
 const RULES = [
-  { label: 'At least 10 characters', test: (v: string) => v.length >= 10 },
-  { label: 'One number', test: (v: string) => /\d/.test(v) },
-  { label: 'One symbol', test: (v: string) => /[^A-Za-z0-9]/.test(v) },
-];
+  { key: 'ruleLength', test: (v: string) => v.length >= 10 },
+  { key: 'ruleNumber', test: (v: string) => /\d/.test(v) },
+  { key: 'ruleSymbol', test: (v: string) => /[^A-Za-z0-9]/.test(v) },
+] as const;
 
 export default function SetNewPassword() {
+  const tr = useT(S);
   const t = useTokens();
   const { d } = useDesignScale();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
-  const [reveal, setReveal] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,17 +139,17 @@ export default function SetNewPassword() {
     } catch (e) {
       setError(
         e instanceof NetworkError
-          ? 'Could not reach Altruist. Check your connection and try again.'
+          ? tr('networkError')
           : e instanceof DeclinedError
             ? e.message
-            : 'Something went wrong on our side. Try again in a moment.',
+            : tr('serverError'),
       );
     } finally {
       setBusy(false);
     }
   };
 
-  const results = RULES.map((r) => ({ ...r, ok: r.test(password) }));
+  const results = RULES.map((r) => ({ ...r, label: tr(r.key), ok: r.test(password) }));
   const allOk = results.every((r) => r.ok);
   const mismatch = confirm.length > 0 && confirm !== password;
 
@@ -71,28 +159,26 @@ export default function SetNewPassword() {
 
       <View style={{ gap: d(10) }}>
         <Text variant="displayS" style={{ fontSize: d(28), lineHeight: d(32) }}>
-          Set a new password
+          {tr('title')}
         </Text>
       </View>
 
       <InputField
-        label="New password"
+        label={tr('newLabel')}
         value={password}
         onChangeText={setPassword}
         placeholder="••••••••••••"
-        secureTextEntry={!reveal}
+        secureTextEntry
         autoComplete="new-password"
-        trailingIcon={reveal ? 'eye-off' : 'eye'}
-        onTrailingPress={() => setReveal((v) => !v)}
       />
       <InputField
-        label="Confirm password"
+        label={tr('confirmLabel')}
         value={confirm}
         onChangeText={setConfirm}
         placeholder="•••••••••"
-        secureTextEntry={!reveal}
+        secureTextEntry
         autoComplete="new-password"
-        error={mismatch ? 'Passwords do not match.' : undefined}
+        error={mismatch ? tr('mismatch') : undefined}
       />
 
       {/* Requirements — bg/surface, r20, pad 16/18, gap 10 */}
@@ -107,9 +193,9 @@ export default function SetNewPassword() {
       >
         {results.map((r) => (
           <View
-            key={r.label}
+            key={r.key}
             accessibilityRole="text"
-            accessibilityLabel={`${r.label}: ${r.ok ? 'met' : 'not met'}`}
+            accessibilityLabel={tr(r.ok ? 'ruleMet' : 'ruleNotMet', { rule: r.label })}
             style={{ flexDirection: 'row', alignItems: 'center', gap: d(10) }}
           >
             <View
@@ -159,7 +245,7 @@ export default function SetNewPassword() {
       ) : null}
 
       <Button
-        label="Update password"
+        label={tr('save')}
         size="large"
         loading={busy}
         disabled={!allOk || confirm !== password || confirm.length === 0 || busy}

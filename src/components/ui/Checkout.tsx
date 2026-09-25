@@ -24,6 +24,16 @@ import { Text } from './Text';
 import { Icon, type IconName } from './Icon';
 import { Radio } from './Form';
 import { Badge } from './Badge';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: { stepA11y: 'Checkout step {step} of 2', delivery: 'Delivery', payment: 'Payment' },
+  fr: { stepA11y: 'Étape {step} sur 2 du paiement', delivery: 'Livraison', payment: 'Paiement' },
+  tw: { stepA11y: 'Nneɛma tɔ anammɔn {step} wɔ 2 mu', delivery: 'De brɛ', payment: 'Ka tua' },
+  gaa: { stepA11y: 'Nɔ hemɔ gbɛ {step} yɛ 2 mli', delivery: 'Kɛbamɔ', payment: 'Nyɔmɔwoo' },
+  ee: { stepA11y: 'Nuƒeƒle afɔɖeɖe {step} le 2 me', delivery: 'Nuɖoɖo', payment: 'Fexexe' },
+  ha: { stepA11y: 'Matakin biya {step} cikin 2', delivery: 'Kawowa', payment: 'Biya' },
+});
 
 export function SectionLabel({ children }: { children: string }) {
   const { d } = useDesignScale();
@@ -37,6 +47,7 @@ export function SectionLabel({ children }: { children: string }) {
 export function CheckoutSteps({ step }: { step: 1 | 2 }) {
   const t = useTokens();
   const { d } = useDesignScale();
+  const tr = useT(S);
 
   const bubble = (index: 1 | 2, label: string) => {
     const done = step > index;
@@ -79,10 +90,10 @@ export function CheckoutSteps({ step }: { step: 1 | 2 }) {
   return (
     <View
       accessibilityRole="progressbar"
-      accessibilityLabel={`Checkout step ${step} of 2`}
+      accessibilityLabel={tr('stepA11y', { step })}
       style={{ flexDirection: 'row', alignItems: 'center', gap: d(10), height: d(26) }}
     >
-      {bubble(1, 'Delivery')}
+      {bubble(1, tr('delivery'))}
       <View
         style={{
           width: d(40),
@@ -91,7 +102,7 @@ export function CheckoutSteps({ step }: { step: 1 | 2 }) {
           backgroundColor: step > 1 ? t.colors.border.brand : t.colors.border.subtle,
         }}
       />
-      {bubble(2, 'Payment')}
+      {bubble(2, tr('payment'))}
     </View>
   );
 }

@@ -28,6 +28,216 @@ import { firstName, greetingFor, initialsOf } from '@/lib/profile';
 import { Avatar } from '@/components/ui/Avatar';
 import { homeCategories } from '@/lib/catalog';
 import { useProducts } from '@/features/catalog/queries';
+import { defineStrings, translate, useLocale, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    greetMorning: 'Good morning',
+    greetAfternoon: 'Good afternoon',
+    greetEvening: 'Good evening',
+    yourProfile: 'Your profile',
+    yourAvatar: 'Your avatar',
+    notifications: 'Notifications',
+    cart: 'Cart',
+    badgeOne: '{label}, {count} item',
+    badgeMany: '{label}, {count} items',
+    viewAll: 'View all',
+    viewAllA11y: 'View all {title}',
+    eyebrow: 'FASTEST WAY TO ORDER',
+    heroTitle: 'Upload a prescription',
+    heroBody: 'Snap it, send it. A licensed partner pharmacist reviews and fulfils it for you.',
+    uploadNow: 'Upload now',
+    shopByCategory: 'Shop by category',
+    recent: 'Recent prescriptions',
+    stampVerified: 'Verified {date} · {time}',
+    stampReviewed: 'Reviewed {date} · {time}',
+    stampUploaded: 'Uploaded {date} · {time}',
+    catPrescriptions: 'Prescriptions',
+    catOtc: 'Over the counter',
+    catVitamins: 'Vitamins',
+    catFitness: 'Fitness',
+    subUploadTrack: 'Upload & track',
+    subBrowse: 'Browse',
+    subItemsOne: '{count} item',
+    subItemsMany: '{count} items',
+    subPlans: '{count} plans',
+  },
+  fr: {
+    greetMorning: 'Bonjour',
+    greetAfternoon: 'Bon après-midi',
+    greetEvening: 'Bonsoir',
+    yourProfile: 'Votre profil',
+    yourAvatar: 'Votre avatar',
+    notifications: 'Notifications',
+    cart: 'Panier',
+    badgeOne: '{label}, {count} article',
+    badgeMany: '{label}, {count} articles',
+    viewAll: 'Tout voir',
+    viewAllA11y: 'Tout voir : {title}',
+    eyebrow: 'LE PLUS RAPIDE POUR COMMANDER',
+    heroTitle: 'Envoyer une ordonnance',
+    heroBody:
+      'Prenez-la en photo, envoyez-la. Un pharmacien partenaire agréé la vérifie et la prépare pour vous.',
+    uploadNow: 'Envoyer',
+    shopByCategory: 'Acheter par catégorie',
+    recent: 'Ordonnances récentes',
+    stampVerified: 'Vérifiée le {date} · {time}',
+    stampReviewed: 'Examinée le {date} · {time}',
+    stampUploaded: 'Envoyée le {date} · {time}',
+    catPrescriptions: 'Ordonnances',
+    catOtc: 'Sans ordonnance',
+    catVitamins: 'Vitamines',
+    catFitness: 'Forme',
+    subUploadTrack: 'Envoyer et suivre',
+    subBrowse: 'Parcourir',
+    subItemsOne: '{count} article',
+    subItemsMany: '{count} articles',
+    subPlans: '{count} programmes',
+  },
+  tw: {
+    greetMorning: 'Maakye',
+    greetAfternoon: 'Maaha',
+    greetEvening: 'Maadwo',
+    yourProfile: 'Wo ho nsɛm',
+    yourAvatar: 'Wo mfonini',
+    notifications: 'Nkaeɛ',
+    cart: 'Kɛntɛn',
+    badgeOne: '{label}, adeɛ {count}',
+    badgeMany: '{label}, nneɛma {count}',
+    viewAll: 'Hwɛ ne nyinaa',
+    viewAllA11y: 'Hwɛ {title} nyinaa',
+    eyebrow: 'ƐKWAN A ƐYƐ NTƐM PAA',
+    heroTitle: 'Fa nnuro krataa to so',
+    heroBody:
+      'Twa ne mfonini, fa kɔ. Nnuro ho ɔbenfoɔ a ɔwɔ tumi bɛhwɛ so na wasiesie ama wo.',
+    uploadNow: 'Fa to so seesei',
+    shopByCategory: 'Tɔ nneɛma wɔ akuo mu',
+    recent: 'Nnuro krataa a ɛbaa nnansa yi',
+    stampVerified: 'Wɔagye atom {date} · {time}',
+    stampReviewed: 'Wɔahwɛ mu {date} · {time}',
+    stampUploaded: 'Wɔde too so {date} · {time}',
+    catPrescriptions: 'Nnuro krataa',
+    catOtc: 'Nnuro a wɔtɔ ara kwa',
+    catVitamins: 'Vitamin',
+    catFitness: 'Apɔw-mu-tenten',
+    subUploadTrack: 'Fa to so na di akyi',
+    subBrowse: 'Hwehwɛ mu',
+    subItemsOne: 'adeɛ {count}',
+    subItemsMany: 'nneɛma {count}',
+    subPlans: 'nhyehyɛeɛ {count}',
+  },
+  gaa: {
+    greetMorning: 'Leebi kpakpa',
+    greetAfternoon: 'Shwane kpakpa',
+    greetEvening: 'Gbɛkɛ kpakpa',
+    yourProfile: 'Bo he saji',
+    yourAvatar: 'Bo mfoniri',
+    notifications: 'Kaimɔi',
+    cart: 'Kɛntɛŋ',
+    badgeOne: '{label}, nɔ {count}',
+    badgeMany: '{label}, nibii {count}',
+    viewAll: 'Kwɛ fɛɛ',
+    viewAllA11y: 'Kwɛ {title} fɛɛ',
+    eyebrow: 'GBƐ NI YAA OYA FE FƐƐ',
+    heroTitle: 'Kɛ tsofa wolo wo mli',
+    heroBody: 'Fɔ mfoniri, ni okɛmaje. Tsofatsɛ ni ahe lɛ gbɛ baakwɛ nɔ ni esaa ha bo.',
+    uploadNow: 'Kɛwo mli bianɛ',
+    shopByCategory: 'He nibii yɛ akuu naa',
+    recent: 'Tsofa woloi ni ba nyɛ',
+    stampVerified: 'Aye lɛ odase {date} · {time}',
+    stampReviewed: 'Akwɛ lɛ {date} · {time}',
+    stampUploaded: 'Akɛwo mli {date} · {time}',
+    catPrescriptions: 'Tsofa woloi',
+    catOtc: 'Tsofai ni ahɔɔ',
+    catVitamins: 'Vitamin',
+    catFitness: 'Gbɔmɔtso hewalɛ',
+    subUploadTrack: 'Kɛwo mli ni oti sɛɛ',
+    subBrowse: 'Kwɛmɔ',
+    subItemsOne: 'nɔ {count}',
+    subItemsMany: 'nibii {count}',
+    subPlans: 'gbɛjianɔtoi {count}',
+  },
+  ee: {
+    greetMorning: 'Ŋdi na wò',
+    greetAfternoon: 'Ŋdɔ na wò',
+    greetEvening: 'Fiẽ na wò',
+    yourProfile: 'Wò ŋutinyawo',
+    yourAvatar: 'Wò foto',
+    notifications: 'Nyanyuiwo',
+    cart: 'Kusi',
+    badgeOne: '{label}, nu {count}',
+    badgeMany: '{label}, nu {count}',
+    viewAll: 'Kpɔ wo katã',
+    viewAllA11y: 'Kpɔ {title} katã',
+    eyebrow: 'MƆ SI LE KABA WU',
+    heroTitle: 'Ɖo atikeŋɔŋlɔ ɖa',
+    heroBody:
+      'Ɖe foto, ɖoe ɖa. Atikewɔla si woɖo kpe edzi alé ŋku ɖe eŋu eye wòawɔe na wò.',
+    uploadNow: 'Ɖoe ɖa fifia',
+    shopByCategory: 'Ƒle nu le hatsotsowo nu',
+    recent: 'Atikeŋɔŋlɔ yeyewo',
+    stampVerified: 'Woɖo kpe edzi {date} · {time}',
+    stampReviewed: 'Wodzro eme {date} · {time}',
+    stampUploaded: 'Woɖoe ɖa {date} · {time}',
+    catPrescriptions: 'Atikeŋɔŋlɔwo',
+    catOtc: 'Atike siwo woƒlena bɔbɔe',
+    catVitamins: 'Vitamin',
+    catFitness: 'Ŋutilãkamedede',
+    subUploadTrack: 'Ɖoe ɖa eye nàkpɔ eŋu',
+    subBrowse: 'Kpɔ nuwo',
+    subItemsOne: 'nu {count}',
+    subItemsMany: 'nu {count}',
+    subPlans: 'ɖoɖo {count}',
+  },
+  ha: {
+    greetMorning: 'Ina kwana',
+    greetAfternoon: 'Ina wuni',
+    greetEvening: 'Barka da yamma',
+    yourProfile: 'Bayananka',
+    yourAvatar: 'Hotonka',
+    notifications: 'Sanarwa',
+    cart: 'Kwando',
+    badgeOne: '{label}, abu {count}',
+    badgeMany: '{label}, abubuwa {count}',
+    viewAll: 'Duba duka',
+    viewAllA11y: 'Duba duka {title}',
+    eyebrow: 'HANYA MAFI SAURI TA YIN ODA',
+    heroTitle: 'Ɗora takardar magani',
+    heroBody:
+      'Ɗauki hotonta, ka aika. Mai harhaɗa magani abokin hulɗa mai lasisi zai duba ya shirya maka.',
+    uploadNow: 'Ɗora yanzu',
+    shopByCategory: 'Saya bisa rukuni',
+    recent: 'Takardun magani na baya-bayan nan',
+    stampVerified: 'An tabbatar {date} · {time}',
+    stampReviewed: 'An duba {date} · {time}',
+    stampUploaded: 'An ɗora {date} · {time}',
+    catPrescriptions: 'Takardun magani',
+    catOtc: 'Ba sai da takarda ba',
+    catVitamins: 'Bitamin',
+    catFitness: 'Motsa jiki',
+    subUploadTrack: 'Ɗora ka bibiya',
+    subBrowse: 'Duba',
+    subItemsOne: 'abu {count}',
+    subItemsMany: 'abubuwa {count}',
+    subPlans: 'shirye-shirye {count}',
+  },
+});
+
+type Key = keyof (typeof S)['en'];
+
+// `greetingFor` and `homeCategories` live in lib and return English; these map
+// their output to keys here. Anything unrecognised is shown as it came.
+const GREETINGS: Record<string, Key> = {
+  'Good morning': 'greetMorning',
+  'Good afternoon': 'greetAfternoon',
+  'Good evening': 'greetEvening',
+};
+const CATEGORY_TITLES: Record<string, Key> = {
+  Prescriptions: 'catPrescriptions',
+  'Over the counter': 'catOtc',
+  Vitamins: 'catVitamins',
+  Fitness: 'catFitness',
+};
 
 /** Category tiles bind to `colors.tile.*` — see IconTile in ListRow.tsx. */
 type TileHue = 'mint' | 'blue' | 'gold' | 'pink';
@@ -37,30 +247,54 @@ type TileHue = 'mint' | 'blue' | 'gold' | 'pink';
 // every tile inherited the master's camera glyph).
 
 /** "Verified 23 Aug 2026 · 05:41 PM" — the card's third line. */
-function stamp(p: { status: string; uploadedAt: number; reviewedAt?: number }): string {
-  const verb =
-    p.status === 'VERIFIED' ? 'Verified' : p.status === 'REJECTED' ? 'Reviewed' : 'Uploaded';
+function stamp(
+  p: { status: string; uploadedAt: number; reviewedAt?: number },
+  locale: string,
+): string {
+  const key: Key =
+    p.status === 'VERIFIED'
+      ? 'stampVerified'
+      : p.status === 'REJECTED'
+        ? 'stampReviewed'
+        : 'stampUploaded';
   const at = new Date(p.reviewedAt ?? p.uploadedAt);
-  const date = at.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const date = at.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
   const time = at
-    .toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true })
+    .toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: true })
     .toUpperCase();
-  return `${verb} ${date} · ${time}`;
+  return translate(S, key, { date, time });
 }
 
 export default function Home() {
   const profile = useProfile();
   const t = useTokens();
+  const tr = useT(S);
+  const locale = useLocale();
   const { d } = useDesignScale();
   const insets = useSafeAreaInsets();
   const cartCount = useCartCount();
   // The newest script, whatever state it is in. Showing only VERIFIED ones
   // would hide the rejection the user most needs to see.
-  const recent = usePrescriptionStore((s) => s.items[0]);
+  const recent = usePrescriptionStore((s) => s.items.find((p) => !p.hidden && !p.archived));
   const { data: promotions, isPending: promosPending } = usePromotions();
   // Category counts come from the catalogue itself — see `homeCategories`.
   const { data: products } = useProducts();
   const CATEGORIES = homeCategories(products);
+
+  const greeting = greetingFor();
+  const categoryTitle = (title: string) => {
+    const key = CATEGORY_TITLES[title];
+    return key ? tr(key) : title;
+  };
+  const categorySub = (sub: string) => {
+    if (sub === 'Upload & track') return tr('subUploadTrack');
+    if (sub === 'Browse') return tr('subBrowse');
+    const m = /^(\d+) (item|items|plans)$/.exec(sub);
+    if (!m) return sub;
+    const count = Number(m[1]);
+    if (m[2] === 'plans') return tr('subPlans', { count });
+    return tr(count === 1 ? 'subItemsOne' : 'subItemsMany', { count });
+  };
 
   const RoundAction = ({
     icon,
@@ -75,7 +309,9 @@ export default function Home() {
   }) => (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={badge ? `${label}, ${badge} item${badge === 1 ? '' : 's'}` : label}
+      accessibilityLabel={
+        badge ? tr(badge === 1 ? 'badgeOne' : 'badgeMany', { label, count: badge }) : label
+      }
       onPress={onPress}
       style={{
         width: d(44),
@@ -123,7 +359,7 @@ export default function Home() {
       </Text>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`View all ${title}`}
+        accessibilityLabel={tr('viewAllA11y', { title })}
         onPress={onAction}
         style={{
           flexDirection: 'row',
@@ -137,7 +373,7 @@ export default function Home() {
         }}
       >
         <Text variant="labelS" tone="secondary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-          View all
+          {tr('viewAll')}
         </Text>
         <Icon name="chevron-right" size={d(16)} tone="secondary" />
       </Pressable>
@@ -159,7 +395,7 @@ export default function Home() {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: d(12), height: d(56) }}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Your profile"
+            accessibilityLabel={tr('yourProfile')}
             onPress={() => router.push('/profile')}
             hitSlop={4}
           >
@@ -168,12 +404,12 @@ export default function Home() {
               uri={profile.avatarUrl}
               preset={profile.avatarPreset}
               size={44}
-              label="Your avatar"
+              label={tr('yourAvatar')}
             />
           </Pressable>
           <View style={{ flex: 1, gap: d(2) }}>
             <Text variant="caption" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-              {greetingFor()}
+              {GREETINGS[greeting] ? tr(GREETINGS[greeting]) : greeting}
             </Text>
             {/* First name only: a greeting, not a form. "Good evening, Samuel",
                 not the full name with its bracketed middle name. */}
@@ -184,7 +420,7 @@ export default function Home() {
           <View style={{ flexDirection: 'row', gap: d(8) }}>
             <RoundAction
               icon="notification"
-              label="Notifications"
+              label={tr('notifications')}
               onPress={() => router.push('/notifications')}
             />
             {/* Figma draws an overflow "more" in this slot with nothing behind
@@ -192,7 +428,7 @@ export default function Home() {
                 slot rather than adding a sixth control to a 56pt bar. */}
             <RoundAction
               icon="cart"
-              label="Cart"
+              label={tr('cart')}
               badge={cartCount}
               onPress={() => router.push('/cart')}
             />
@@ -229,7 +465,7 @@ export default function Home() {
               color={t.colors.text.onBrand}
               style={{ flex: 1, opacity: 0.7, fontSize: d(11), lineHeight: d(14) }}
             >
-              FASTEST WAY TO ORDER
+              {tr('eyebrow')}
             </Text>
             <View
               style={{
@@ -250,19 +486,19 @@ export default function Home() {
             color={t.colors.text.onBrand}
             style={{ fontSize: d(24), lineHeight: d(30) }}
           >
-            Upload a prescription
+            {tr('heroTitle')}
           </Text>
           <Text
             variant="bodyM"
             color={t.colors.text.onBrand}
             style={{ opacity: 0.78, fontSize: d(14), lineHeight: d(21) }}
           >
-            Snap it, send it. A licensed partner pharmacist reviews and fulfils it for you.
+            {tr('heroBody')}
           </Text>
 
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Upload now"
+            accessibilityLabel={tr('uploadNow')}
             onPress={() => router.push('/prescriptions')}
             style={{
               alignSelf: 'flex-start',
@@ -276,13 +512,13 @@ export default function Home() {
             }}
           >
             <Text variant="labelM" tone="primary" style={{ fontSize: d(14), lineHeight: d(18) }}>
-              Upload now
+              {tr('uploadNow')}
             </Text>
             <Icon name="prescription" size={d(18)} tone="primary" />
           </Pressable>
         </View>
 
-        <SectionHeader title="Shop by category" onAction={() => router.push('/catalog')} />
+        <SectionHeader title={tr('shopByCategory')} onAction={() => router.push('/catalog')} />
 
         {/* Category grid — 2 x 2, gap 14, tiles radius 28 padding 18 */}
         <View style={{ gap: d(14) }}>
@@ -292,7 +528,7 @@ export default function Home() {
                 <Pressable
                   key={c.title}
                   accessibilityRole="button"
-                  accessibilityLabel={`${c.title}. ${c.sub}`}
+                  accessibilityLabel={`${categoryTitle(c.title)}. ${categorySub(c.sub)}`}
                   onPress={() => router.push(c.href as never)}
                   style={({ pressed }) => ({
                     flex: 1,
@@ -320,7 +556,7 @@ export default function Home() {
                     numberOfLines={2}
                     style={{ fontSize: d(16), lineHeight: d(20) }}
                   >
-                    {c.title}
+                    {categoryTitle(c.title)}
                   </Text>
                   {/* Pinned to the bottom of the tile. Tiles in a row stretch to
                       the taller one, so this keeps the counts on a single
@@ -337,7 +573,7 @@ export default function Home() {
                       lineHeight: d(16),
                     }}
                   >
-                    {c.sub}
+                    {categorySub(c.sub)}
                   </Text>
                 </Pressable>
               ))}
@@ -348,13 +584,13 @@ export default function Home() {
         {recent ? (
           <>
             <SectionHeader
-              title="Recent prescriptions"
+              title={tr('recent')}
               onAction={() => router.push('/prescriptions')}
             />
             <PrescriptionCard
               title={`TrxID ${recent.id}`}
               note={recent.note}
-              timestamp={stamp(recent)}
+              timestamp={stamp(recent, locale)}
               status={recent.status}
               onPress={() =>
                 router.push(

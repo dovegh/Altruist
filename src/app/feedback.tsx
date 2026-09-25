@@ -41,13 +41,126 @@ import { useDesignScale } from '@/theme/useDesignScale';
 import { Text } from '@/components/ui/Text';
 import { Icon } from '@/components/ui/Icon';
 import { primitives as p, motion, radius, fontFamily } from '@/theme/tokens';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    bad: 'Bad',
+    badWord: 'BAD',
+    notBad: 'Not bad',
+    notBadWord: 'NOT BAD',
+    good: 'Good',
+    goodWord: 'GOOD',
+    close: 'Close feedback',
+    howUsed: 'How feedback is used',
+    question: 'How was your\npharmacy experience?',
+    placeholder: 'Tell us what went wrong',
+    noteA11y: 'Your feedback note',
+    submitA11y: 'Submit feedback',
+    submit: 'Submit',
+    rating: 'Rating',
+    addNoteA11y: 'Add a note',
+    addNote: 'Add note',
+  },
+  fr: {
+    bad: 'Mauvais',
+    badWord: 'MAUVAIS',
+    notBad: 'Pas mal',
+    notBadWord: 'PAS MAL',
+    good: 'Bien',
+    goodWord: 'BIEN',
+    close: "Fermer l'avis",
+    howUsed: 'Comment votre avis est utilisé',
+    question: "Comment s'est passée votre\nexpérience en pharmacie ?",
+    placeholder: "Dites-nous ce qui n'a pas marché",
+    noteA11y: 'Votre commentaire',
+    submitA11y: 'Envoyer votre avis',
+    submit: 'Envoyer',
+    rating: 'Note',
+    addNoteA11y: 'Ajouter un commentaire',
+    addNote: 'Commenter',
+  },
+  tw: {
+    bad: 'Ɛnyɛ',
+    badWord: 'ƐNYƐ',
+    notBad: 'Ɛnyɛ bɔne',
+    notBadWord: 'ƐNYƐ BƆNE',
+    good: 'Ɛyɛ',
+    goodWord: 'ƐYƐ',
+    close: 'To adwenkyerɛ no mu',
+    howUsed: 'Sɛnea yɛde wo adwenkyerɛ di dwuma',
+    question: 'Ɛyɛɛ wo dɛn wɔ\nnnuro adetɔnfoɔ hɔ?',
+    placeholder: 'Ka deɛ ɛkɔɔ bɔne kyerɛ yɛn',
+    noteA11y: 'Wo adwenkyerɛ',
+    submitA11y: 'Fa wo adwenkyerɛ mena',
+    submit: 'Mena',
+    rating: 'Sɛnea ɛteɛ',
+    addNoteA11y: 'Kyerɛw biribi ka ho',
+    addNote: 'Kyerɛw nsɛm',
+  },
+  gaa: {
+    bad: 'Ehiii',
+    badWord: 'EHIII',
+    notBad: 'Ehi fioo',
+    notBadWord: 'EHI FIOO',
+    good: 'Ehi',
+    goodWord: 'EHI',
+    close: 'Ŋmɛ susumɔ lɛ naa',
+    howUsed: 'Bɔ ni wɔkɛ osusumɔ lɛ tsuɔ nii',
+    question: 'Te tsofa hejɔɔ he lɛ\nfee bo tɛŋŋ?',
+    placeholder: 'Gba wɔ nɔ ni tee shi lɛ',
+    noteA11y: 'Osusumɔ lɛ',
+    submitA11y: 'Kɛ osusumɔ lɛ tsu',
+    submit: 'Tsu',
+    rating: 'Bɔ ni eyɔɔ',
+    addNoteA11y: 'Ŋma nɔ ko fata he',
+    addNote: 'Ŋma nɔ ko',
+  },
+  ee: {
+    bad: 'Menyo o',
+    badWord: 'MENYO O',
+    notBad: 'Enyo vie',
+    notBadWord: 'ENYO VIE',
+    good: 'Enyo',
+    goodWord: 'ENYO',
+    close: 'Tu susu ɖeɖefia la',
+    howUsed: 'Alesi míezãa wò susu',
+    question: 'Aleke nèkpɔe le\natikedzraƒea?',
+    placeholder: 'Gblɔ nu si gblẽ na mí',
+    noteA11y: 'Wò susu ɖeɖefia',
+    submitA11y: 'Ɖo wò susu ɖa',
+    submit: 'Ɖoe ɖa',
+    rating: 'Ŋkuléle',
+    addNoteA11y: 'Ŋlɔ nya aɖe kpe ɖe eŋu',
+    addNote: 'Ŋlɔ nya',
+  },
+  ha: {
+    bad: 'Mara kyau',
+    badWord: 'MARA KYAU',
+    notBad: 'Ba laifi',
+    notBadWord: 'BA LAIFI',
+    good: 'Mai kyau',
+    goodWord: 'MAI KYAU',
+    close: "Rufe ra'ayi",
+    howUsed: "Yadda ake amfani da ra'ayinka",
+    question: 'Yaya kwarewarka\na kantin magani?',
+    placeholder: 'Faɗa mana abin da ya lalace',
+    noteA11y: "Bayanin ra'ayinka",
+    submitA11y: "Aika ra'ayi",
+    submit: 'Aika',
+    rating: 'Ƙima',
+    addNoteA11y: 'Ƙara bayani',
+    addNote: 'Ƙara bayani',
+  },
+});
 
 type Rating = 0 | 1 | 2;
+type Key = keyof typeof S.en;
 
-const RATINGS: { key: Rating; label: string; word: string; bg: string; ink: string }[] = [
-  { key: 0, label: 'Bad', word: 'BAD', bg: p.coral[500], ink: p.coral[800] },
-  { key: 1, label: 'Not bad', word: 'NOT BAD', bg: p.gold[500], ink: p.gold[800] },
-  { key: 2, label: 'Good', word: 'GOOD', bg: p.mint[500], ink: p.mint[800] },
+const RATINGS: { key: Rating; label: Key; word: Key; bg: string; ink: string }[] = [
+  { key: 0, label: 'bad', word: 'badWord', bg: p.coral[500], ink: p.coral[800] },
+  { key: 1, label: 'notBad', word: 'notBadWord', bg: p.gold[500], ink: p.gold[800] },
+  { key: 2, label: 'good', word: 'goodWord', bg: p.mint[500], ink: p.mint[800] },
 ];
 
 const NOTE_LIMIT = 280;
@@ -55,6 +168,7 @@ const NOTE_LIMIT = 280;
 export default function Feedback() {
   const { d } = useDesignScale();
   const insets = useSafeAreaInsets();
+  const tr = useT(S);
   const [rating, setRating] = useState<Rating>(0);
   const [noteOpen, setNoteOpen] = useState(false);
   const [note, setNote] = useState('');
@@ -180,8 +294,8 @@ export default function Feedback() {
           paddingHorizontal: d(24),
         }}
       >
-        {roundControl('close', 'Close feedback', () => router.back())}
-        {roundControl('info', 'How feedback is used')}
+        {roundControl('close', tr('close'), () => router.back())}
+        {roundControl('info', tr('howUsed'))}
       </View>
 
       <Text
@@ -194,7 +308,7 @@ export default function Feedback() {
           lineHeight: d(30),
         }}
       >
-        {'How was your\npharmacy experience?'}
+        {tr('question')}
       </Text>
 
       {noteOpen ? (
@@ -219,9 +333,9 @@ export default function Feedback() {
               multiline
               autoFocus
               maxLength={NOTE_LIMIT}
-              placeholder="Tell us what went wrong"
+              placeholder={tr('placeholder')}
               placeholderTextColor={p.teal[700]}
-              accessibilityLabel="Your feedback note"
+              accessibilityLabel={tr('noteA11y')}
               style={{
                 flex: 1,
                 padding: 0,
@@ -250,7 +364,7 @@ export default function Feedback() {
             </Text>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Submit feedback"
+              accessibilityLabel={tr('submitA11y')}
               onPress={submit}
               style={({ pressed }) => ({
                 flexDirection: 'row',
@@ -265,7 +379,7 @@ export default function Feedback() {
               })}
             >
               <Text variant="labelL" color={p.teal[950]} style={{ fontSize: d(16), lineHeight: d(20) }}>
-                Submit
+                {tr('submit')}
               </Text>
               <Icon name="arrow-right" size={d(18)} color={p.teal[950]} />
             </Pressable>
@@ -287,15 +401,15 @@ export default function Feedback() {
               letterSpacing: -1.4,
             }}
           >
-            {r.word}
+            {tr(r.word)}
           </Text>
 
           {/* Slider — three stops */}
           <View style={{ marginTop: d(48), marginHorizontal: d(24) }}>
             <View
               accessibilityRole="adjustable"
-              accessibilityLabel="Rating"
-              accessibilityValue={{ text: r.label }}
+              accessibilityLabel={tr('rating')}
+              accessibilityValue={{ text: tr(r.label) }}
               style={{
                 height: d(6),
                 borderRadius: radius.full,
@@ -323,7 +437,7 @@ export default function Feedback() {
                   key={x.key}
                   accessibilityRole="button"
                   accessibilityState={{ selected: rating === x.key }}
-                  accessibilityLabel={x.label}
+                  accessibilityLabel={tr(x.label)}
                   onPress={() => setRating(x.key)}
                   hitSlop={{ top: 24, bottom: 12 }}
                   style={{ flex: 1, alignItems: i === 0 ? 'flex-start' : i === 1 ? 'center' : 'flex-end' }}
@@ -337,7 +451,7 @@ export default function Feedback() {
                       lineHeight: d(16),
                     }}
                   >
-                    {x.label}
+                    {tr(x.label)}
                   </Text>
                 </Pressable>
               ))}
@@ -356,7 +470,7 @@ export default function Feedback() {
           >
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Add a note"
+              accessibilityLabel={tr('addNoteA11y')}
               onPress={() => setNoteOpen(true)}
               style={({ pressed }) => ({
                 alignItems: 'center',
@@ -370,13 +484,13 @@ export default function Feedback() {
               })}
             >
               <Text variant="labelL" color={p.teal[900]} style={{ fontSize: d(16), lineHeight: d(20) }}>
-                Add note
+                {tr('addNote')}
               </Text>
             </Pressable>
 
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Submit feedback"
+              accessibilityLabel={tr('submitA11y')}
               onPress={submit}
               style={({ pressed }) => ({
                 flexDirection: 'row',
@@ -391,7 +505,7 @@ export default function Feedback() {
               })}
             >
               <Text variant="labelL" color={p.teal[950]} style={{ fontSize: d(16), lineHeight: d(20) }}>
-                Submit
+                {tr('submit')}
               </Text>
               <Icon name="arrow-right" size={d(18)} color={p.teal[950]} />
             </Pressable>

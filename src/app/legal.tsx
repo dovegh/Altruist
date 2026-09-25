@@ -21,15 +21,69 @@ import { Text } from '@/components/ui/Text';
 import { Icon } from '@/components/ui/Icon';
 import { LEGAL_DOCS, PLATFORM_STATEMENT, PRIVACY_URL, docSubtitle } from '@/lib/legal';
 export { TERMS_URL, PRIVACY_URL } from '@/lib/legal';
+import { defineStrings, useT } from '@/i18n';
+
+// The platform statement and the documents themselves stay in English.
+const S = defineStrings({
+  en: {
+    title: 'Legal',
+    terms: 'Terms of Service',
+    privacy: 'Privacy Policy',
+    partners: 'Partner pharmacies',
+    partnersSub: 'Licences and who fulfils your orders',
+    contact: 'Contact & data requests',
+  },
+  fr: {
+    title: 'Mentions légales',
+    terms: "Conditions d'utilisation",
+    privacy: 'Politique de confidentialité',
+    partners: 'Pharmacies partenaires',
+    partnersSub: 'Licences et qui prépare vos commandes',
+    contact: 'Contact et demandes de données',
+  },
+  tw: {
+    title: 'Mmara',
+    terms: 'Nhyehyɛeɛ a ɛfa dwumadie ho',
+    privacy: 'Kokoam nsɛm ho nhyehyɛeɛ',
+    partners: 'Nnuro adetɔnfoɔ a yɛne wɔn yɛ adwuma',
+    partnersSub: 'Tumi krataa ne wɔn a wɔyɛ wo nneɛma',
+    contact: 'Nkitahodie ne nsɛm ho abisadeɛ',
+  },
+  gaa: {
+    title: 'Mlai',
+    terms: 'Nitsumɔ he mlai',
+    privacy: 'Teemɔ saji ahe mlai',
+    partners: 'Tsofa hejɔɔ he ni wɔkɛtsuɔ nii',
+    partnersSub: 'Lisɛnsii kɛ mɛi ni feɔ onibii',
+    contact: 'Wiemɔ kɛ saji ahe sanebimɔi',
+  },
+  ee: {
+    title: 'Sewo',
+    terms: 'Zazã ƒe ɖoɖowo',
+    privacy: 'Adzamenyawo ƒe ɖoɖo',
+    partners: 'Atikedzraƒe siwo míewɔa dɔ kpli',
+    partnersSub: 'Mɔɖeɖegbalẽwo kple ame siwo wɔa wò nuƒleƒlewo',
+    contact: 'Kadodo kple nyatakaka biabiawo',
+  },
+  ha: {
+    title: 'Sharuɗɗa',
+    terms: 'Sharuɗɗan amfani',
+    privacy: 'Manufar sirri',
+    partners: 'Kantunan magani abokan hulɗa',
+    partnersSub: 'Lasisi da wanda ke cika odarka',
+    contact: 'Tuntuɓa da buƙatun bayanai',
+  },
+});
 
 
 export default function Legal() {
   const t = useTokens();
   const { d } = useDesignScale();
+  const tr = useT(S);
 
   return (
     <FormScreen gap={18} contentStyle={{ paddingBottom: d(60) }}>
-      <TitleAppBar title="Legal" />
+      <TitleAppBar title={tr('title')} />
 
       {/* Framing card */}
       <View
@@ -61,25 +115,25 @@ export default function Legal() {
       </View>
 
       <ListRow
-        title="Terms of Service"
+        title={tr('terms')}
         subtitle={docSubtitle(LEGAL_DOCS[0])}
         chevron
         onPress={() => router.push('/terms')}
       />
       <ListRow
-        title="Privacy Policy"
+        title={tr('privacy')}
         subtitle={docSubtitle(LEGAL_DOCS[1])}
         chevron
         onPress={() => Linking.openURL(PRIVACY_URL)}
       />
       <ListRow
-        title="Partner pharmacies"
-        subtitle="Licences and who fulfils your orders"
+        title={tr('partners')}
+        subtitle={tr('partnersSub')}
         chevron
         onPress={() => router.push('/partners')}
       />
       <ListRow
-        title="Contact & data requests"
+        title={tr('contact')}
         subtitle="privacy@altruistpharmacy.com"
         chevron
         onPress={() => Linking.openURL('mailto:privacy@altruistpharmacy.com')}

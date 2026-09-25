@@ -29,6 +29,95 @@ import type { TileHue } from '@/components/ui/ListRow';
 import { usePartnerPharmacy } from '@/features/profile/store';
 import { CONTACTS, FAQ, fixtureThreads } from '@/lib/support';
 import { relativeTime } from '@/lib/notifications';
+import { defineStrings, useT } from '@/i18n';
+
+// Contacts, FAQ and threads come from the support library and stay as they are.
+const S = defineStrings({
+  en: {
+    title: 'Help & support',
+    searchLabel: 'Search help',
+    searchPlaceholder: 'Search articles and orders',
+    whoCanHelp: 'WHO CAN HELP',
+    message: 'Message',
+    cannotAdvise:
+      'Altruist cannot advise on medicines. Clinical questions always go to the pharmacy that dispensed your order.',
+    conversations: 'YOUR CONVERSATIONS',
+    threadA11y: '{title}. {preview}. {time}.',
+    threadUnreadA11y: '{title}. {preview}. {time}. {count} unread.',
+    report: 'Report a problem',
+    common: 'COMMON QUESTIONS',
+  },
+  fr: {
+    title: 'Aide et assistance',
+    searchLabel: "Rechercher dans l'aide",
+    searchPlaceholder: 'Rechercher des articles et des commandes',
+    whoCanHelp: 'QUI PEUT VOUS AIDER',
+    message: 'Écrire',
+    cannotAdvise:
+      'Altruist ne peut pas donner de conseils sur les médicaments. Les questions cliniques vont toujours à la pharmacie qui a préparé votre commande.',
+    conversations: 'VOS CONVERSATIONS',
+    threadA11y: '{title}. {preview}. {time}.',
+    threadUnreadA11y: '{title}. {preview}. {time}. {count} non lus.',
+    report: 'Signaler un problème',
+    common: 'QUESTIONS FRÉQUENTES',
+  },
+  tw: {
+    title: 'Mmoa',
+    searchLabel: 'Hwehwɛ mmoa',
+    searchPlaceholder: 'Hwehwɛ nsɛm ne nneɛma a woato',
+    whoCanHelp: 'WƆN NA WƆBƐTUMI ABOA',
+    message: 'Kyerɛw',
+    cannotAdvise:
+      'Altruist ntumi mma nnuro ho afotuo. Ayaresa ho nsɛmmisa kɔ nnuro adetɔnfoɔ a wɔmaa wo nnuro no hɔ bere nyinaa.',
+    conversations: 'WO NKƆMMƆ',
+    threadA11y: '{title}. {preview}. {time}.',
+    threadUnreadA11y: '{title}. {preview}. {time}. {count} a wonkenkanee.',
+    report: 'Bɔ ɔhaw bi ho amanneɛ',
+    common: 'NSƐMMISA A ƐTAA BA',
+  },
+  gaa: {
+    title: 'Yelikɛbuamɔ',
+    searchLabel: 'Taomɔ yelikɛbuamɔ',
+    searchPlaceholder: 'Taomɔ saji kɛ nibii ni ohe',
+    whoCanHelp: 'MƐNI BAANYƐ AYE ABUA',
+    message: 'Ŋma',
+    cannotAdvise:
+      'Altruist nyɛŋ aŋa tsofai ahe ŋaa. Hela he sanebimɔi yaa tsofa hejɔɔ he ni kɛ otsofa lɛ ha bo lɛ be fɛɛ be.',
+    conversations: 'OSANEGBAA',
+    threadA11y: '{title}. {preview}. {time}.',
+    threadUnreadA11y: '{title}. {preview}. {time}. {count} ni okaneko.',
+    report: 'Bɔ naagba ko he amaniɛ',
+    common: 'SANEBIMƆI NI KƐƆ OFƆ',
+  },
+  ee: {
+    title: 'Kpekpeɖeŋu',
+    searchLabel: 'Di kpekpeɖeŋu',
+    searchPlaceholder: 'Di nyatiwo kple nuƒleƒlewo',
+    whoCanHelp: 'AME SIWO ATE ŊU AKPE ƉE ŊUWÒ',
+    message: 'Ŋlɔ nya',
+    cannotAdvise:
+      'Altruist mate ŋu aɖo aɖaŋu tso atikewo ŋu o. Atikewɔwɔ ŋuti nyabiasewo yia atikedzraƒe si na atike wò la gbɔ ɣesiaɣi.',
+    conversations: 'WÒ DZEDZEWO',
+    threadA11y: '{title}. {preview}. {time}.',
+    threadUnreadA11y: '{title}. {preview}. {time}. {count} siwo mèxlẽ o.',
+    report: 'Gblɔ kuxi aɖe',
+    common: 'NYABIASE SIWO VANA ZI GEƉE',
+  },
+  ha: {
+    title: 'Taimako',
+    searchLabel: 'Nemi taimako',
+    searchPlaceholder: 'Nemi labarai da oda',
+    whoCanHelp: 'WA ZAI IYA TAIMAKA',
+    message: 'Aika saƙo',
+    cannotAdvise:
+      'Altruist ba ya ba da shawara kan magunguna. Tambayoyin lafiya koyaushe suna zuwa ga kantin maganin da ya ba da odarka.',
+    conversations: 'TATTAUNAWARKA',
+    threadA11y: '{title}. {preview}. {time}.',
+    threadUnreadA11y: '{title}. {preview}. {time}. {count} ba a karanta ba.',
+    report: 'Bayar da rahoton matsala',
+    common: 'TAMBAYOYIN DA AKE YAWAN YI',
+  },
+});
 
 
 
@@ -38,17 +127,18 @@ export default function Support() {
   const { d } = useDesignScale();
   const pharmacy = usePartnerPharmacy();
   const THREADS = fixtureThreads(pharmacy);
+  const tr = useT(S);
   const [query, setQuery] = useState('');
 
   return (
     <FormScreen gap={16} contentStyle={{ paddingBottom: d(60) }}>
-      <TitleAppBar title="Help & support" />
+      <TitleAppBar title={tr('title')} />
 
       <InputField
-        label="Search help"
+        label={tr('searchLabel')}
         value={query}
         onChangeText={setQuery}
-        placeholder="Search articles and orders"
+        placeholder={tr('searchPlaceholder')}
       />
 
       {/* Who can help */}
@@ -61,7 +151,7 @@ export default function Support() {
           backgroundColor: t.colors.bg.surface,
         }}
       >
-        <SectionLabel>WHO CAN HELP</SectionLabel>
+        <SectionLabel>{tr('whoCanHelp')}</SectionLabel>
 
         {CONTACTS.map((c) => (
           <View
@@ -86,7 +176,7 @@ export default function Support() {
               </Text>
             </View>
             <Button
-              label="Message"
+              label={tr('message')}
               variant="secondary"
               size="small"
               fullWidth={false}
@@ -96,20 +186,22 @@ export default function Support() {
         ))}
 
         <Text variant="caption" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-          Altruist cannot advise on medicines. Clinical questions always go to the pharmacy that
-          dispensed your order.
+          {tr('cannotAdvise')}
         </Text>
       </View>
 
-      <SectionLabel>YOUR CONVERSATIONS</SectionLabel>
+      <SectionLabel>{tr('conversations')}</SectionLabel>
 
       {THREADS.map((th) => (
         <Pressable
           key={th.id}
           accessibilityRole="button"
-          accessibilityLabel={`${th.title}. ${th.preview}. ${relativeTime(th.at)}.${
-            th.unread ? ` ${th.unread} unread.` : ''
-          }`}
+          accessibilityLabel={tr(th.unread ? 'threadUnreadA11y' : 'threadA11y', {
+            title: th.title,
+            preview: th.preview,
+            time: relativeTime(th.at),
+            count: th.unread,
+          })}
           onPress={() => router.push('/support-conversation')}
           style={({ pressed }) => ({
             flexDirection: 'row',
@@ -147,13 +239,13 @@ export default function Support() {
       ))}
 
       <Button
-        label="Report a problem"
+        label={tr('report')}
         size="large"
         iconLeading="danger"
         onPress={() => router.push('/report-problem')}
       />
 
-      <SectionLabel>COMMON QUESTIONS</SectionLabel>
+      <SectionLabel>{tr('common')}</SectionLabel>
 
       {FAQ.map((q) => (
         <Pressable

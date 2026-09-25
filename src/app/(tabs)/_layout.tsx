@@ -92,6 +92,52 @@ import { useDesignScale } from '@/theme/useDesignScale';
 import { Text } from '@/components/ui/Text';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { motion } from '@/theme/tokens';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    home: 'Home',
+    catalog: 'Catalog',
+    scripts: 'Scripts',
+    wellness: 'Wellness',
+    profile: 'Profile',
+  },
+  fr: {
+    home: 'Accueil',
+    catalog: 'Catalogue',
+    scripts: 'Ordos',
+    wellness: 'Bien-être',
+    profile: 'Profil',
+  },
+  tw: {
+    home: 'Fie',
+    catalog: 'Nneɛma',
+    scripts: 'Krataa',
+    wellness: 'Apɔmuden',
+    profile: 'Wo ho',
+  },
+  gaa: {
+    home: 'Shĩa',
+    catalog: 'Nibii',
+    scripts: 'Woloi',
+    wellness: 'Hewalɛ',
+    profile: 'Bo he',
+  },
+  ee: {
+    home: 'Aƒeme',
+    catalog: 'Nuwo',
+    scripts: 'Ŋɔŋlɔwo',
+    wellness: 'Lãmesẽ',
+    profile: 'Wò ŋuti',
+  },
+  ha: {
+    home: 'Gida',
+    catalog: 'Kaya',
+    scripts: 'Takardu',
+    wellness: 'Lafiya',
+    profile: 'Bayani',
+  },
+});
 
 /**
  * Routes that live under (tabs) so they keep the floating bar, but have no slot
@@ -102,12 +148,13 @@ const NESTED: Record<string, string> = { search: 'catalog' };
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-const TABS: { name: string; title: string; icon: IconName }[] = [
-  { name: 'home', title: 'Home', icon: 'home' },
-  { name: 'catalog', title: 'Catalog', icon: 'catalog' },
-  { name: 'prescriptions', title: 'Scripts', icon: 'prescription' },
-  { name: 'wellness', title: 'Wellness', icon: 'wellness' },
-  { name: 'profile', title: 'Profile', icon: 'profile' },
+// `title` is a key into S, translated at render.
+const TABS: { name: string; title: keyof (typeof S)['en']; icon: IconName }[] = [
+  { name: 'home', title: 'home', icon: 'home' },
+  { name: 'catalog', title: 'catalog', icon: 'catalog' },
+  { name: 'prescriptions', title: 'scripts', icon: 'prescription' },
+  { name: 'wellness', title: 'wellness', icon: 'wellness' },
+  { name: 'profile', title: 'profile', icon: 'profile' },
 ];
 
 /** Unfocused slot, from the component doc. Comfortably over the 44pt minimum. */
@@ -150,6 +197,7 @@ const TabSlot = React.memo(function TabSlot({
 }) {
   const t = useTokens();
   const { d } = useDesignScale();
+  const tr = useT(S);
 
   const onPress = () => {
     const event = navigation.emit({ type: 'tabPress', target: routeKey, canPreventDefault: true });
@@ -230,7 +278,7 @@ const TabSlot = React.memo(function TabSlot({
       onPress={onPress}
       accessibilityRole="tab"
       accessibilityState={{ selected: focused }}
-      accessibilityLabel={meta.title}
+      accessibilityLabel={tr(meta.title)}
       style={[
         {
           flexDirection: 'row',
@@ -271,7 +319,7 @@ const TabSlot = React.memo(function TabSlot({
           numberOfLines={1}
           style={{ fontSize: d(12), lineHeight: d(16) }}
         >
-          {meta.title}
+          {tr(meta.title)}
         </Text>
       </Animated.View>
     </AnimatedPressable>
@@ -282,6 +330,7 @@ function FloatingTabBar({ state, navigation }: any) {
   const t = useTokens();
   const { d, width } = useDesignScale();
   const insets = useSafeAreaInsets();
+  const tr = useT(S);
 
   // Explicit width, not left/right insets: React Navigation supplies its own
   // container styles for the tabBar slot, and relying on insets let the row
@@ -372,7 +421,7 @@ function FloatingTabBar({ state, navigation }: any) {
               onLayout={measure(tab.name)}
               style={{ fontSize: d(12), lineHeight: d(16) }}
             >
-              {tab.title}
+              {tr(tab.title)}
             </Text>
           ))}
         </View>
@@ -405,6 +454,7 @@ function FloatingTabBar({ state, navigation }: any) {
 }
 
 export default function TabsLayout() {
+  const tr = useT(S);
   return (
     <Tabs
       // Tab switching is instant by default, which is already not a slide. The
@@ -413,7 +463,7 @@ export default function TabsLayout() {
       tabBar={(props) => <FloatingTabBar {...props} />}
     >
       {TABS.map((tab) => (
-        <Tabs.Screen key={tab.name} name={tab.name} options={{ title: tab.title }} />
+        <Tabs.Screen key={tab.name} name={tab.name} options={{ title: tr(tab.title) }} />
       ))}
       {Object.keys(NESTED).map((name) => (
         <Tabs.Screen key={name} name={name} options={{ href: null }} />

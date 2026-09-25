@@ -26,6 +26,101 @@ import { Button } from '@/components/ui/Button';
 import { showDialog } from '@/components/ui/Dialog';
 import { useLocationPick } from '@/features/profile/locationPick';
 import type { LatLng } from '@/lib/api';
+import { leaveAppFor } from '@/lib/appLock';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    locationOffTitle: 'Location is off',
+    locationOffMessage: 'Turn it on in Settings, or move the map to your address.',
+    settings: 'Settings',
+    notNow: 'Not now',
+    mapA11y: 'Map. Move it to put the pin on your address.',
+    back: 'Go back',
+    search: 'Search a street or place',
+    myLocation: 'Use my location',
+    noMatch: 'No match — move the map instead',
+    deliveryLocation: 'Delivery location',
+    finding: 'Finding the address…',
+    pinned: 'Pinned location',
+    useThis: 'Use this location',
+  },
+  fr: {
+    locationOffTitle: 'La localisation est désactivée',
+    locationOffMessage: "Activez-la dans les Réglages, ou déplacez la carte jusqu'à votre adresse.",
+    settings: 'Réglages',
+    notNow: 'Plus tard',
+    mapA11y: "Carte. Déplacez-la pour placer l'épingle sur votre adresse.",
+    back: 'Retour',
+    search: 'Rechercher une rue ou un lieu',
+    myLocation: 'Utiliser ma position',
+    noMatch: 'Aucun résultat — déplacez plutôt la carte',
+    deliveryLocation: 'Lieu de livraison',
+    finding: "Recherche de l'adresse…",
+    pinned: 'Emplacement épinglé',
+    useThis: 'Utiliser cet emplacement',
+  },
+  tw: {
+    locationOffTitle: 'Beaeɛ kwan ayɛ mum',
+    locationOffMessage: 'Bue wɔ Nhyehyɛeɛ mu, anaa twe map no kɔ wo address so.',
+    settings: 'Nhyehyɛeɛ',
+    notNow: 'Ɛnnɛ deɛ, daabi',
+    mapA11y: 'Map. Twe no na agyiraeɛ no nkɔ wo address so.',
+    back: 'San w’akyi',
+    search: 'Hwehwɛ abɔnten anaa beaeɛ',
+    myLocation: 'Fa me beaeɛ',
+    noMatch: 'Yɛanhu — twe map no mmom',
+    deliveryLocation: 'Beaeɛ a yɛde bɛbrɛ wo',
+    finding: 'Ɛrehwehwɛ address no…',
+    pinned: 'Beaeɛ a wɔahyɛ agyiraeɛ',
+    useThis: 'Fa beaeɛ yi',
+  },
+  gaa: {
+    locationOffTitle: 'He ni oyɔɔ lɛ egbɔ',
+    locationOffMessage: 'Bue yɛ Toiŋjɔlɛmɔi mli, loo gbala map lɛ kɛya o address nɔ.',
+    settings: 'Toiŋjɔlɛmɔi',
+    notNow: 'Jeee amrɔ nɛɛ',
+    mapA11y: 'Map. Gbala lɛ koni okadi lɛ ahi o address nɔ.',
+    back: 'Kuku sɛɛ',
+    search: 'Taomɔ gbɛjegbɛ loo he ko',
+    myLocation: 'Kɛ he ni miyɔɔ tsu nii',
+    noMatch: 'Anaaa — gbala map lɛ moŋ',
+    deliveryLocation: 'He ni wɔkɛbaa',
+    finding: 'Ataoɔ address lɛ…',
+    pinned: 'He ni akɛ okadi wo',
+    useThis: 'Kɛ he nɛɛ tsu nii',
+  },
+  ee: {
+    locationOffTitle: 'Wotu teƒekpɔkpɔ',
+    locationOffMessage: 'Ʋu eme le Ɖoɖowo me, alo ʋu map la yi wò adrɛs dzi.',
+    settings: 'Ɖoɖowo',
+    notNow: 'Menye fifia o',
+    mapA11y: 'Map. Ʋui be dzesi la nanɔ wò adrɛs dzi.',
+    back: 'Trɔ yi megbe',
+    search: 'Di mɔ alo teƒe',
+    myLocation: 'Zã nye teƒe',
+    noMatch: 'Míekpɔe o — ʋu map la boŋ',
+    deliveryLocation: 'Nudodo teƒe',
+    finding: 'Le adrɛs la dim…',
+    pinned: 'Teƒe si woɖo dzesi',
+    useThis: 'Zã teƒe sia',
+  },
+  ha: {
+    locationOffTitle: 'An kashe wuri',
+    locationOffMessage: 'Kunna shi a cikin Saituna, ko ka matsar da taswira zuwa adireshinka.',
+    settings: 'Saituna',
+    notNow: 'Ba yanzu ba',
+    mapA11y: 'Taswira. Matsar da ita don sanya alamar a kan adireshinka.',
+    back: 'Koma baya',
+    search: 'Nemi titi ko wuri',
+    myLocation: 'Yi amfani da wurina',
+    noMatch: 'Ba a samu ba — matsar da taswira maimakon haka',
+    deliveryLocation: 'Wurin kawowa',
+    finding: 'Ana neman adireshin…',
+    pinned: 'Wurin da aka sanya alama',
+    useThis: 'Yi amfani da wannan wuri',
+  },
+});
 
 /** Independence Square, Accra — where the map opens when nothing better is known. */
 const ACCRA: LatLng = { lat: 5.5486, lng: -0.1937 };
@@ -54,6 +149,7 @@ function describe(a: Location.LocationGeocodedAddress | undefined): string {
 }
 
 export default function PickLocation() {
+  const tr = useT(S);
   const t = useTokens();
   const { d } = useDesignScale();
   const insets = useSafeAreaInsets();
@@ -80,11 +176,11 @@ export default function PickLocation() {
           showDialog({
             icon: 'location',
             tone: 'warning',
-            title: 'Location is off',
-            message: 'Turn it on in Settings, or move the map to your address.',
+            title: tr('locationOffTitle'),
+            message: tr('locationOffMessage'),
             actions: [
-              { label: 'Settings', onPress: () => void Linking.openSettings() },
-              { label: 'Not now', variant: 'tertiary' },
+              { label: tr('settings'), onPress: () => void leaveAppFor(() => Linking.openSettings()) },
+              { label: tr('notNow'), variant: 'tertiary' },
             ],
           });
         }
@@ -188,7 +284,7 @@ export default function PickLocation() {
         showsUserLocation
         showsMyLocationButton={false}
         toolbarEnabled={false}
-        accessibilityLabel="Map. Move it to put the pin on your address."
+        accessibilityLabel={tr('mapA11y')}
       />
 
       {/* The pin: fixed at the centre, its point on the exact spot. */}
@@ -244,7 +340,7 @@ export default function PickLocation() {
           alignItems: 'center',
         }}
       >
-        {round('arrow-left', 'Go back', () =>
+        {round('arrow-left', tr('back'), () =>
           router.canGoBack() ? router.back() : router.replace('/add-address'),
         )}
         <View
@@ -272,10 +368,10 @@ export default function PickLocation() {
               setSearchMiss(false);
             }}
             onSubmitEditing={search}
-            placeholder="Search a street or place"
+            placeholder={tr('search')}
             placeholderTextColor={t.colors.text.placeholder}
             returnKeyType="search"
-            accessibilityLabel="Search a street or place"
+            accessibilityLabel={tr('search')}
             style={{
               flex: 1,
               fontFamily: t.typography.bodyM.fontFamily,
@@ -291,7 +387,7 @@ export default function PickLocation() {
       {/* Bottom: my location + the address under the pin */}
       <View style={{ position: 'absolute', left: d(16), right: d(16), bottom: insets.bottom + d(16), gap: d(12) }}>
         <View style={{ alignSelf: 'flex-end' }}>
-          {round('location', 'Use my location', () => void goToMyLocation(), locating)}
+          {round('location', tr('myLocation'), () => void goToMyLocation(), locating)}
         </View>
 
         <View
@@ -311,18 +407,18 @@ export default function PickLocation() {
             <Icon name="location" size={d(20)} tone="brand" />
             <View style={{ flex: 1, gap: d(2) }}>
               <Text variant="caption" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-                {searchMiss ? 'No match — move the map instead' : 'Delivery location'}
+                {searchMiss ? tr('noMatch') : tr('deliveryLocation')}
               </Text>
               <Text
                 variant="labelL"
                 numberOfLines={2}
                 style={{ fontSize: d(16), lineHeight: d(21) }}
               >
-                {resolving && !line ? 'Finding the address…' : line || 'Pinned location'}
+                {resolving && !line ? tr('finding') : line || tr('pinned')}
               </Text>
             </View>
           </View>
-          <Button label="Use this location" size="large" onPress={confirm} />
+          <Button label={tr('useThis')} size="large" onPress={confirm} />
         </View>
       </View>
     </View>

@@ -37,8 +37,201 @@ import { useProduct } from '@/features/catalog/queries';
 import { useCartStore } from '@/features/cart/store';
 import { useIsSaved, useSavedStore } from '@/features/catalog/saved';
 import { packLine } from '@/lib/catalog';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    notFoundTitle: 'Product not found',
+    notFoundBody:
+      'This medicine is no longer listed by any partner pharmacy. It may have been withdrawn or renamed.',
+    browse: 'Browse the catalogue',
+    goBack: 'Go back',
+    factForm: 'Form',
+    factDosage: 'Dosage',
+    factPack: 'Pack',
+    factShips: 'Ships',
+    factCategory: 'Category',
+    removeSaved: 'Remove from saved',
+    save: 'Save this product',
+    share: 'Share this product',
+    shareMessage: '{name} · {pack} · {price} — dispensed by {pharmacy} on Altruist',
+    reviewOne: '{rating} · {count} review',
+    reviewMany: '{rating} · {count} reviews',
+    noReviews: 'No reviews yet',
+    supplement: 'Supplement',
+    rxTitle: 'Prescription required',
+    rxBody:
+      'A licensed partner pharmacist must verify your prescription before this item can be dispensed.',
+    aboutMedicine: 'About this medicine',
+    aboutProduct: 'About this product',
+    aboutFallback:
+      '{pharmacy} lists this as {name} ({pack}). Ask the pharmacy for full product details before use.',
+    dispensedBy: 'Dispensed by {pharmacy}',
+    total: 'Total',
+    addToCart: 'Add to cart',
+    outOfStock: 'Out of stock',
+  },
+  fr: {
+    notFoundTitle: 'Produit introuvable',
+    notFoundBody:
+      "Ce médicament n'est plus proposé par aucune pharmacie partenaire. Il a peut-être été retiré ou renommé.",
+    browse: 'Parcourir le catalogue',
+    goBack: 'Retour',
+    factForm: 'Forme',
+    factDosage: 'Posologie',
+    factPack: 'Conditionnement',
+    factShips: 'Expédition',
+    factCategory: 'Catégorie',
+    removeSaved: 'Retirer des favoris',
+    save: 'Enregistrer ce produit',
+    share: 'Partager ce produit',
+    shareMessage: '{name} · {pack} · {price} — délivré par {pharmacy} sur Altruist',
+    reviewOne: '{rating} · {count} avis',
+    reviewMany: '{rating} · {count} avis',
+    noReviews: "Pas encore d'avis",
+    supplement: 'Complément',
+    rxTitle: 'Ordonnance requise',
+    rxBody:
+      'Un pharmacien partenaire agréé doit vérifier votre ordonnance avant que ce produit puisse être délivré.',
+    aboutMedicine: 'À propos de ce médicament',
+    aboutProduct: 'À propos de ce produit',
+    aboutFallback:
+      '{pharmacy} le référence sous le nom {name} ({pack}). Demandez tous les détails du produit à la pharmacie avant utilisation.',
+    dispensedBy: 'Délivré par {pharmacy}',
+    total: 'Total',
+    addToCart: 'Ajouter au panier',
+    outOfStock: 'En rupture de stock',
+  },
+  tw: {
+    notFoundTitle: 'Yɛanhu adeɛ no',
+    notFoundBody:
+      'Nnuro fie biara nni saa nnuro yi bio. Ebia wɔayi afiri hɔ anaa wɔasesa ne din.',
+    browse: 'Hwɛ nneɛma a ɛwɔ hɔ',
+    goBack: 'San w’akyi',
+    factForm: 'Ne sɛbea',
+    factDosage: 'Dodoɔ a wobɛnom',
+    factPack: 'Kotoku',
+    factShips: 'Wɔde ba',
+    factCategory: 'Ne kuo',
+    removeSaved: 'Yi firi deɛ woakora mu',
+    save: 'Kora saa adeɛ yi',
+    share: 'Kyɛ saa adeɛ yi',
+    shareMessage: '{name} · {pack} · {price} — {pharmacy} na ɛtɔn wɔ Altruist so',
+    reviewOne: '{rating} · adwene {count}',
+    reviewMany: '{rating} · adwene {count}',
+    noReviews: 'Obiara nkaa ho asɛm ɛ',
+    supplement: 'Aduan ho mmoa',
+    rxTitle: 'Ɛhia nnuro krataa',
+    rxBody:
+      'Nnuroyɛfoɔ a wɔama no tumi bɛhwɛ wo nnuro krataa ansa na wɔde saa adeɛ yi ama wo.',
+    aboutMedicine: 'Saa nnuro yi ho asɛm',
+    aboutProduct: 'Saa adeɛ yi ho asɛm',
+    aboutFallback:
+      '{pharmacy} frɛ yei {name} ({pack}). Bisa nnuro fie no ne ho nsɛm nyinaa ansa na woade adi dwuma.',
+    dispensedBy: '{pharmacy} na ɛde ma',
+    total: 'Ne nyinaa',
+    addToCart: 'Fa gu kɛntɛn mu',
+    outOfStock: 'Asa',
+  },
+  gaa: {
+    notFoundTitle: 'Anaaa nɔ lɛ',
+    notFoundBody:
+      'Tsofa shĩa ko bɛ ni hiɛ tsofa nɛɛ dɔŋŋ. Ekolɛ ajie kɛjɛ jɛmɛ loo atsake egbɛi.',
+    browse: 'Kwɛmɔ nibii ni yɔɔ',
+    goBack: 'Kua sɛɛ',
+    factForm: 'Bɔ ni eyɔɔ',
+    factDosage: 'Enɛ ni oonu',
+    factPack: 'Adeka',
+    factShips: 'Kɛbaa',
+    factCategory: 'Kuu',
+    removeSaved: 'Jiemɔ kɛjɛ nɔ ni okɔ mli',
+    save: 'Toɔ nɔ nɛɛ',
+    share: 'Ŋmɛɛ nɔ nɛɛ',
+    shareMessage: '{name} · {pack} · {price} — {pharmacy} kɛhaa yɛ Altruist nɔ',
+    reviewOne: '{rating} · susumɔ {count}',
+    reviewMany: '{rating} · susumɔi {count}',
+    noReviews: 'Susumɔ ko bɛ kɛhã',
+    supplement: 'Niyenii he buamɔ',
+    rxTitle: 'Tsofa wolo he miihia',
+    rxBody:
+      'Tsofatsɛ ni ahã lɛ hewalɛ lɛ esa akwɛ o tsofa wolo lɛ dani akɛ nɔ nɛɛ aaahã bo.',
+    aboutMedicine: 'Tsofa nɛɛ he sane',
+    aboutProduct: 'Nɔ nɛɛ he sane',
+    aboutFallback:
+      '{pharmacy} tsɛɔ enɛ {name} ({pack}). Bi tsofa shĩa lɛ ehe saji fɛɛ dani okɛtsu nii.',
+    dispensedBy: '{pharmacy} kɛhaa',
+    total: 'Fɛɛ',
+    addToCart: 'Kɛwo kɛntɛŋ mli',
+    outOfStock: 'Egbe naa',
+  },
+  ee: {
+    notFoundTitle: 'Míekpɔ nua o',
+    notFoundBody:
+      'Atikeƒle aɖeke megale atike sia dzram o. Ɖewohĩ woɖe ɖa alo wotrɔ eŋkɔ.',
+    browse: 'Kpɔ nuawo katã',
+    goBack: 'Trɔ yi megbe',
+    factForm: 'Eƒe nɔnɔme',
+    factDosage: 'Agbɔsɔsɔ',
+    factPack: 'Agba',
+    factShips: 'Woɖoe ɖa',
+    factCategory: 'Hatsotso',
+    removeSaved: 'Ɖe ɖa le nu siwo nèdzra ɖo me',
+    save: 'Dzra nu sia ɖo',
+    share: 'Mã nu sia',
+    shareMessage: '{name} · {pack} · {price} — {pharmacy} ye naa le Altruist dzi',
+    reviewOne: '{rating} · susu {count}',
+    reviewMany: '{rating} · susu {count}',
+    noReviews: 'Susu aɖeke meli haɖe o',
+    supplement: 'Nuɖuɖu kpekpeɖeŋu',
+    rxTitle: 'Atike ŋɔŋlɔ hiã',
+    rxBody:
+      'Ele be atikewɔla si ŋu mɔɖeɖe le nakpɔ wò atike ŋɔŋlɔ hafi woana nu sia wò.',
+    aboutMedicine: 'Atike sia ŋuti',
+    aboutProduct: 'Nu sia ŋuti',
+    aboutFallback:
+      '{pharmacy} yɔe be {name} ({pack}). Bia atikeƒea le eŋu nyawo katã hafi nàzãe.',
+    dispensedBy: '{pharmacy} ye naa',
+    total: 'Katã',
+    addToCart: 'Tsɔe de kusi me',
+    outOfStock: 'Ewu enu',
+  },
+  ha: {
+    notFoundTitle: 'Ba a sami kaya ba',
+    notFoundBody:
+      'Babu kantin magani abokin hulɗa da ke sayar da wannan magani yanzu. Wataƙila an cire shi ko an canza sunansa.',
+    browse: 'Duba kayayyaki',
+    goBack: 'Koma baya',
+    factForm: 'Siffa',
+    factDosage: 'Adadin sha',
+    factPack: 'Kunshi',
+    factShips: 'Isarwa',
+    factCategory: 'Rukuni',
+    removeSaved: 'Cire daga ajiyayyu',
+    save: 'Ajiye wannan kaya',
+    share: 'Raba wannan kaya',
+    shareMessage: '{name} · {pack} · {price} — {pharmacy} ne ke bayarwa a Altruist',
+    reviewOne: '{rating} · sharhi {count}',
+    reviewMany: '{rating} · sharhi {count}',
+    noReviews: 'Babu sharhi tukuna',
+    supplement: 'Ƙarin abinci',
+    rxTitle: 'Ana buƙatar takardar magani',
+    rxBody:
+      'Dole mai harhaɗa magani mai lasisi ya tabbatar da takardar maganinka kafin a ba da wannan kaya.',
+    aboutMedicine: 'Game da wannan magani',
+    aboutProduct: 'Game da wannan kaya',
+    aboutFallback:
+      '{pharmacy} ya sa wannan a matsayin {name} ({pack}). Tambayi kantin magani cikakken bayani kafin amfani.',
+    dispensedBy: '{pharmacy} ne ke bayarwa',
+    total: 'Jimla',
+    addToCart: 'Saka a kwando',
+    outOfStock: 'Ya ƙare',
+  },
+});
+
+type Key = keyof typeof S.en;
 
 export default function ProductDetail() {
+  const tr = useT(S);
   const t = useTokens();
   const { d } = useDesignScale();
   const insets = useSafeAreaInsets();
@@ -75,12 +268,12 @@ export default function ProductDetail() {
       <StatusScreen
         icon="danger"
         tone="danger"
-        title="Product not found"
-        body="This medicine is no longer listed by any partner pharmacy. It may have been withdrawn or renamed."
+        title={tr('notFoundTitle')}
+        body={tr('notFoundBody')}
         actions={
           <>
-            <Button label="Browse the catalogue" size="large" onPress={() => router.replace('/catalog')} />
-            <Button label="Go back" variant="tertiary" size="large" onPress={() => router.back()} />
+            <Button label={tr('browse')} size="large" onPress={() => router.replace('/catalog')} />
+            <Button label={tr('goBack')} variant="tertiary" size="large" onPress={() => router.back()} />
           </>
         }
       />
@@ -113,12 +306,12 @@ export default function ProductDetail() {
    * which reads as a loading failure. Pack and category are always present, so
    * they fill the row for a product that has nothing clinical to state.
    */
-  const candidateFacts: { icon: IconName; label: string; value: string }[] = [
-    { icon: 'prescription', label: 'Form', value: product.form },
-    { icon: 'clock', label: 'Dosage', value: product.dosage },
-    { icon: 'catalog', label: 'Pack', value: product.pack },
-    { icon: 'cart', label: 'Ships', value: product.ships },
-    { icon: 'shield-check', label: 'Category', value: product.category },
+  const candidateFacts: { icon: IconName; label: Key; value: string }[] = [
+    { icon: 'prescription', label: 'factForm', value: product.form },
+    { icon: 'clock', label: 'factDosage', value: product.dosage },
+    { icon: 'catalog', label: 'factPack', value: product.pack },
+    { icon: 'cart', label: 'factShips', value: product.ships },
+    { icon: 'shield-check', label: 'factCategory', value: product.category },
   ];
   const facts = candidateFacts.filter((f) => f.value.trim().length > 0).slice(0, 3);
 
@@ -174,21 +367,26 @@ export default function ProductDetail() {
             alignItems: 'center',
           }}
         >
-          {round('arrow-left', 'Go back', () => router.back())}
+          {round('arrow-left', tr('goBack'), () => router.back())}
           <View style={{ flex: 1 }} />
           <View style={{ flexDirection: 'row', gap: d(10) }}>
             {round(
               'heart',
-              saved ? 'Remove from saved' : 'Save this product',
+              saved ? tr('removeSaved') : tr('save'),
               () => id && toggleSaved(id),
               saved,
             )}
-            {round('send', 'Share this product', () =>
+            {round('send', tr('share'), () =>
               Share.share({
                 title: product.name,
                 // No public product URL exists yet, so this shares what a person
                 // can actually act on: the name, the pack and who dispenses it.
-                message: `${product.name} · ${product.pack} · ${cedis(product.price)} — dispensed by ${product.pharmacy} on Altruist`,
+                message: tr('shareMessage', {
+                  name: product.name,
+                  pack: product.pack,
+                  price: cedis(product.price),
+                  pharmacy: product.pharmacy,
+                }),
               }),
             )}
           </View>
@@ -204,12 +402,15 @@ export default function ProductDetail() {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: d(5) }}>
                 <Icon name="star" size={d(14)} tone="warning" />
                 <Text variant="caption" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-                  {product.rating} · {product.reviews} review{product.reviews === 1 ? '' : 's'}
+                  {tr(product.reviews === 1 ? 'reviewOne' : 'reviewMany', {
+                    rating: product.rating,
+                    count: product.reviews,
+                  })}
                 </Text>
               </View>
             ) : (
               <Text variant="caption" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-                No reviews yet
+                {tr('noReviews')}
               </Text>
             )}
           </View>
@@ -220,7 +421,7 @@ export default function ProductDetail() {
           <Text variant="bodyM" tone="secondary" style={{ fontSize: d(14), lineHeight: d(21) }}>
             {[
               packLine(product),
-              product.category === 'Vitamins' ? 'Supplement' : product.form,
+              product.category === 'Vitamins' ? tr('supplement') : product.form,
             ]
               .filter((part) => part && part.trim().length > 0)
               .join(' · ')}
@@ -255,11 +456,10 @@ export default function ProductDetail() {
               <Icon name="shield-check" size={d(20)} tone="warning" />
               <View style={{ flex: 1, gap: d(4) }}>
                 <Text variant="labelM" tone="warning" style={{ fontSize: d(14), lineHeight: d(18) }}>
-                  Prescription required
+                  {tr('rxTitle')}
                 </Text>
                 <Text variant="bodyS" tone="secondary" style={{ fontSize: d(13), lineHeight: d(19) }}>
-                  A licensed partner pharmacist must verify your prescription before this item can
-                  be dispensed.
+                  {tr('rxBody')}
                 </Text>
               </View>
             </View>
@@ -280,7 +480,7 @@ export default function ProductDetail() {
               >
                 <Icon name={f.icon} size={d(18)} tone="primary" />
                 <Text variant="caption" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-                  {f.label}
+                  {tr(f.label)}
                 </Text>
                 <Text variant="labelM" style={{ fontSize: d(14), lineHeight: d(18) }}>
                   {f.value}
@@ -290,18 +490,22 @@ export default function ProductDetail() {
           </View>
 
           <Text variant="headingM" style={{ fontSize: d(18), lineHeight: d(24) }}>
-            {product.requiresPrescription ? 'About this medicine' : 'About this product'}
+            {product.requiresPrescription ? tr('aboutMedicine') : tr('aboutProduct')}
           </Text>
           <Text variant="bodyM" tone="secondary" style={{ fontSize: d(14), lineHeight: d(21) }}>
             {product.description?.trim()
               ? product.description
               : /* Better an honest pointer than an empty heading: the pharmacy
                    holds the pack details this import does not carry. */
-                `${product.pharmacy} lists this as ${product.name} (${product.pack}). Ask the pharmacy for full product details before use.`}
+                tr('aboutFallback', {
+                  pharmacy: product.pharmacy,
+                  name: product.name,
+                  pack: product.pack,
+                })}
           </Text>
 
           <ListRow
-            title={`Dispensed by ${product.pharmacy}`}
+            title={tr('dispensedBy', { pharmacy: product.pharmacy })}
             subtitle={product.pharmacyMeta}
             chevron
             onPress={() => router.push('/partners')}
@@ -323,14 +527,14 @@ export default function ProductDetail() {
       >
         <View style={{ gap: d(1) }}>
           <Text variant="caption" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-            Total
+            {tr('total')}
           </Text>
           <Text variant="numericL" style={{ fontSize: d(28), lineHeight: d(32) }}>
             {cedis(product.price * qty)}
           </Text>
         </View>
         <Button
-          label={product.inStock ? 'Add to cart' : 'Out of stock'}
+          label={product.inStock ? tr('addToCart') : tr('outOfStock')}
           size="large"
           iconLeading="cart"
           disabled={!product.inStock}

@@ -17,6 +17,82 @@ import { useTokens } from '@/theme/ThemeProvider';
 import { useDesignScale } from '@/theme/useDesignScale';
 import { Text } from './Text';
 import { Icon } from './Icon';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    PENDING: 'PENDING',
+    VERIFYING: 'VERIFYING',
+    VERIFIED: 'VERIFIED',
+    REJECTED: 'REJECTED',
+    RECEIVED: 'RECEIVED',
+    PACKING: 'PACKING',
+    DISPATCHED: 'DISPATCHED',
+    DELIVERED: 'DELIVERED',
+    CANCELLED: 'CANCELLED',
+    statusA11y: 'Status: {status}',
+  },
+  fr: {
+    PENDING: 'EN ATTENTE',
+    VERIFYING: 'EN VÉRIFICATION',
+    VERIFIED: 'VÉRIFIÉE',
+    REJECTED: 'REFUSÉE',
+    RECEIVED: 'REÇUE',
+    PACKING: 'EN PRÉPARATION',
+    DISPATCHED: 'EXPÉDIÉE',
+    DELIVERED: 'LIVRÉE',
+    CANCELLED: 'ANNULÉE',
+    statusA11y: 'Statut : {status}',
+  },
+  tw: {
+    PENDING: 'ƐRETWƐN',
+    VERIFYING: 'YƐREHWƐ MU',
+    VERIFIED: 'WƆAHWƐ MU',
+    REJECTED: 'WƆAPO',
+    RECEIVED: 'YƐANYA',
+    PACKING: 'YƐREBOA ANO',
+    DISPATCHED: 'ƐWƆ KWAN SO',
+    DELIVERED: 'WƆADE ABA',
+    CANCELLED: 'WƆATWA MU',
+    statusA11y: 'Tebea: {status}',
+  },
+  gaa: {
+    PENDING: 'EEMƐ',
+    VERIFYING: 'AMƐKWƐ MLI',
+    VERIFIED: 'AKWƐ MLI',
+    REJECTED: 'AKPOO',
+    RECEIVED: 'NINE ESHƐ',
+    PACKING: 'AMƐBUA NAA',
+    DISPATCHED: 'EJE KPO',
+    DELIVERED: 'ESHƐ',
+    CANCELLED: 'AFITE',
+    statusA11y: 'Shihilɛ: {status}',
+  },
+  ee: {
+    PENDING: 'LALAM',
+    VERIFYING: 'WOLE EKPƆM',
+    VERIFIED: 'WOKPƆE',
+    REJECTED: 'WOGBE',
+    RECEIVED: 'EXƆE',
+    PACKING: 'WOLE EBLAM',
+    DISPATCHED: 'EDZO',
+    DELIVERED: 'EVA',
+    CANCELLED: 'WOTSƆE ƉA ƉI',
+    statusA11y: 'Nɔnɔme: {status}',
+  },
+  ha: {
+    PENDING: 'ANA JIRA',
+    VERIFYING: 'ANA TANTANCEWA',
+    VERIFIED: 'AN TABBATAR',
+    REJECTED: 'AN ƘI',
+    RECEIVED: 'AN KARƁA',
+    PACKING: 'ANA SHIRYAWA',
+    DISPATCHED: 'AN TURA',
+    DELIVERED: 'AN KAWO',
+    CANCELLED: 'AN SOKE',
+    statusA11y: 'Matsayi: {status}',
+  },
+});
 
 export type LifecycleStatus =
   | 'PENDING'
@@ -32,25 +108,26 @@ export type LifecycleStatus =
 export function StatusPill({ status }: { status: LifecycleStatus }) {
   const t = useTokens();
   const { d } = useDesignScale();
+  const tr = useT(S);
 
   // category, not step: queued / awaiting / in-motion / complete / failed
   const MAP: Record<LifecycleStatus, { label: string; bg: string; fg: string }> = {
-    PENDING: { label: 'PENDING', bg: t.colors.bg.warningSubtle, fg: t.colors.text.warning },
-    VERIFYING: { label: 'VERIFYING', bg: t.colors.bg.infoSubtle, fg: t.colors.text.info },
-    VERIFIED: { label: 'VERIFIED', bg: t.colors.bg.successSubtle, fg: t.colors.text.success },
-    REJECTED: { label: 'REJECTED', bg: t.colors.bg.dangerSubtle, fg: t.colors.text.danger },
-    RECEIVED: { label: 'RECEIVED', bg: t.colors.bg.surfaceRaised, fg: t.colors.text.secondary },
-    PACKING: { label: 'PACKING', bg: t.colors.bg.infoSubtle, fg: t.colors.text.info },
-    DISPATCHED: { label: 'DISPATCHED', bg: t.colors.bg.infoSubtle, fg: t.colors.text.info },
-    DELIVERED: { label: 'DELIVERED', bg: t.colors.bg.successSubtle, fg: t.colors.text.success },
-    CANCELLED: { label: 'CANCELLED', bg: t.colors.bg.dangerSubtle, fg: t.colors.text.danger },
+    PENDING: { label: tr('PENDING'), bg: t.colors.bg.warningSubtle, fg: t.colors.text.warning },
+    VERIFYING: { label: tr('VERIFYING'), bg: t.colors.bg.infoSubtle, fg: t.colors.text.info },
+    VERIFIED: { label: tr('VERIFIED'), bg: t.colors.bg.successSubtle, fg: t.colors.text.success },
+    REJECTED: { label: tr('REJECTED'), bg: t.colors.bg.dangerSubtle, fg: t.colors.text.danger },
+    RECEIVED: { label: tr('RECEIVED'), bg: t.colors.bg.surfaceRaised, fg: t.colors.text.secondary },
+    PACKING: { label: tr('PACKING'), bg: t.colors.bg.infoSubtle, fg: t.colors.text.info },
+    DISPATCHED: { label: tr('DISPATCHED'), bg: t.colors.bg.infoSubtle, fg: t.colors.text.info },
+    DELIVERED: { label: tr('DELIVERED'), bg: t.colors.bg.successSubtle, fg: t.colors.text.success },
+    CANCELLED: { label: tr('CANCELLED'), bg: t.colors.bg.dangerSubtle, fg: t.colors.text.danger },
   };
   const s = MAP[status];
 
   return (
     <View
       accessibilityRole="text"
-      accessibilityLabel={`Status: ${s.label.toLowerCase()}`}
+      accessibilityLabel={tr('statusA11y', { status: s.label.toLowerCase() })}
       style={{
         flexDirection: 'row',
         alignItems: 'center',

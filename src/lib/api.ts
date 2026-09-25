@@ -27,6 +27,7 @@ import { randomUUID } from 'expo-crypto';
 import { formatGhanaMobile, providerName, type MomoProvider } from './momo';
 import { getToken } from './session';
 import { readLocalFile } from './files';
+import { leaveAppFor } from './appLock';
 import { SUPABASE_CONFIGURED, db } from './supabase';
 import { PRODUCTS, matches, type Product, type CatalogFilter, type SearchFilter } from './catalog';
 import { PROMOTIONS, advertisable, withArt, type Promotion } from './promotions';
@@ -434,6 +435,10 @@ export type PrescriptionRecord = {
   /** Storage path of the photo in the private bucket; never shown or shared. */
   imagePath?: string;
   productIds: string[];
+  /** Tucked under "Archived" by the patient (0017). */
+  archived?: boolean;
+  /** Removed from the patient's list (0017). The pharmacy's record stays. */
+  hidden?: boolean;
 };
 
 /** Every prescription this person has uploaded, newest first. */
@@ -442,7 +447,7 @@ export async function listPrescriptions(): Promise<PrescriptionRecord[]> {
   const { data, error } = await db()
     .from('prescriptions')
     .select(
-      'id, status, note, uploaded_at, reviewed_at, reviewed_by, image_path, pharmacies(name), prescription_products(product_id)',
+      'id, status, note, uploaded_at, reviewed_at, reviewed_by, image_path, pharmacies(name), prescription_products(product_id), prescription_user_state(archived_at, hidden_at)',
     )
     .order('uploaded_at', { ascending: false });
   if (error) rethrow(error, 'listPrescriptions');
@@ -456,7 +461,34 @@ export async function listPrescriptions(): Promise<PrescriptionRecord[]> {
     reviewedBy: row.reviewed_by ?? undefined,
     imagePath: row.image_path ?? undefined,
     productIds: (row.prescription_products ?? []).map((l: { product_id: string }) => l.product_id),
+    archived: Boolean(row.prescription_user_state?.archived_at),
+    hidden: Boolean(row.prescription_user_state?.hidden_at),
   }));
+}
+
+/**
+ * Archives, unarchives or removes a prescription from the patient's own list.
+ * Only their view changes: the row in `prescriptions` is a health record the
+ * pharmacy keeps, and the patient has no delete right on it.
+ */
+export async function setPrescriptionListState(
+  id: string,
+  state: { archived: boolean; hidden: boolean },
+): Promise<void> {
+  if (!SUPABASE_CONFIGURED) return;
+  const client = db();
+  const { data: auth } = await client.auth.getUser();
+  const userId = auth?.user?.id;
+  if (!userId) throw new ApiError(401, 'setPrescriptionListState');
+  const now = new Date().toISOString();
+  const { error } = await client.from('prescription_user_state').upsert({
+    prescription_id: id,
+    user_id: userId,
+    archived_at: state.archived ? now : null,
+    hidden_at: state.hidden ? now : null,
+    updated_at: now,
+  });
+  if (error) rethrow(error, 'setPrescriptionListState');
 }
 
 /**
@@ -926,7 +958,7 @@ export async function signInWithProvider(provider: OAuthProvider): Promise<Sessi
 
   providerSignInOpen = true;
   try {
-    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+    const result = await leaveAppFor(() => WebBrowser.openAuthSessionAsync(data.url, redirectTo));
     if (result.type !== 'success') {
       // Dismissed or cancelled. Not an error to report as a failure.
       throw new DeclinedError('Sign-in was cancelled.');

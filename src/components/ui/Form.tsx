@@ -24,6 +24,46 @@ import { useDesignScale } from '@/theme/useDesignScale';
 import { motion } from '@/theme/tokens';
 import { Text } from './Text';
 import { Icon } from './Icon';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    quantity: 'Quantity',
+    decrease: 'Decrease {label}',
+    increase: 'Increase {label}',
+    valueA11y: '{label}: {value}',
+  },
+  fr: {
+    quantity: 'Quantité',
+    decrease: 'Diminuer : {label}',
+    increase: 'Augmenter : {label}',
+    valueA11y: '{label} : {value}',
+  },
+  tw: {
+    quantity: 'Dodoɔ',
+    decrease: 'Te {label} so',
+    increase: 'Fa {label} ka ho',
+    valueA11y: '{label}: {value}',
+  },
+  gaa: {
+    quantity: 'Yibɔ',
+    decrease: 'Ha {label} afee bibioo',
+    increase: 'Fɔ {label} he',
+    valueA11y: '{label}: {value}',
+  },
+  ee: {
+    quantity: 'Agbɔsɔsɔ',
+    decrease: 'Ɖe {label} dzi kpɔtɔ',
+    increase: 'Tsɔ kpe {label} ŋu',
+    valueA11y: '{label}: {value}',
+  },
+  ha: {
+    quantity: 'Adadi',
+    decrease: 'Rage {label}',
+    increase: 'Ƙara {label}',
+    valueA11y: '{label}: {value}',
+  },
+});
 
 /** Scales a selection mark in and out instead of cutting. */
 function useMarkScale(on: boolean) {
@@ -175,7 +215,7 @@ export function QuantityStepper({
   onChange,
   min = 1,
   max = 99,
-  label = 'Quantity',
+  label: labelProp,
 }: {
   value: number;
   onChange: (next: number) => void;
@@ -185,6 +225,8 @@ export function QuantityStepper({
 }) {
   const t = useTokens();
   const { d } = useDesignScale();
+  const tr = useT(S);
+  const label = labelProp ?? tr('quantity');
 
   const step = (delta: number) => {
     const next = Math.min(max, Math.max(min, value + delta));
@@ -194,7 +236,7 @@ export function QuantityStepper({
   const btn = (icon: 'minus' | 'add', delta: number, atLimit: boolean) => (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={delta < 0 ? `Decrease ${label}` : `Increase ${label}`}
+      accessibilityLabel={delta < 0 ? tr('decrease', { label }) : tr('increase', { label })}
       accessibilityState={{ disabled: atLimit }}
       disabled={atLimit}
       hitSlop={6}
@@ -221,7 +263,7 @@ export function QuantityStepper({
 
   return (
     <View
-      accessibilityLabel={`${label}: ${value}`}
+      accessibilityLabel={tr('valueA11y', { label, value })}
       style={{
         flexDirection: 'row',
         alignItems: 'center',

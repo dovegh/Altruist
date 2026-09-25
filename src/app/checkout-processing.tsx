@@ -35,8 +35,79 @@ import { useCartStore } from '@/features/cart/store';
 import { useCheckoutStore, useCheckoutSelection } from '@/features/checkout/store';
 import { useOrderStore, snapshotLines, initialEvents } from '@/features/orders/store';
 import { usePartnerPharmacy } from '@/features/profile/store';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    approvePrompt: 'Approve the payment prompt on your phone.',
+    noResponse: 'no response from your phone — the prompt may have expired',
+    title: 'Authorising with your bank',
+    body: 'Approve the request in your banking app or enter the OTP your bank sends you.',
+    doNotClose: 'Do not close this screen or press back',
+    reference: 'Reference {reference}',
+    cancel: 'Cancel payment',
+    redirected:
+      'If you were redirected to your bank and closed the page, your payment may still complete. Check Orders before trying again.',
+  },
+  fr: {
+    approvePrompt: 'Validez la demande de paiement sur votre téléphone.',
+    noResponse: 'aucune réponse de votre téléphone — la demande a peut-être expiré',
+    title: 'Autorisation auprès de votre banque',
+    body: "Validez la demande dans votre application bancaire ou saisissez l'OTP envoyé par votre banque.",
+    doNotClose: "Ne fermez pas cet écran et n'appuyez pas sur retour",
+    reference: 'Référence {reference}',
+    cancel: 'Annuler le paiement',
+    redirected:
+      'Si vous avez été redirigé vers votre banque et avez fermé la page, votre paiement peut encore aboutir. Vérifiez vos commandes avant de réessayer.',
+  },
+  tw: {
+    approvePrompt: 'Pene sika tua asɛm a aba wo fon so no so.',
+    noResponse: 'wo fon no mmuaa — ebia asɛm no berɛ atwam',
+    title: 'Yɛne wo sikakorabea rekasa',
+    body: 'Pene so wɔ wo sikakorabea app mu anaa hyɛ OTP a wo sikakorabea de bɛmena wo no.',
+    doNotClose: 'Nto saa screen yi mu na mmfa nsan w’akyi',
+    reference: 'Reference {reference}',
+    cancel: 'Twa sika tua no mu',
+    redirected:
+      'Sɛ wɔde wo kɔɔ wo sikakorabea na wotoo krataafa no mu a, ebia wo sika tua no bɛkɔ so. Hwɛ nneɛma a woato ansa na woasan abɔ mmɔden.',
+  },
+  gaa: {
+    approvePrompt: 'Kpɛlɛ nyɔmɔwoo sane ni ba o fon lɛ nɔ lɛ nɔ.',
+    noResponse: 'o fon lɛ haaa hetoo — ekolɛ sane lɛ be eho',
+    title: 'Wɔkɛ o shika tohe miiwie',
+    body: 'Kpɛlɛ nɔ yɛ o shika tohe app lɛ mli loo ŋma OTP ni o shika tohe lɛ kɛmaje bo lɛ.',
+    doNotClose: 'Kaawo screen nɛɛ naa ni okaaku osɛɛ',
+    reference: 'Reference {reference}',
+    cancel: 'Kpa nyɔmɔwoo lɛ',
+    redirected:
+      'Kɛji akɛ bo tee o shika tohe lɛ ni owo nɔ lɛ naa lɛ, ekolɛ o nyɔmɔwoo lɛ baaya nɔ. Kwɛmɔ nɔ ni ohe lɛ dani oka ekoŋŋ.',
+  },
+  ee: {
+    approvePrompt: 'Lɔ̃ ɖe fexexe ƒe biabia si va wò fon dzi la dzi.',
+    noResponse: 'wò fon meɖo eŋu o — ɖewohĩ biabia la ƒe ɣeyiɣi va yi',
+    title: 'Míele nu ƒom kple wò gadzraɖoƒe',
+    body: 'Lɔ̃ ɖe biabia la dzi le wò gadzraɖoƒe ƒe app me alo ŋlɔ OTP si wò gadzraɖoƒe ɖo ɖe wò.',
+    doNotClose: 'Mègatu screen sia alo azi megbe o',
+    reference: 'Reference {reference}',
+    cancel: 'Tutu fexexe la',
+    redirected:
+      'Ne wokplɔ wò yi wò gadzraɖoƒe eye nètu axa la, ɖewohĩ wò fexexe awu enu. Kpɔ nu siwo nèƒle hafi nàgate kpɔ.',
+  },
+  ha: {
+    approvePrompt: 'Amince da buƙatar biyan kuɗi a wayarka.',
+    noResponse: 'babu amsa daga wayarka — wataƙila buƙatar ta ƙare',
+    title: 'Ana tabbatarwa da bankinka',
+    body: 'Amince da buƙatar a manhajar bankinka ko shigar da OTP da bankinka zai aiko maka.',
+    doNotClose: 'Kada ka rufe wannan allon ko ka koma baya',
+    reference: 'Lambar shaida {reference}',
+    cancel: 'Soke biyan kuɗi',
+    redirected:
+      'Idan an kai ka bankinka kuma ka rufe shafin, biyan kuɗinka zai iya kammala. Duba odarka kafin ka sake gwadawa.',
+  },
+});
 
 export default function CheckoutProcessing() {
+  const tr = useT(S);
   const pharmacy = usePartnerPharmacy();
   const t = useTokens();
   const { d } = useDesignScale();
@@ -121,12 +192,12 @@ export default function CheckoutProcessing() {
         // give up after two minutes rather than spin forever — an unanswered
         // prompt expires on the network side anyway.
         if (payment.status === 'pending') {
-          setWaitingOn(payment.next ?? 'Approve the payment prompt on your phone.');
+          setWaitingOn(payment.next ?? tr('approvePrompt'));
           const deadline = Date.now() + 120_000;
           while (payment.status === 'pending') {
             if (Date.now() > deadline) {
               throw new DeclinedError(
-                'no response from your phone — the prompt may have expired',
+                tr('noResponse'),
                 payment.reference,
               );
             }
@@ -216,11 +287,10 @@ export default function CheckoutProcessing() {
 
         <View style={{ gap: d(10) }}>
           <Text variant="headingL" center style={{ fontSize: d(20), lineHeight: d(26) }}>
-            Authorising with your bank
+            {tr('title')}
           </Text>
           <Text variant="bodyM" tone="secondary" center style={{ fontSize: d(14), lineHeight: d(21) }}>
-            {waitingOn ??
-              'Approve the request in your banking app or enter the OTP your bank sends you.'}
+            {waitingOn ?? tr('body')}
           </Text>
         </View>
 
@@ -237,7 +307,7 @@ export default function CheckoutProcessing() {
         >
           <Icon name="danger" size={d(18)} tone="warning" />
           <Text variant="labelS" tone="warning" style={{ flex: 1, fontSize: d(12), lineHeight: d(16) }}>
-            Do not close this screen or press back
+            {tr('doNotClose')}
           </Text>
         </View>
 
@@ -246,12 +316,12 @@ export default function CheckoutProcessing() {
             {[snapshot ? cedis(snapshot.total) : null, method?.title].filter(Boolean).join(' · ')}
           </Text>
           <Text variant="caption" tone="tertiary" center style={{ fontSize: d(12), lineHeight: d(16) }}>
-            Reference {reference}
+            {tr('reference', { reference })}
           </Text>
         </View>
 
         <Button
-          label="Cancel payment"
+          label={tr('cancel')}
           variant="tertiary"
           size="medium"
           onPress={() => {
@@ -267,8 +337,7 @@ export default function CheckoutProcessing() {
         center
         style={{ marginTop: d(20), fontSize: d(12), lineHeight: d(16) }}
       >
-        If you were redirected to your bank and closed the page, your payment may still complete.
-        Check Orders before trying again.
+        {tr('redirected')}
       </Text>
     </View>
   );

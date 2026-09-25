@@ -27,9 +27,159 @@ import { StatusScreen } from '@/components/ui/StatusScreen';
 import { cedis } from '@/lib/money';
 import { useOrderStore } from '@/features/orders/store';
 import { CANCEL_REASONS as REASONS } from '@/lib/forms';
+import { defineStrings, useT } from '@/i18n';
+import { formLabel } from '@/lib/formLabels';
+
+const S = defineStrings({
+  en: {
+    notFoundTitle: 'Order not found',
+    notFoundBody: 'We could not find that order on this device.',
+    seeAll: 'See all orders',
+    medicines: 'Medicines and items',
+    refundedBy: 'Refunded by {pharmacy}',
+    deliveryFee: 'Delivery fee',
+    notRefunded: 'Not refunded — rider already dispatched',
+    refundedNotYet: 'Refunded — not yet dispatched',
+    serviceFee: 'Altruist service fee',
+    refundedFull: 'Refunded in full',
+    title: 'Cancel order',
+    stripOne: '{pharmacy} · {count} item',
+    stripMany: '{pharmacy} · {count} items',
+    warnTitle: 'Your pharmacist has started preparing this order',
+    warnBody: 'You can still cancel for free until it is dispatched.',
+    getBack: 'WHAT YOU GET BACK',
+    totalRefund: 'Total refund',
+    refundsReturn:
+      'Refunds return to {method} via Paystack. They cannot be redirected to another card or account.',
+    why: 'WHY ARE YOU CANCELLING?',
+    cancelThis: 'Cancel this order',
+    keep: 'Keep my order',
+  },
+  fr: {
+    notFoundTitle: 'Commande introuvable',
+    notFoundBody: 'Nous n’avons pas trouvé cette commande sur cet appareil.',
+    seeAll: 'Voir toutes les commandes',
+    medicines: 'Médicaments et articles',
+    refundedBy: 'Remboursé par {pharmacy}',
+    deliveryFee: 'Frais de livraison',
+    notRefunded: 'Non remboursés — le livreur est déjà parti',
+    refundedNotYet: 'Remboursés — pas encore expédiée',
+    serviceFee: 'Frais de service Altruist',
+    refundedFull: 'Remboursés intégralement',
+    title: 'Annuler la commande',
+    stripOne: '{pharmacy} · {count} article',
+    stripMany: '{pharmacy} · {count} articles',
+    warnTitle: 'Votre pharmacien a commencé à préparer cette commande',
+    warnBody: 'Vous pouvez encore annuler gratuitement jusqu’à son expédition.',
+    getBack: 'CE QUI VOUS EST REMBOURSÉ',
+    totalRefund: 'Remboursement total',
+    refundsReturn:
+      'Les remboursements reviennent sur {method} via Paystack. Ils ne peuvent pas être redirigés vers une autre carte ou un autre compte.',
+    why: 'POURQUOI ANNULEZ-VOUS ?',
+    cancelThis: 'Annuler cette commande',
+    keep: 'Garder ma commande',
+  },
+  tw: {
+    notFoundTitle: 'Yɛanhu adetɔ no',
+    notFoundBody: 'Yɛanhu saa adetɔ no wɔ saa fon yi so.',
+    seeAll: 'Hwɛ nneɛma a woato nyinaa',
+    medicines: 'Nnuro ne nneɛma',
+    refundedBy: '{pharmacy} na ɛsan de ma wo',
+    deliveryFee: 'De brɛ wo ho ka',
+    notRefunded: 'Wɔnsan mma — ɔkafoɔ no afiri hɔ dada',
+    refundedNotYet: 'Wɔsan de ma — ɛmfirii hɔ ɛ',
+    serviceFee: 'Altruist adwuma ho ka',
+    refundedFull: 'Wɔsan de ne nyinaa ma',
+    title: 'Twa adetɔ mu',
+    stripOne: '{pharmacy} · adeɛ {count}',
+    stripMany: '{pharmacy} · nneɛma {count}',
+    warnTitle: 'Wo nnuroyɛfoɔ afi aseɛ resiesie saa adetɔ yi',
+    warnBody: 'Wobɛtumi atwa mu kwa kɔsi sɛ wɔde bɛfiri hɔ.',
+    getBack: 'DEƐ WOBƐNYA ASAN',
+    totalRefund: 'Sika a ɛbɛsan aba nyinaa',
+    refundsReturn:
+      'Sika a ɛsan ba no bɛkɔ {method} so denam Paystack so. Wɔrentumi mfa nkɔ kaad anaa akontaa foforɔ so.',
+    why: 'ADƐN NTI NA WORETWA MU?',
+    cancelThis: 'Twa saa adetɔ yi mu',
+    keep: 'Ma m’adetɔ ntena hɔ',
+  },
+  gaa: {
+    notFoundTitle: 'Anaaa nɔ ni ohe lɛ',
+    notFoundBody: 'Wɔnaaa nɔ nɛɛ yɛ fon nɛɛ nɔ.',
+    seeAll: 'Kwɛmɔ nɔ ni ohe fɛɛ',
+    medicines: 'Tsofai kɛ nibii',
+    refundedBy: '{pharmacy} kuɔ ehaa bo',
+    deliveryFee: 'Kɛbamɔ he nyɔmɔ',
+    notRefunded: 'Akuuu aha — mɔ ni kɛbaa lɛ ejɛ jɛmɛ momo',
+    refundedNotYet: 'Akuɔ ahaa — ejɛko jɛmɛ kɛhã',
+    serviceFee: 'Altruist nitsumɔ he nyɔmɔ',
+    refundedFull: 'Akuɔ fɛɛ ahaa',
+    title: 'Kpa nɔ ni ohe',
+    stripOne: '{pharmacy} · nɔ {count}',
+    stripMany: '{pharmacy} · nibii {count}',
+    warnTitle: 'O tsofatsɛ lɛ ebɔi nɔ nɛɛ saamɔ',
+    warnBody: 'Obaanyɛ okpa yaka kɛyashi beni ajɛ jɛmɛ.',
+    getBack: 'NƆ NI OBAANA EKOŊŊ',
+    totalRefund: 'Shika ni aaku fɛɛ',
+    refundsReturn:
+      'Shika ni aaku lɛ baaya {method} nɔ kɛtsɔ Paystack nɔ. Anyɛŋ akɛya kaad loo akɔŋt kroko nɔ.',
+    why: 'MƐNI HEWƆ OKPAA?',
+    cancelThis: 'Kpa nɔ nɛɛ',
+    keep: 'Ha mi nɔ lɛ ahi jɛmɛ',
+  },
+  ee: {
+    notFoundTitle: 'Míekpɔ nuƒeƒle la o',
+    notFoundBody: 'Míekpɔ nuƒeƒle ma le fon sia dzi o.',
+    seeAll: 'Kpɔ nu siwo nèƒle katã',
+    medicines: 'Atikewo kple nuwo',
+    refundedBy: '{pharmacy} ye agbugbɔe ana wò',
+    deliveryFee: 'Nukɔkɔyi ƒe fe',
+    notRefunded: 'Womagbugbɔe o — nukɔla la dzo xoxo',
+    refundedNotYet: 'Woagbugbɔe — nukɔla la medzo haɖe o',
+    serviceFee: 'Altruist ƒe dɔwɔwɔ fe',
+    refundedFull: 'Woagbugbɔ blibo',
+    title: 'Tutu nuƒeƒle',
+    stripOne: '{pharmacy} · nu {count}',
+    stripMany: '{pharmacy} · nu {count}',
+    warnTitle: 'Wò atikewɔla de asi nuƒeƒle sia dzadzraɖo me',
+    warnBody: 'Àte ŋu atutui faa va se ɖe esime woaɖoe ɖa.',
+    getBack: 'NU SI AGBÕ VA WÒ',
+    totalRefund: 'Ga si agbɔ katã',
+    refundsReturn:
+      'Ga si agbɔ la ayi {method} dzi to Paystack dzi. Womate ŋu aɖoe ɖe kaad alo akɔnta bubu dzi o.',
+    why: 'NUKA ŊUTI NÈLE ETUTUM ƉO?',
+    cancelThis: 'Tutu nuƒeƒle sia',
+    keep: 'Na nye nuƒeƒle nanɔ anyi',
+  },
+  ha: {
+    notFoundTitle: 'Ba a sami oda ba',
+    notFoundBody: 'Ba mu sami wannan oda a wannan na’ura ba.',
+    seeAll: 'Duba duk oda',
+    medicines: 'Magunguna da kaya',
+    refundedBy: '{pharmacy} ne zai mayar',
+    deliveryFee: 'Kuɗin isarwa',
+    notRefunded: 'Ba za a mayar ba — mai kawowa ya riga ya tashi',
+    refundedNotYet: 'Za a mayar — ba a tura ba tukuna',
+    serviceFee: 'Kuɗin sabis na Altruist',
+    refundedFull: 'Za a mayar duka',
+    title: 'Soke oda',
+    stripOne: '{pharmacy} · kaya {count}',
+    stripMany: '{pharmacy} · kaya {count}',
+    warnTitle: 'Mai harhaɗa maganinka ya fara shirya wannan oda',
+    warnBody: 'Za ka iya soke kyauta har sai an tura ta.',
+    getBack: 'ABIN DA ZA A MAYAR MAKA',
+    totalRefund: 'Jimlar kuɗin da za a mayar',
+    refundsReturn:
+      'Ana mayar da kuɗi zuwa {method} ta Paystack. Ba za a iya tura su zuwa wani kati ko asusu ba.',
+    why: 'ME YA SA KAKE SOKEWA?',
+    cancelThis: 'Soke wannan oda',
+    keep: 'Ci gaba da odata',
+  },
+});
 
 
 export default function CancelOrder() {
+  const tr = useT(S);
   const t = useTokens();
   const { d } = useDesignScale();
   const [reason, setReason] = useState<string | null>(null);
@@ -45,10 +195,10 @@ export default function CancelOrder() {
       <StatusScreen
         icon="danger"
         tone="danger"
-        title="Order not found"
-        body="We could not find that order on this device."
+        title={tr('notFoundTitle')}
+        body={tr('notFoundBody')}
         actions={
-          <Button label="See all orders" size="large" onPress={() => router.replace('/order-history')} />
+          <Button label={tr('seeAll')} size="large" onPress={() => router.replace('/order-history')} />
         }
       />
     );
@@ -60,20 +210,20 @@ export default function CancelOrder() {
   // while nothing has left the counter.
   const dispatched = order.status === 'DISPATCHED' || order.status === 'DELIVERED';
   const breakdown: [string, string, string][] = [
-    ['Medicines and items', `Refunded by ${order.pharmacy}`, cedis(order.subtotal)],
+    [tr('medicines'), tr('refundedBy', { pharmacy: order.pharmacy }), cedis(order.subtotal)],
     [
-      'Delivery fee',
-      dispatched ? 'Not refunded — rider already dispatched' : 'Refunded — not yet dispatched',
+      tr('deliveryFee'),
+      dispatched ? tr('notRefunded') : tr('refundedNotYet'),
       cedis(dispatched ? 0 : order.deliveryFee),
     ],
-    ['Altruist service fee', 'Refunded in full', cedis(order.serviceFee)],
+    [tr('serviceFee'), tr('refundedFull'), cedis(order.serviceFee)],
   ];
   const refund = order.subtotal + (dispatched ? 0 : order.deliveryFee) + order.serviceFee;
 
   return (
     <View style={{ flex: 1, backgroundColor: t.colors.bg.canvas }}>
       <FormScreen gap={16}>
-        <TitleAppBar title="Cancel order" />
+        <TitleAppBar title={tr('title')} />
 
         {/* Order strip */}
         <View
@@ -104,7 +254,7 @@ export default function CancelOrder() {
               TrxID {order.id}
             </Text>
             <Text variant="caption" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-              {order.pharmacy} · {units} item{units === 1 ? '' : 's'}
+              {tr(units === 1 ? 'stripOne' : 'stripMany', { pharmacy: order.pharmacy, count: units })}
             </Text>
           </View>
           <Text variant="numericM" style={{ fontSize: d(20), lineHeight: d(26) }}>
@@ -126,10 +276,10 @@ export default function CancelOrder() {
           <Icon name="clock" size={d(20)} tone="warning" />
           <View style={{ flex: 1, gap: d(4) }}>
             <Text variant="labelM" style={{ fontSize: d(14), lineHeight: d(18) }}>
-              Your pharmacist has started preparing this order
+              {tr('warnTitle')}
             </Text>
             <Text variant="bodyS" tone="secondary" style={{ fontSize: d(13), lineHeight: d(19) }}>
-              You can still cancel for free until it is dispatched.
+              {tr('warnBody')}
             </Text>
           </View>
         </View>
@@ -144,7 +294,7 @@ export default function CancelOrder() {
             backgroundColor: t.colors.bg.surface,
           }}
         >
-          <SectionLabel>WHAT YOU GET BACK</SectionLabel>
+          <SectionLabel>{tr('getBack')}</SectionLabel>
 
           {breakdown.map(([label, note, value]) => (
             <View key={label} style={{ flexDirection: 'row', gap: d(12) }}>
@@ -170,7 +320,7 @@ export default function CancelOrder() {
 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: d(12) }}>
             <Text variant="labelL" style={{ flex: 1, fontSize: d(16), lineHeight: d(20) }}>
-              Total refund
+              {tr('totalRefund')}
             </Text>
             <Text variant="numericM" tone="brand" style={{ fontSize: d(20), lineHeight: d(26) }}>
               {cedis(refund)}
@@ -178,12 +328,11 @@ export default function CancelOrder() {
           </View>
 
           <Text variant="caption" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-            Refunds return to {order.methodLabel} via Paystack. They cannot be redirected to
-            another card or account.
+            {tr('refundsReturn', { method: order.methodLabel })}
           </Text>
         </View>
 
-        <SectionLabel>WHY ARE YOU CANCELLING?</SectionLabel>
+        <SectionLabel>{tr('why')}</SectionLabel>
 
         {REASONS.map((r) => {
           const selected = reason === r;
@@ -192,7 +341,7 @@ export default function CancelOrder() {
               key={r}
               accessibilityRole="radio"
               accessibilityState={{ selected }}
-              accessibilityLabel={r}
+              accessibilityLabel={formLabel(r)}
               onPress={() => setReason(r)}
               style={({ pressed }) => ({
                 flexDirection: 'row',
@@ -209,7 +358,7 @@ export default function CancelOrder() {
             >
               <Radio selected={selected} />
               <Text variant="labelM" style={{ flex: 1, fontSize: d(14), lineHeight: d(18) }}>
-                {r}
+                {formLabel(r)}
               </Text>
             </Pressable>
           );
@@ -218,7 +367,7 @@ export default function CancelOrder() {
 
       <StickyFooter>
         <Button
-          label="Cancel this order"
+          label={tr('cancelThis')}
           variant="danger"
           size="large"
           onPress={() => {
@@ -227,7 +376,7 @@ export default function CancelOrder() {
           }}
         />
         <Button
-          label="Keep my order"
+          label={tr('keep')}
           variant="tertiary"
           size="large"
           onPress={() => router.back()}

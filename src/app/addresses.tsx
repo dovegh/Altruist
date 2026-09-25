@@ -28,8 +28,97 @@ import { Icon, type IconName } from '@/components/ui/Icon';
 import { FormMessage, describeFailure } from '@/components/ui/FormMessage';
 import { useAddresses, useWalletStore } from '@/features/checkout/store';
 import { makeDefaultAddress, removeAddress } from '@/features/profile/addresses';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    title: 'Delivery addresses',
+    default: 'Default',
+    confirmDelete: 'Delete “{title}”?',
+    deleting: 'Deleting…',
+    yesDelete: 'Yes, delete',
+    keep: 'Keep it',
+    edit: 'Edit',
+    delete: 'Delete',
+    saving: 'Saving…',
+    makeDefault: 'Make default',
+    empty: 'No saved addresses yet. Add one and it becomes your default.',
+    add: 'Add a new address',
+  },
+  fr: {
+    title: 'Adresses de livraison',
+    default: 'Par défaut',
+    confirmDelete: 'Supprimer « {title} » ?',
+    deleting: 'Suppression…',
+    yesDelete: 'Oui, supprimer',
+    keep: 'La garder',
+    edit: 'Modifier',
+    delete: 'Supprimer',
+    saving: 'Enregistrement…',
+    makeDefault: 'Définir par défaut',
+    empty: 'Aucune adresse enregistrée. Ajoutez-en une et elle deviendra votre adresse par défaut.',
+    add: 'Ajouter une adresse',
+  },
+  tw: {
+    title: 'Baabi a yɛde nneɛma bɛbrɛ wo',
+    default: 'Deɛ ɛdi kan',
+    confirmDelete: 'Yi “{title}” fi hɔ?',
+    deleting: 'Ɛreyi…',
+    yesDelete: 'Aane, yi fi hɔ',
+    keep: 'Gyaw no hɔ',
+    edit: 'Sesa',
+    delete: 'Yi fi hɔ',
+    saving: 'Ɛrekora…',
+    makeDefault: 'Ma ɛnyɛ deɛ ɛdi kan',
+    empty: 'Wonkoraa address biara. Fa baako ka ho na ɛbɛyɛ deɛ ɛdi kan.',
+    add: 'Fa address foforɔ ka ho',
+  },
+  gaa: {
+    title: 'Hei ni wɔkɛ nibii baabrɛ bo',
+    default: 'Klɛŋklɛŋ nɔ',
+    confirmDelete: 'Ajie “{title}” kɛya?',
+    deleting: 'Ajieɔ…',
+    yesDelete: 'Hɛɛ, jiemɔ',
+    keep: 'Ha ahi jɛmɛ',
+    edit: 'Tsake',
+    delete: 'Jiemɔ',
+    saving: 'Atoɔ…',
+    makeDefault: 'Ha efee klɛŋklɛŋ nɔ',
+    empty: 'Otooo address ko kɛhe. Kɛ ekome fata he ni ebaafee klɛŋklɛŋ nɔ.',
+    add: 'Kɛ address hee fata he',
+  },
+  ee: {
+    title: 'Nudodo ƒe adrɛswo',
+    default: 'Gbãtɔ',
+    confirmDelete: 'Àtutu “{title}”?',
+    deleting: 'Le etutum…',
+    yesDelete: 'Ɛ̃, tutui',
+    keep: 'Na wòanɔ anyi',
+    edit: 'Trɔe',
+    delete: 'Tutui',
+    saving: 'Le edzram ɖo…',
+    makeDefault: 'Wɔe gbãtɔ',
+    empty: 'Mèdzra adrɛs aɖeke ɖo haɖe o. Tsɔ ɖeka kpe ɖe eŋu eye wòazu gbãtɔ.',
+    add: 'Tsɔ adrɛs yeye kpe ɖe eŋu',
+  },
+  ha: {
+    title: 'Adireshin kawo kaya',
+    default: 'Na asali',
+    confirmDelete: 'Goge “{title}”?',
+    deleting: 'Ana gogewa…',
+    yesDelete: 'Eh, goge',
+    keep: 'Bar shi',
+    edit: 'Gyara',
+    delete: 'Goge',
+    saving: 'Ana ajiyewa…',
+    makeDefault: 'Mai da shi na asali',
+    empty: 'Babu adireshin da aka ajiye tukuna. Ƙara ɗaya kuma zai zama na asali.',
+    add: 'Ƙara sabon adireshi',
+  },
+});
 
 export default function Addresses() {
+  const tr = useT(S);
   const t = useTokens();
   const { d } = useDesignScale();
 
@@ -89,7 +178,7 @@ export default function Addresses() {
 
   return (
     <FormScreen gap={16} contentStyle={{ paddingBottom: d(60) }}>
-      <TitleAppBar title="Delivery addresses" />
+      <TitleAppBar title={tr('title')} />
 
       {error ? <FormMessage>{error}</FormMessage> : null}
 
@@ -124,7 +213,7 @@ export default function Addresses() {
               <Text variant="labelL" style={{ flex: 1, fontSize: d(16), lineHeight: d(20) }}>
                 {a.title}
               </Text>
-              {isDefault ? <Badge label="Default" tone="brand" /> : null}
+              {isDefault ? <Badge label={tr('default')} tone="brand" /> : null}
             </View>
 
             <Text variant="bodyM" tone="secondary" style={{ fontSize: d(14), lineHeight: d(21) }}>
@@ -140,25 +229,25 @@ export default function Addresses() {
             {confirming === a.id ? (
               <View style={{ gap: d(10) }}>
                 <Text variant="labelM" tone="danger" style={{ fontSize: d(14), lineHeight: d(18) }}>
-                  Delete “{a.title}”?
+                  {tr('confirmDelete', { title: a.title })}
                 </Text>
                 <View style={{ flexDirection: 'row', gap: d(10) }}>
-                  {chip('trash', busy === a.id ? 'Deleting…' : 'Yes, delete', true, () =>
+                  {chip('trash', busy === a.id ? tr('deleting') : tr('yesDelete'), true, () =>
                     run(a.id, async () => {
                       await removeAddress(a.id);
                       setConfirming(null);
                     }),
                   )}
-                  {chip('close', 'Keep it', false, () => setConfirming(null))}
+                  {chip('close', tr('keep'), false, () => setConfirming(null))}
                 </View>
               </View>
             ) : (
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: d(10) }}>
-                {chip('edit', 'Edit', false, () => router.push(`/add-address?id=${a.id}`))}
-                {chip('trash', 'Delete', true, () => setConfirming(a.id))}
+                {chip('edit', tr('edit'), false, () => router.push(`/add-address?id=${a.id}`))}
+                {chip('trash', tr('delete'), true, () => setConfirming(a.id))}
                 {isDefault
                   ? null
-                  : chip('check', busy === a.id ? 'Saving…' : 'Make default', false, () =>
+                  : chip('check', busy === a.id ? tr('saving') : tr('makeDefault'), false, () =>
                       run(a.id, () => makeDefaultAddress(a.id)),
                     )}
               </View>
@@ -169,12 +258,12 @@ export default function Addresses() {
 
       {addresses.length === 0 ? (
         <Text variant="bodyM" tone="tertiary" style={{ fontSize: d(14), lineHeight: d(21) }}>
-          No saved addresses yet. Add one and it becomes your default.
+          {tr('empty')}
         </Text>
       ) : null}
 
       <Button
-        label="Add a new address"
+        label={tr('add')}
         variant="secondary"
         size="large"
         iconLeading="add"

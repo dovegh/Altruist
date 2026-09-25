@@ -24,11 +24,71 @@ import { Icon } from '@/components/ui/Icon';
 import { cedis } from '@/lib/money';
 import { useOrderStore } from '@/features/orders/store';
 import { CANCELLATION_REFUND_STEPS as STEPS } from '@/lib/forms';
+import { defineStrings, useT } from '@/i18n';
+import { formLabel } from '@/lib/formLabels';
+
+const S = defineStrings({
+  en: {
+    title: 'Order cancelled',
+    onItsWay: '{amount} is on its way back to {method}.',
+    bankTitle: 'Your bank sets the final timing',
+    bankBody:
+      'Altruist releases the refund immediately. How quickly it appears depends on your bank — most take 3–5 business days.',
+    backToOrders: 'Back to orders',
+    contact: 'Contact the pharmacy',
+  },
+  fr: {
+    title: 'Commande annulée',
+    onItsWay: '{amount} est en cours de remboursement sur {method}.',
+    bankTitle: 'Votre banque fixe le délai final',
+    bankBody:
+      'Altruist déclenche le remboursement immédiatement. Le délai d’apparition dépend de votre banque — la plupart prennent 3 à 5 jours ouvrés.',
+    backToOrders: 'Retour aux commandes',
+    contact: 'Contacter la pharmacie',
+  },
+  tw: {
+    title: 'Wɔatwa adetɔ no mu',
+    onItsWay: '{amount} resan akɔ {method} so.',
+    bankTitle: 'Wo sikakorabea na ɛkyerɛ berɛ a ɛbɛduru',
+    bankBody:
+      'Altruist de sika no ma ntɛm ara. Berɛ a ɛbɛgye ansa na aba no gyina wo sikakorabea so — dodoɔ no ara gye nnwumadi nna 3–5.',
+    backToOrders: 'San kɔ nneɛma a woato',
+    contact: 'Frɛ nnuro fie no',
+  },
+  gaa: {
+    title: 'Akpa nɔ ni ohe lɛ',
+    onItsWay: '{amount} miiku kɛmiiya {method} nɔ.',
+    bankTitle: 'O shika tohe lɛ kɛɔ be ni ebaashɛ',
+    bankBody:
+      'Altruist kɛ shika lɛ haa amrɔ nɔŋŋ. Be ni ebaanɔ dani eba lɛ damɔ o shika tohe lɛ nɔ — amɛteŋ pii nɔɔ nitsumɔ gbii 3–5.',
+    backToOrders: 'Kua nɔ ni ohe lɛ',
+    contact: 'Tsɛ tsofa shĩa lɛ',
+  },
+  ee: {
+    title: 'Wotu nuƒeƒle la',
+    onItsWay: '{amount} le trɔtrɔ yim ɖe {method} dzi.',
+    bankTitle: 'Wò gadzraɖoƒe ye ɖoa ɣeyiɣi mamlɛtɔ',
+    bankBody:
+      'Altruist naa ga la enumake. Ale si wòawɔ kaba ado le wò gadzraɖoƒe si — wo dometɔ akpa gãtɔ xɔa dɔwɔŋkeke 3–5.',
+    backToOrders: 'Trɔ yi nu siwo nèƒle',
+    contact: 'Yɔ atikeƒle la',
+  },
+  ha: {
+    title: 'An soke oda',
+    onItsWay: '{amount} yana kan hanyar komawa {method}.',
+    bankTitle: 'Bankinka ne ke tantance lokaci na ƙarshe',
+    bankBody:
+      'Altruist yana sakin kuɗin nan take. Saurin bayyanarsa ya dogara da bankinka — yawancinsu suna ɗaukar kwanakin aiki 3–5.',
+    backToOrders: 'Koma zuwa oda',
+    contact: 'Tuntuɓi kantin magani',
+  },
+});
 
 type StepState = 'done' | 'current' | 'upcoming';
 
 
 export default function CancellationConfirmed() {
+  const tr = useT(S);
   const t = useTokens();
   const { d } = useDesignScale();
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -49,7 +109,7 @@ export default function CancellationConfirmed() {
 
       <View style={{ gap: d(10) }}>
         <Text variant="displayS" center style={{ fontSize: d(28), lineHeight: d(32) }}>
-          Order cancelled
+          {tr('title')}
         </Text>
         <Text
           variant="bodyL"
@@ -57,7 +117,7 @@ export default function CancellationConfirmed() {
           center
           style={{ fontSize: d(16), lineHeight: d(24) }}
         >
-          {order ? `${cedis(refund)} is on its way back to ${order.methodLabel}.` : ''}
+          {order ? tr('onItsWay', { amount: cedis(refund), method: order.methodLabel }) : ''}
         </Text>
       </View>
 
@@ -73,9 +133,9 @@ export default function CancellationConfirmed() {
           const last = i === STEPS.length - 1;
           return (
             <View
-              key={s.title}
+              key={formLabel(s.title)}
               accessibilityRole="text"
-              accessibilityLabel={`${s.title}. ${s.meta}. ${s.state}`}
+              accessibilityLabel={`${formLabel(s.title)}. ${formLabel(s.meta)}. ${s.state}`}
               style={{ flexDirection: 'row', gap: d(14), paddingBottom: last ? 0 : d(4) }}
             >
               <View style={{ width: d(26), alignItems: 'center' }}>
@@ -130,7 +190,7 @@ export default function CancellationConfirmed() {
                   tone="tertiary"
                   style={{ fontSize: d(12), lineHeight: d(16) }}
                 >
-                  {s.meta}
+                  {formLabel(s.meta)}
                 </Text>
               </View>
             </View>
@@ -151,18 +211,17 @@ export default function CancellationConfirmed() {
         <Icon name="info" size={d(20)} tone="primary" />
         <View style={{ flex: 1, gap: d(4) }}>
           <Text variant="labelM" style={{ fontSize: d(14), lineHeight: d(18) }}>
-            Your bank sets the final timing
+            {tr('bankTitle')}
           </Text>
           <Text variant="bodyS" tone="secondary" style={{ fontSize: d(13), lineHeight: d(19) }}>
-            Altruist releases the refund immediately. How quickly it appears depends on your bank —
-            most take 3–5 business days.
+            {tr('bankBody')}
           </Text>
         </View>
       </View>
 
-      <Button label="Back to orders" size="large" onPress={() => router.replace('/order-history')} />
+      <Button label={tr('backToOrders')} size="large" onPress={() => router.replace('/order-history')} />
       <Button
-        label="Contact the pharmacy"
+        label={tr('contact')}
         variant="tertiary"
         size="large"
         iconLeading="call"

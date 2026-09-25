@@ -19,6 +19,7 @@ export type IconProps = {
 
 export type IconName =
  | 'add'
+ | 'archive'
  | 'arrow-left'
  | 'arrow-right'
  | 'award'
@@ -61,6 +62,14 @@ export type IconName =
 export const AddIcon = ({ size = 24, color = 'currentColor' }: IconProps) => (
  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
  <Path d="M4 12H20M12 20V12L12 4" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+ </Svg>
+);
+
+export const ArchiveIcon = ({ size = 24, color = 'currentColor' }: IconProps) => (
+ <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+ <Path d="M4 8V17C4 19.2091 5.79086 21 8 21H16C18.2091 21 20 19.2091 20 17V8" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+ <Path d="M3 5.5C3 4.11929 4.11929 3 5.5 3H18.5C19.8807 3 21 4.11929 21 5.5C21 6.88071 19.8807 8 18.5 8H5.5C4.11929 8 3 6.88071 3 5.5Z" stroke={color} strokeWidth="1.5"/>
+ <Path d="M10 12H14" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
  </Svg>
 );
 
@@ -299,6 +308,7 @@ export const WellnessIcon = ({ size = 24, color = 'currentColor' }: IconProps) =
 
 export const Icons = {
  'add': AddIcon,
+ 'archive': ArchiveIcon,
  'arrow-left': ArrowLeftIcon,
  'arrow-right': ArrowRightIcon,
  'award': AwardIcon,

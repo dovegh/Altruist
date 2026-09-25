@@ -67,7 +67,7 @@ export function clearUserData(): void {
   });
   useSavedStore.setState({ ids: [] });
   useRecentSearchStore.setState({ terms: [] });
-  useNotificationStore.setState({ read: [] });
+  useNotificationStore.setState({ read: [], archived: [], deleted: [] });
   useNotificationPrefsStore.setState({ prefs: null });
   // Biometric unlock was this person's choice; the next one sets their own.
   void setBiometricEnabled(false);

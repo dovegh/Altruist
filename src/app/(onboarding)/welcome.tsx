@@ -28,9 +28,155 @@ import { FREE_DELIVERY_OVER } from '@/features/cart/useCart';
 import { cedis } from '@/lib/money';
 import { DeclinedError, NetworkError, signInWithProvider, type OAuthProvider } from '@/lib/api';
 import { setSession } from '@/lib/session';
+import { defineStrings, useT } from '@/i18n';
+
+// "Pharmacy Council" is the regulator's name and stays as it is.
+const S = defineStrings({
+  en: {
+    verifiedPartner: 'Verified partner',
+    pcLicensed: 'PC licensed',
+    rxIn40: 'Rx in 40 min',
+    fastestToday: 'Fastest today',
+    freeDelivery: 'Free delivery',
+    overAmount: 'Over {amount}',
+    sameDay: 'Same-day',
+    acrossAccra: 'Across Accra',
+    headYour: 'Your',
+    headPharmacy: 'pharmacy',
+    headStarts: 'starts',
+    headHere: 'here.',
+    networkError: 'Could not reach Altruist. Check your connection and try again.',
+    serverError: 'Something went wrong on our side. Try again in a moment.',
+    goBack: 'Go back',
+    continueEmail: 'Continue with Email',
+    continueApple: 'Continue with Apple',
+    continueGoogle: 'Continue with Google',
+    loginA11y: 'Already have an account? Log in',
+    haveAccount: 'Already have an account?',
+    logIn: 'Log in',
+  },
+  fr: {
+    verifiedPartner: 'Partenaire vérifié',
+    pcLicensed: 'Agréé PC',
+    rxIn40: 'Ordonnance en 40 min',
+    fastestToday: "Le plus rapide aujourd'hui",
+    freeDelivery: 'Livraison gratuite',
+    overAmount: 'Dès {amount}',
+    sameDay: 'Le jour même',
+    acrossAccra: 'Dans tout Accra',
+    headYour: 'Votre',
+    headPharmacy: 'pharmacie',
+    headStarts: 'commence',
+    headHere: 'ici.',
+    networkError: 'Impossible de joindre Altruist. Vérifiez votre connexion et réessayez.',
+    serverError: 'Un problème est survenu de notre côté. Réessayez dans un instant.',
+    goBack: 'Retour',
+    continueEmail: 'Continuer avec un e-mail',
+    continueApple: 'Continuer avec Apple',
+    continueGoogle: 'Continuer avec Google',
+    loginA11y: 'Vous avez déjà un compte ? Se connecter',
+    haveAccount: 'Vous avez déjà un compte ?',
+    logIn: 'Se connecter',
+  },
+  tw: {
+    verifiedPartner: 'Ɔhokafoɔ a yɛagye no atom',
+    pcLicensed: 'PC ama no krataa',
+    rxIn40: 'Rx wɔ simma 40 mu',
+    fastestToday: 'Ɛyɛ ntɛm sen biara ɛnnɛ',
+    freeDelivery: 'Yɛde bɛbrɛ wo kwa',
+    overAmount: 'Ɛboro {amount}',
+    sameDay: 'Da no ara',
+    acrossAccra: 'Accra nyinaa',
+    headYour: 'Wo',
+    headPharmacy: 'nnuro tɔnbea',
+    headStarts: 'hyɛ ase',
+    headHere: 'ha.',
+    networkError: 'Yɛantumi anka Altruist. Hwɛ wo intanɛt na san sɔ hwɛ.',
+    serverError: 'Biribi ankɔ yie wɔ yɛn fam. San sɔ hwɛ nkyɛ kakra.',
+    goBack: 'San kɔ akyi',
+    continueEmail: 'Kɔ so wɔ Email so',
+    continueApple: 'Kɔ so wɔ Apple so',
+    continueGoogle: 'Kɔ so wɔ Google so',
+    loginA11y: 'Wowɔ akontaa dada? Kɔ mu',
+    haveAccount: 'Wowɔ akontaa dada?',
+    logIn: 'Kɔ mu',
+  },
+  gaa: {
+    verifiedPartner: 'Hefatalɔ ni ahe gbɛ',
+    pcLicensed: 'PC eha gbɛ',
+    rxIn40: 'Rx yɛ minitii 40 mli',
+    fastestToday: 'Eyaa oya fe fɛɛ ŋmɛnɛ',
+    freeDelivery: 'Wɔkɛbaa yaka',
+    overAmount: 'Ni fe {amount}',
+    sameDay: 'Nakai gbi lɛ nɔŋŋ',
+    acrossAccra: 'Accra fɛɛ',
+    headYour: 'O',
+    headPharmacy: 'tsofa shĩa',
+    headStarts: 'je shishi',
+    headHere: 'biɛ.',
+    networkError: 'Ashɛɛɛ Altruist nɔ. Kwɛ o intanɛt ni oka ekoŋŋ.',
+    serverError: 'Nɔko tɔ̃ yɛ wɔ gbɛfaŋ. Ka ekoŋŋ yɛ be fioo sɛɛ.',
+    goBack: 'Kua sɛɛ',
+    continueEmail: 'Ya nɔ kɛ Email',
+    continueApple: 'Ya nɔ kɛ Apple',
+    continueGoogle: 'Ya nɔ kɛ Google',
+    loginA11y: 'Oyɛ akɔŋt momo? Bote mli',
+    haveAccount: 'Oyɛ akɔŋt momo?',
+    logIn: 'Bote mli',
+  },
+  ee: {
+    verifiedPartner: 'Hadɔwɔla si woɖo kpe edzi',
+    pcLicensed: 'PC ɖe mɔ nɛ',
+    rxIn40: 'Rx le aɖabaƒoƒo 40 me',
+    fastestToday: 'Esi ƒo kabakaba wu egbe',
+    freeDelivery: 'Nuɖoɖo femaxee',
+    overAmount: 'Si wu {amount}',
+    sameDay: 'Ŋkeke ma ke dzi',
+    acrossAccra: 'Accra katã',
+    headYour: 'Wò',
+    headPharmacy: 'atikedzraƒe',
+    headStarts: 'dze egɔme',
+    headHere: 'afii.',
+    networkError: 'Míete ŋu ɖo Altruist gbɔ o. Kpɔ wò intanɛt eye nàgate kpɔ.',
+    serverError: 'Nane gblẽ le mía gbɔ. Gate kpɔ le ɣeyiɣi kpui aɖe megbe.',
+    goBack: 'Trɔ yi megbe',
+    continueEmail: 'Yi edzi kple Email',
+    continueApple: 'Yi edzi kple Apple',
+    continueGoogle: 'Yi edzi kple Google',
+    loginA11y: 'Akɔnta le asiwò xoxo? Ge ɖe eme',
+    haveAccount: 'Akɔnta le asiwò xoxo?',
+    logIn: 'Ge ɖe eme',
+  },
+  ha: {
+    verifiedPartner: 'Abokin hulɗa da aka tabbatar',
+    pcLicensed: 'Lasisin PC',
+    rxIn40: 'Rx cikin minti 40',
+    fastestToday: 'Mafi sauri yau',
+    freeDelivery: 'Kawowa kyauta',
+    overAmount: 'Sama da {amount}',
+    sameDay: 'A rana ɗaya',
+    acrossAccra: 'Duk faɗin Accra',
+    headYour: 'Kantin',
+    headPharmacy: 'maganinka',
+    headStarts: 'ya fara',
+    headHere: 'a nan.',
+    networkError: 'Ba a iya kaiwa ga Altruist ba. Duba haɗin intanet ɗinka ka sake gwadawa.',
+    serverError: 'Wani abu ya faru a ɓangarenmu. Sake gwadawa nan da ɗan lokaci.',
+    goBack: 'Koma baya',
+    continueEmail: 'Ci gaba da Imel',
+    continueApple: 'Ci gaba da Apple',
+    continueGoogle: 'Ci gaba da Google',
+    loginA11y: 'Kana da asusu? Shiga',
+    haveAccount: 'Kana da asusu?',
+    logIn: 'Shiga',
+  },
+});
+
+type Key = keyof (typeof S)['en'];
+type Tr = (key: Key, vars?: Record<string, string | number>) => string;
 
 // Partner facts on the chips come from the partner record, not the copy deck.
-const chipsFor = (p: Pharmacy): PartnerChipSpec[] => [
+const chipsFor = (p: Pharmacy, tr: Tr): PartnerChipSpec[] => [
   {
     box: { left: 16.39, top: 300, width: 152.503, height: 63.694 },
     rotate: 7,
@@ -38,7 +184,7 @@ const chipsFor = (p: Pharmacy): PartnerChipSpec[] => [
     thumb: 'surface',
     icon: 'shield-check',
     title: shortName(p),
-    sub: 'Verified partner',
+    sub: tr('verifiedPartner'),
   },
   {
     box: { left: 178, top: 270.01, width: 147.025, height: 60.696 },
@@ -55,7 +201,7 @@ const chipsFor = (p: Pharmacy): PartnerChipSpec[] => [
     surface: 'accentBlue',
     thumb: 'surface',
     icon: 'shield-check',
-    title: 'PC licensed',
+    title: tr('pcLicensed'),
     sub: 'Pharmacy Council',
   },
   {
@@ -64,8 +210,8 @@ const chipsFor = (p: Pharmacy): PartnerChipSpec[] => [
     surface: 'accentPink',
     thumb: 'surface',
     icon: 'shield-check',
-    title: 'Rx in 40 min',
-    sub: 'Fastest today',
+    title: tr('rxIn40'),
+    sub: tr('fastestToday'),
   },
   {
     box: { left: 37.59, top: 418, width: 136.224, height: 52.95 },
@@ -73,8 +219,8 @@ const chipsFor = (p: Pharmacy): PartnerChipSpec[] => [
     surface: 'surface',
     thumb: 'brand',
     icon: 'shield-check',
-    title: 'Free delivery',
-    sub: `Over ${cedis(FREE_DELIVERY_OVER)}`,
+    title: tr('freeDelivery'),
+    sub: tr('overAmount', { amount: cedis(FREE_DELIVERY_OVER) }),
   },
   {
     box: { left: 196, top: 405.96, width: 138.607, height: 61.988 },
@@ -82,19 +228,20 @@ const chipsFor = (p: Pharmacy): PartnerChipSpec[] => [
     surface: 'surface',
     thumb: 'accentBlue',
     icon: 'shield-check',
-    title: 'Same-day',
-    sub: 'Across Accra',
+    title: tr('sameDay'),
+    sub: tr('acrossAccra'),
   },
 ];
 
-const HEAD = [
-  { text: 'Your' },
-  { text: 'pharmacy' },
-  { text: 'starts' },
-  { text: 'here.', highlight: true },
+const HEAD: { key: Key; highlight?: boolean }[] = [
+  { key: 'headYour' },
+  { key: 'headPharmacy' },
+  { key: 'headStarts' },
+  { key: 'headHere', highlight: true },
 ];
 
 export default function Welcome() {
+  const tr = useT(S);
   const t = useTokens();
   const { name: themeName } = useTheme();
   const { d } = useDesignScale();
@@ -116,14 +263,14 @@ export default function Welcome() {
     } catch (e) {
       setAuthError(
         e instanceof NetworkError
-          ? 'Could not reach Altruist. Check your connection and try again.'
+          ? tr('networkError')
           : e instanceof DeclinedError
             ? e.message
-            : 'Something went wrong on our side. Try again in a moment.',
+            : tr('serverError'),
       );
     }
   };
-  const CHIPS = chipsFor(pharmacy);
+  const CHIPS = chipsFor(pharmacy, tr);
   const insets = useSafeAreaInsets();
 
   // Figma's canvas puts y=0 at the screen top, above a 46pt status area.
@@ -191,7 +338,7 @@ export default function Welcome() {
         {/* Back — 44pt circle at (20, 20) on bg/brand-pressed */}
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Go back"
+          accessibilityLabel={tr('goBack')}
           onPress={() => router.back()}
           style={{
             position: 'absolute',
@@ -235,7 +382,7 @@ export default function Welcome() {
                 }}
               >
                 <Text variant="displayL" tone="primary" style={{ fontSize: d(40), lineHeight: d(44) }}>
-                  {w.text}
+                  {tr(w.key)}
                 </Text>
               </View>
             ) : (
@@ -245,7 +392,7 @@ export default function Welcome() {
                 color={t.colors.text.onBrand}
                 style={{ fontSize: d(40), lineHeight: d(44) }}
               >
-                {w.text}
+                {tr(w.key)}
               </Text>
             ),
           )}
@@ -258,7 +405,7 @@ export default function Welcome() {
 
       {/* Continue with Email — (24, 560), bg/surface, 22pt icon well */}
       <AuthButton
-        label="Continue with Email"
+        label={tr('continueEmail')}
         top={560}
         tone="surface"
         onPress={() => router.push('/register')}
@@ -283,7 +430,7 @@ export default function Welcome() {
           theme: black on light, white on dark. It was always white, which drew
           a white apple on a white button. */}
       <AuthButton
-        label="Continue with Apple"
+        label={tr('continueApple')}
         top={628}
         tone="surfaceRaised"
         bordered
@@ -292,7 +439,7 @@ export default function Welcome() {
       />
 
       <AuthButton
-        label="Continue with Google"
+        label={tr('continueGoogle')}
         top={696}
         tone="surfaceRaised"
         bordered
@@ -323,7 +470,7 @@ export default function Welcome() {
       {/* Log in — (24, 766), height 24 */}
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Already have an account? Log in"
+        accessibilityLabel={tr('loginA11y')}
         onPress={() => router.push('/login')}
         style={{
           position: 'absolute',
@@ -338,10 +485,10 @@ export default function Welcome() {
         }}
       >
         <Text variant="bodyM" tone="secondary" style={{ fontSize: d(14), lineHeight: d(21) }}>
-          Already have an account?
+          {tr('haveAccount')}
         </Text>
         <Text variant="labelM" tone="brand" style={{ fontSize: d(14), lineHeight: d(18) }}>
-          Log in
+          {tr('logIn')}
         </Text>
       </Pressable>
     </View>

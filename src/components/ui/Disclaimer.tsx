@@ -15,9 +15,19 @@ import { useTokens } from '@/theme/ThemeProvider';
 import { useDesignScale } from '@/theme/useDesignScale';
 import { Text } from './Text';
 import { Icon } from './Icon';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: { title: 'General information, not medical advice' },
+  fr: { title: 'Informations générales, pas un avis médical' },
+  tw: { title: 'Nsɛm kɛkɛ, ɛnyɛ ayaresa ho afotuo' },
+  gaa: { title: 'Saji kɛkɛ, jeee hela he ŋaawoo' },
+  ee: { title: 'Nyatakaka ko, menye atikewɔwɔ ƒe aɖaŋuɖoɖo o' },
+  ha: { title: 'Bayani na gaba ɗaya, ba shawarar likita ba' },
+});
 
 export function MedicalDisclaimer({
-  title = 'General information, not medical advice',
+  title: titleProp,
   body,
 }: {
   title?: string;
@@ -25,6 +35,8 @@ export function MedicalDisclaimer({
 }) {
   const t = useTokens();
   const { d } = useDesignScale();
+  const tr = useT(S);
+  const title = titleProp ?? tr('title');
   return (
     <View
       accessibilityRole="alert"

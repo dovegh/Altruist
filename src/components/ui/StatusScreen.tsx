@@ -28,6 +28,16 @@ import { FormScreen } from './FormScreen';
 import { Appear, Celebrate } from './Motion';
 import { Text } from './Text';
 import { Icon, type IconName } from './Icon';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: { working: 'Working' },
+  fr: { working: 'En cours' },
+  tw: { working: 'Ɛreyɛ adwuma' },
+  gaa: { working: 'Emiitsu nii' },
+  ee: { working: 'Ele dɔ wɔm' },
+  ha: { working: 'Ana aiki' },
+});
 
 export type StatusTone = 'brand' | 'danger' | 'warning' | 'neutral';
 
@@ -131,6 +141,7 @@ export function StatusHalo({
 export function Spinner({ size = 96 }: { size?: number }) {
   const t = useTokens();
   const { d } = useDesignScale();
+  const tr = useT(S);
   const spin = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -151,7 +162,7 @@ export function Spinner({ size = 96 }: { size?: number }) {
   return (
     <View
       accessibilityRole="progressbar"
-      accessibilityLabel="Working"
+      accessibilityLabel={tr('working')}
       style={{ width: d(size), height: d(size), alignSelf: 'center' }}
     >
       <View

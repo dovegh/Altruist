@@ -64,6 +64,12 @@
         {
           "locationWhenInUsePermission": "Altruist uses your location to pin your delivery address."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#00DB9A"
+        }
       ]
     ],
     "experiments": {

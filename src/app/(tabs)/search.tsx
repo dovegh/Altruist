@@ -29,10 +29,154 @@ import { useCartStore } from '@/features/cart/store';
 import { searchSuggestions } from '@/lib/catalog';
 import { useProducts } from '@/features/catalog/queries';
 import { useRecentSearchStore } from '@/features/catalog/recent';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    placeholder: 'Search medicines, vitamins, brands',
+    clearSearch: 'Clear search',
+    cancel: 'Cancel',
+    recent: 'RECENT SEARCHES',
+    clear: 'Clear',
+    trySearching: 'TRY SEARCHING FOR',
+    hint: 'Search by brand or ingredient.',
+    noResults: 'No results for “{query}”',
+    noResultsIn: 'No results for “{query}” in {filter}',
+    noResultsBody:
+      'Check the spelling, or search by the active ingredient rather than the brand name.',
+    didYouMean: 'DID YOU MEAN',
+    browse: 'Browse the catalogue',
+    uploadInstead: 'Upload a prescription instead',
+    resultsOne: '{count} result · sorted by relevance',
+    resultsMany: '{count} results · sorted by relevance',
+    filterAll: 'All',
+    filterRx: 'Rx only',
+    filterOtc: 'OTC',
+    filterInStock: 'In stock',
+  },
+  fr: {
+    placeholder: 'Rechercher médicaments, vitamines, marques',
+    clearSearch: 'Effacer la recherche',
+    cancel: 'Annuler',
+    recent: 'RECHERCHES RÉCENTES',
+    clear: 'Effacer',
+    trySearching: 'ESSAYEZ DE CHERCHER',
+    hint: 'Cherchez par marque ou par principe actif.',
+    noResults: 'Aucun résultat pour « {query} »',
+    noResultsIn: 'Aucun résultat pour « {query} » dans {filter}',
+    noResultsBody:
+      "Vérifiez l'orthographe, ou cherchez par principe actif plutôt que par nom de marque.",
+    didYouMean: 'VOULIEZ-VOUS DIRE',
+    browse: 'Parcourir le catalogue',
+    uploadInstead: 'Envoyer plutôt une ordonnance',
+    resultsOne: '{count} résultat · par pertinence',
+    resultsMany: '{count} résultats · par pertinence',
+    filterAll: 'Tout',
+    filterRx: 'Sur ordonnance',
+    filterOtc: 'Sans ordonnance',
+    filterInStock: 'En stock',
+  },
+  tw: {
+    placeholder: 'Hwehwɛ nnuro, vitamin, din',
+    clearSearch: 'Pepa deɛ wohwehwɛeɛ',
+    cancel: 'Gyae',
+    recent: 'DEƐ WOHWEHWƐƐ NNANSA YI',
+    clear: 'Pepa',
+    trySearching: 'HWEHWƐ EYINOM',
+    hint: 'Hwehwɛ wɔ din anaa nneɛma a ɛwɔ mu so.',
+    noResults: 'Yɛanhu “{query}”',
+    noResultsIn: 'Yɛanhu “{query}” wɔ {filter} mu',
+    noResultsBody:
+      'Hwɛ sɛnea woakyerɛw no, anaa hwehwɛ aduro no mu adeɛ titire na ɛnyɛ ne din.',
+    didYouMean: 'NA WOPƐ SƐ WOKA',
+    browse: 'Hwɛ nneɛma no',
+    uploadInstead: 'Fa nnuro krataa to so mmom',
+    resultsOne: 'Yɛahu {count} · deɛ ɛfata di kan',
+    resultsMany: 'Yɛahu {count} · deɛ ɛfata di kan',
+    filterAll: 'Ne nyinaa',
+    filterRx: 'Rx nko ara',
+    filterOtc: 'OTC',
+    filterInStock: 'Ɛwɔ hɔ',
+  },
+  gaa: {
+    placeholder: 'Tao tsofai, vitamin, gbɛi',
+    clearSearch: 'Jiemɔ taomɔ lɛ',
+    cancel: 'Kpa',
+    recent: 'TAOMƆI NI BA NYƐ',
+    clear: 'Jiemɔ',
+    trySearching: 'TAO NƐƐMƐI',
+    hint: 'Tao yɛ gbɛi loo nɔ ni yɔɔ mli nɔ.',
+    noResults: 'Ana “{query}” ko',
+    noResultsIn: 'Ana “{query}” ko yɛ {filter} mli',
+    noResultsBody:
+      'Kwɛ bɔ ni oŋma lɛ, loo otao tsofa lɛ mli nɔ titri lɛ yɛ gbɛi lɛ najiaŋ.',
+    didYouMean: 'ANI OSUMƆƆ AKƐ',
+    browse: 'Kwɛ nibii lɛ',
+    uploadInstead: 'Kɛ tsofa wolo wo mli moŋ',
+    resultsOne: 'Ana nɔ {count} · nɔ ni sa fe fɛɛ klɛŋklɛŋ',
+    resultsMany: 'Ana nibii {count} · nɔ ni sa fe fɛɛ klɛŋklɛŋ',
+    filterAll: 'Fɛɛ',
+    filterRx: 'Rx pɛ',
+    filterOtc: 'OTC',
+    filterInStock: 'Eyɛ',
+  },
+  ee: {
+    placeholder: 'Di atikewo, vitamin, ŋkɔwo',
+    clearSearch: 'Tutu didi la',
+    cancel: 'Dzudzɔ',
+    recent: 'DIDI YEYEWO',
+    clear: 'Tutu',
+    trySearching: 'DI NU SIAWO',
+    hint: 'Di le ŋkɔ alo nu si le eme nu.',
+    noResults: 'Womekpɔ “{query}” o',
+    noResultsIn: 'Womekpɔ “{query}” le {filter} me o',
+    noResultsBody:
+      'Kpɔ ale si nèŋlɔe, alo di atike la me nu vevitɔ ɖe ŋkɔ la teƒe.',
+    didYouMean: 'ƉE NÈDI BE',
+    browse: 'Kpɔ nuwo',
+    uploadInstead: 'Ɖo atikeŋɔŋlɔ ɖa boŋ',
+    resultsOne: 'Nu {count} · esi sɔ wu gbã',
+    resultsMany: 'Nu {count} · esi sɔ wu gbã',
+    filterAll: 'Katã',
+    filterRx: 'Rx ɖeɖe',
+    filterOtc: 'OTC',
+    filterInStock: 'Esiwo li',
+  },
+  ha: {
+    placeholder: 'Nemo magunguna, bitamin, alamu',
+    clearSearch: 'Share bincike',
+    cancel: 'Soke',
+    recent: 'BINCIKEN BAYA-BAYAN NAN',
+    clear: 'Share',
+    trySearching: 'GWADA NEMAN',
+    hint: 'Nema ta alama ko sinadari.',
+    noResults: 'Babu sakamako ga “{query}”',
+    noResultsIn: 'Babu sakamako ga “{query}” a {filter}',
+    noResultsBody: 'Duba rubutun, ko ka nemi sinadarin maganin maimakon sunan alama.',
+    didYouMean: 'KO KANA NUFIN',
+    browse: 'Duba kayayyaki',
+    uploadInstead: 'Ɗora takardar magani maimakon haka',
+    resultsOne: 'Sakamako {count} · bisa dacewa',
+    resultsMany: 'Sakamako {count} · bisa dacewa',
+    filterAll: 'Duka',
+    filterRx: 'Rx kaɗai',
+    filterOtc: 'OTC',
+    filterInStock: 'Akwai a kanti',
+  },
+});
+
+// Filter values stay English (they are query values); only the chip text is translated.
+const FILTER_LABELS: Record<SearchFilter, keyof (typeof S)['en']> = {
+  All: 'filterAll',
+  'Rx only': 'filterRx',
+  OTC: 'filterOtc',
+  'In stock': 'filterInStock',
+};
 
 
 export default function Search() {
   const t = useTokens();
+  const tr = useT(S);
   const { d } = useDesignScale();
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState('');
@@ -66,7 +210,7 @@ export default function Search() {
   const chipRow = (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: d(10) }}>
       {FILTERS.map((f) => (
-        <FilterChip key={f} label={f} selected={filter === f} onPress={() => setFilter(f)} />
+        <FilterChip key={f} label={tr(FILTER_LABELS[f])} selected={filter === f} onPress={() => setFilter(f)} />
       ))}
     </ScrollView>
   );
@@ -98,9 +242,9 @@ export default function Search() {
           onChangeText={setQuery}
           autoFocus
           returnKeyType="search"
-          placeholder="Search medicines, vitamins, brands"
+          placeholder={tr('placeholder')}
           placeholderTextColor={t.colors.text.placeholder}
-          accessibilityLabel="Search medicines, vitamins, brands"
+          accessibilityLabel={tr('placeholder')}
           style={{
             flex: 1,
             padding: 0,
@@ -113,7 +257,7 @@ export default function Search() {
         {query.length > 0 ? (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Clear search"
+            accessibilityLabel={tr('clearSearch')}
             hitSlop={10}
             onPress={() => setQuery('')}
             style={{
@@ -131,7 +275,7 @@ export default function Search() {
       </View>
       <Pressable accessibilityRole="button" hitSlop={8} onPress={() => router.back()}>
         <Text variant="labelM" tone="brand" style={{ fontSize: d(14), lineHeight: d(18) }}>
-          Cancel
+          {tr('cancel')}
         </Text>
       </Pressable>
     </View>
@@ -162,11 +306,11 @@ export default function Search() {
               tone="tertiary"
               style={{ flex: 1, fontSize: d(11), lineHeight: d(14) }}
             >
-              RECENT SEARCHES
+              {tr('recent')}
             </Text>
             <Pressable accessibilityRole="button" hitSlop={8} onPress={clearRecent}>
               <Text variant="labelS" tone="brand" style={{ fontSize: d(12), lineHeight: d(16) }}>
-                Clear
+                {tr('clear')}
               </Text>
             </Pressable>
           </View>
@@ -188,7 +332,7 @@ export default function Search() {
         }}
       >
         <Text variant="labelXS" tone="tertiary" style={{ fontSize: d(11), lineHeight: d(14) }}>
-          TRY SEARCHING FOR
+          {tr('trySearching')}
         </Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: d(8) }}>
           {SUGGESTIONS.map((sug) => (
@@ -197,7 +341,7 @@ export default function Search() {
         </View>
       </View>
       <Text variant="bodyS" tone="secondary" center style={{ fontSize: d(13), lineHeight: d(19) }}>
-        Search by brand or ingredient.
+        {tr('hint')}
       </Text>
     </>
   );
@@ -239,8 +383,9 @@ export default function Search() {
 
       <View style={{ gap: d(10) }}>
         <Text variant="headingXL" center style={{ fontSize: d(24), lineHeight: d(30) }}>
-          No results for “{query}”
-          {filter === 'All' ? '' : ` in ${filter}`}
+          {filter === 'All'
+            ? tr('noResults', { query })
+            : tr('noResultsIn', { query, filter: tr(FILTER_LABELS[filter]) })}
         </Text>
         <Text
           variant="bodyM"
@@ -248,7 +393,7 @@ export default function Search() {
           center
           style={{ fontSize: d(14), lineHeight: d(21) }}
         >
-          Check the spelling, or search by the active ingredient rather than the brand name.
+          {tr('noResultsBody')}
         </Text>
       </View>
 
@@ -263,7 +408,7 @@ export default function Search() {
         }}
       >
         <Text variant="labelXS" tone="tertiary" style={{ fontSize: d(11), lineHeight: d(14) }}>
-          DID YOU MEAN
+          {tr('didYouMean')}
         </Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: d(8) }}>
           {SUGGESTIONS.map((s) => (
@@ -273,12 +418,12 @@ export default function Search() {
       </View>
 
       <Button
-        label="Browse the catalogue"
+        label={tr('browse')}
         size="large"
         onPress={() => router.replace('/catalog')}
       />
       <Button
-        label="Upload a prescription instead"
+        label={tr('uploadInstead')}
         variant="tertiary"
         size="large"
         onPress={() => router.push('/prescription-upload')}
@@ -291,7 +436,7 @@ export default function Search() {
       {chipRow}
 
       <Text variant="caption" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-        {results.length} result{results.length === 1 ? '' : 's'} · sorted by relevance
+        {tr(results.length === 1 ? 'resultsOne' : 'resultsMany', { count: results.length })}
       </Text>
 
       {results.map((p) => (

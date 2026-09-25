@@ -29,6 +29,154 @@ import { StatusScreen } from '@/components/ui/StatusScreen';
 import { cedis } from '@/lib/money';
 import { useOrderStore } from '@/features/orders/store';
 import { usePartnerPharmacy } from '@/features/profile/store';
+import { defineStrings, useLocale, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    licence: 'Pharmacy Council licence {licence} · {address}',
+    dispensedBy: 'Dispensed by {name}',
+    leadPharmacist: 'Lead Pharmacist · {registration}',
+    paystackRef: 'Paystack ref {reference}',
+    notFoundTitle: 'Receipt not found',
+    notFoundBody:
+      'We could not find that order on this device. A receipt is only held where the order was placed.',
+    seeAll: 'See all orders',
+    title: 'Receipt',
+    paid: 'PAID',
+    totalPaid: 'Total paid',
+    subtotal: 'Subtotal',
+    deliveryRow: 'Delivery — {speed}',
+    serviceFee: 'Altruist service fee',
+    soldBy: 'SOLD AND DISPENSED BY',
+    notice:
+      'Altruist Technologies operated the platform and collected payment as agent. The pharmacy named above is the seller of record and is responsible for the medicines supplied. Keep this receipt for any refund or return request.',
+    share: 'Share receipt',
+    help: 'Get help',
+    shareTitle: 'Altruist receipt {id}',
+    shareHead: 'Altruist receipt · TrxID {id}',
+    shareTotal: 'Total paid {amount}',
+  },
+  fr: {
+    licence: 'Licence du Pharmacy Council {licence} · {address}',
+    dispensedBy: 'Délivré par {name}',
+    leadPharmacist: 'Pharmacien responsable · {registration}',
+    paystackRef: 'Réf. Paystack {reference}',
+    notFoundTitle: 'Reçu introuvable',
+    notFoundBody:
+      'Nous n’avons pas trouvé cette commande sur cet appareil. Un reçu n’est conservé que là où la commande a été passée.',
+    seeAll: 'Voir toutes les commandes',
+    title: 'Reçu',
+    paid: 'PAYÉ',
+    totalPaid: 'Total payé',
+    subtotal: 'Sous-total',
+    deliveryRow: 'Livraison — {speed}',
+    serviceFee: 'Frais de service Altruist',
+    soldBy: 'VENDU ET DÉLIVRÉ PAR',
+    notice:
+      'Altruist Technologies a exploité la plateforme et encaissé le paiement en tant qu’agent. La pharmacie indiquée ci-dessus est le vendeur officiel et est responsable des médicaments fournis. Conservez ce reçu pour toute demande de remboursement ou de retour.',
+    share: 'Partager le reçu',
+    help: 'Obtenir de l’aide',
+    shareTitle: 'Reçu Altruist {id}',
+    shareHead: 'Reçu Altruist · TrxID {id}',
+    shareTotal: 'Total payé {amount}',
+  },
+  tw: {
+    licence: 'Pharmacy Council tumi krataa {licence} · {address}',
+    dispensedBy: '{name} na ɔde maeɛ',
+    leadPharmacist: 'Nnuroyɛfoɔ panin · {registration}',
+    paystackRef: 'Paystack ref {reference}',
+    notFoundTitle: 'Yɛanhu receipt no',
+    notFoundBody:
+      'Yɛanhu saa adetɔ no wɔ saa fon yi so. Baabi a wɔtɔɔ adeɛ no nko ara na receipt no wɔ.',
+    seeAll: 'Hwɛ nneɛma a woato nyinaa',
+    title: 'Receipt',
+    paid: 'WOATUA',
+    totalPaid: 'Sika a wotuaeɛ nyinaa',
+    subtotal: 'Nneɛma no bo',
+    deliveryRow: 'De brɛ wo — {speed}',
+    serviceFee: 'Altruist adwuma ho ka',
+    soldBy: 'NEA ƆTƆNEƐ NA ƆDE MAEƐ',
+    notice:
+      'Altruist Technologies na ɛhwɛ platform no so na ɛgyee sika no sɛ ananmusifoɔ. Nnuro fie a ne din wɔ soro hɔ no na ɔtɔnee na nnuro no ho asɛm da ne so. Kora saa receipt yi sɛ wopɛ sɛ wɔsan wo sika anaa wode biribi san ba a.',
+    share: 'Kyɛ receipt',
+    help: 'Nya mmoa',
+    shareTitle: 'Altruist receipt {id}',
+    shareHead: 'Altruist receipt · TrxID {id}',
+    shareTotal: 'Sika a wotuaeɛ nyinaa {amount}',
+  },
+  gaa: {
+    licence: 'Pharmacy Council hewalɛ wolo {licence} · {address}',
+    dispensedBy: '{name} kɛhaa',
+    leadPharmacist: 'Tsofatsɛ onukpa · {registration}',
+    paystackRef: 'Paystack ref {reference}',
+    notFoundTitle: 'Anaaa receipt lɛ',
+    notFoundBody:
+      'Wɔnaaa nɔ nɛɛ yɛ fon nɛɛ nɔ. Jɛmɛ ni ahe nɔ lɛ pɛ receipt lɛ yɔɔ.',
+    seeAll: 'Kwɛmɔ nɔ ni ohe fɛɛ',
+    title: 'Receipt',
+    paid: 'OWO',
+    totalPaid: 'Nɔ ni owo fɛɛ',
+    subtotal: 'Nibii lɛ ahe',
+    deliveryRow: 'Kɛbamɔ — {speed}',
+    serviceFee: 'Altruist nitsumɔ he nyɔmɔ',
+    soldBy: 'MƆ NI HÕƆ NI KƐHAA',
+    notice:
+      'Altruist Technologies kwɛ platform lɛ nɔ ni ehé shika lɛ akɛ najiaŋdamɔ. Tsofa shĩa ni agbɛi yɔɔ ŋwɛi lɛ ji mɔ ni hõɔ ni tsofai lɛ ahe sane kã enɔ. Toɔ receipt nɛɛ kɛji otaoɔ ni aku o shika aha bo loo okɛ nɔ ko aku.',
+    share: 'Ŋmɛɛ receipt',
+    help: 'Na yelikɛbuamɔ',
+    shareTitle: 'Altruist receipt {id}',
+    shareHead: 'Altruist receipt · TrxID {id}',
+    shareTotal: 'Nɔ ni owo fɛɛ {amount}',
+  },
+  ee: {
+    licence: 'Pharmacy Council ƒe mɔɖeɖe {licence} · {address}',
+    dispensedBy: '{name} ye nae',
+    leadPharmacist: 'Atikewɔla gã · {registration}',
+    paystackRef: 'Paystack ref {reference}',
+    notFoundTitle: 'Míekpɔ receipt la o',
+    notFoundBody:
+      'Míekpɔ nuƒeƒle ma le fon sia dzi o. Afi si woƒle nua le ko receipt la nɔna.',
+    seeAll: 'Kpɔ nu siwo nèƒle katã',
+    title: 'Receipt',
+    paid: 'ÈXE FE',
+    totalPaid: 'Fe si nèxe katã',
+    subtotal: 'Nuawo ƒe home',
+    deliveryRow: 'Nukɔkɔyi — {speed}',
+    serviceFee: 'Altruist ƒe dɔwɔwɔ fe',
+    soldBy: 'AMESI DZRAE HE NAE',
+    notice:
+      'Altruist Technologies ye kpɔ platform la dzi eye wòxɔ ga la abe teƒenɔla ene. Atikeƒle si ŋkɔ le etame la ye dzra nua eye atike siwo wona la ƒe agba le eya dzi. Dzra receipt sia ɖo ne èdi be yeaxɔ ga gbugbɔ alo atrɔ nu aɖe ɖe asi.',
+    share: 'Mã receipt',
+    help: 'Xɔ kpekpeɖeŋu',
+    shareTitle: 'Altruist receipt {id}',
+    shareHead: 'Altruist receipt · TrxID {id}',
+    shareTotal: 'Fe si nèxe katã {amount}',
+  },
+  ha: {
+    licence: 'Lasisin Pharmacy Council {licence} · {address}',
+    dispensedBy: '{name} ne ya bayar',
+    leadPharmacist: 'Babban mai harhaɗa magani · {registration}',
+    paystackRef: 'Paystack ref {reference}',
+    notFoundTitle: 'Ba a sami rasiti ba',
+    notFoundBody:
+      'Ba mu sami wannan oda a wannan na’ura ba. Rasiti yana nan ne kawai inda aka yi oda.',
+    seeAll: 'Duba duk oda',
+    title: 'Rasiti',
+    paid: 'AN BIYA',
+    totalPaid: 'Jimlar da aka biya',
+    subtotal: 'Jimlar kaya',
+    deliveryRow: 'Isarwa — {speed}',
+    serviceFee: 'Kuɗin sabis na Altruist',
+    soldBy: 'WANDA YA SAYAR KUMA YA BAYAR',
+    notice:
+      'Altruist Technologies ne ke gudanar da dandalin kuma ya karɓi kuɗi a matsayin wakili. Kantin magani da aka ambata a sama shi ne mai sayarwa kuma shi ke da alhakin maganin da aka bayar. Ajiye wannan rasiti don duk wata buƙatar mayar da kuɗi ko mayar da kaya.',
+    share: 'Raba rasiti',
+    help: 'Nemi taimako',
+    shareTitle: 'Rasitin Altruist {id}',
+    shareHead: 'Rasitin Altruist · TrxID {id}',
+    shareTotal: 'Jimlar da aka biya {amount}',
+  },
+});
 
 /**
  * The seller of record, which is a property of the pharmacy that dispensed the
@@ -40,8 +188,10 @@ import { usePartnerPharmacy } from '@/features/profile/store';
  */
 
 export default function OrderReceipt() {
+  const tr = useT(S);
+  const locale = useLocale();
   const pharmacy = usePartnerPharmacy();
-  const licence = `Pharmacy Council licence ${pharmacy.licence} · ${pharmacy.address}`;
+  const licence = tr('licence', { licence: pharmacy.licence, address: pharmacy.address });
   const t = useTokens();
   const { d } = useDesignScale();
   const ink = t.colors.text.onBrand;
@@ -51,12 +201,12 @@ export default function OrderReceipt() {
   const hydrated = useOrderStore((s) => s.hydrated);
 
   const paidAt = order
-    ? `${new Date(order.placedAt).toLocaleDateString('en-GB', {
+    ? `${new Date(order.placedAt).toLocaleDateString(locale, {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
       })} · ${new Date(order.placedAt)
-        .toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true })
+        .toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: true })
         .toUpperCase()}`
     : '';
 
@@ -65,13 +215,13 @@ export default function OrderReceipt() {
         { icon: 'shield-check', title: order.pharmacy, meta: licence },
         {
           icon: 'prescription',
-          title: `Dispensed by ${pharmacy.superintendent.name}`,
-          meta: `Lead Pharmacist · ${pharmacy.superintendent.registration}`,
+          title: tr('dispensedBy', { name: pharmacy.superintendent.name }),
+          meta: tr('leadPharmacist', { registration: pharmacy.superintendent.registration }),
         },
         {
           icon: 'card',
           title: order.methodLabel,
-          meta: `Paystack ref ${order.reference}`,
+          meta: tr('paystackRef', { reference: order.reference }),
         },
       ]
     : [];
@@ -99,10 +249,10 @@ export default function OrderReceipt() {
       <StatusScreen
         icon="danger"
         tone="danger"
-        title="Receipt not found"
-        body="We could not find that order on this device. A receipt is only held where the order was placed."
+        title={tr('notFoundTitle')}
+        body={tr('notFoundBody')}
         actions={
-          <Button label="See all orders" size="large" onPress={() => router.replace('/order-history')} />
+          <Button label={tr('seeAll')} size="large" onPress={() => router.replace('/order-history')} />
         }
       />
     );
@@ -135,7 +285,7 @@ export default function OrderReceipt() {
   return (
     <View style={{ flex: 1, backgroundColor: t.colors.bg.canvas }}>
       <FormScreen gap={16}>
-        <TitleAppBar title="Receipt" />
+        <TitleAppBar title={tr('title')} />
 
         {/* Receipt document */}
         <View
@@ -161,7 +311,7 @@ export default function OrderReceipt() {
                 color={ink}
                 style={{ textAlign: 'right', fontSize: d(11), lineHeight: d(14) }}
               >
-                PAID
+                {tr('paid')}
               </Text>
               <Text
                 variant="caption"
@@ -179,7 +329,7 @@ export default function OrderReceipt() {
               color={ink}
               style={{ opacity: 0.6, fontSize: d(12), lineHeight: d(16) }}
             >
-              Total paid
+              {tr('totalPaid')}
             </Text>
             <Text variant="numericL" color={ink} style={{ fontSize: d(28), lineHeight: d(32) }}>
               {cedis(order.total)}
@@ -233,10 +383,10 @@ export default function OrderReceipt() {
 
           {dashedRule}
 
-          {money('Subtotal', cedis(order.subtotal))}
-          {money(`Delivery — ${order.speedLabel}`, cedis(order.deliveryFee))}
-          {money('Altruist service fee', cedis(order.serviceFee))}
-          {money('Total paid', cedis(order.total), true)}
+          {money(tr('subtotal'), cedis(order.subtotal))}
+          {money(tr('deliveryRow', { speed: order.speedLabel }), cedis(order.deliveryFee))}
+          {money(tr('serviceFee'), cedis(order.serviceFee))}
+          {money(tr('totalPaid'), cedis(order.total), true)}
         </View>
 
         {/* Tear edge — 22pt canvas circles punched along the bottom */}
@@ -275,7 +425,7 @@ export default function OrderReceipt() {
           }}
         >
           <Text variant="labelXS" tone="tertiary" style={{ fontSize: d(11), lineHeight: d(14) }}>
-            SOLD AND DISPENSED BY
+            {tr('soldBy')}
           </Text>
           {seller.map((s) => (
             <View key={s.title} style={{ flexDirection: 'row', gap: d(12) }}>
@@ -313,9 +463,7 @@ export default function OrderReceipt() {
             tone="tertiary"
             style={{ flex: 1, fontSize: d(12), lineHeight: d(16) }}
           >
-            Altruist Technologies operated the platform and collected payment as agent. The pharmacy
-            named above is the seller of record and is responsible for the medicines supplied. Keep
-            this receipt for any refund or return request.
+            {tr('notice')}
           </Text>
         </View>
       </FormScreen>
@@ -323,7 +471,7 @@ export default function OrderReceipt() {
       <StickyFooter>
         <View style={{ flexDirection: 'row', gap: d(12) }}>
           <Button
-            label="Share receipt"
+            label={tr('share')}
             variant="secondary"
             size="large"
             iconLeading="upload"
@@ -337,18 +485,18 @@ export default function OrderReceipt() {
              */
             onPress={() =>
               Share.share({
-                title: `Altruist receipt ${order.id}`,
+                title: tr('shareTitle', { id: order.id }),
                 message: [
-                  `Altruist receipt · TrxID ${order.id}`,
+                  tr('shareHead', { id: order.id }),
                   `${order.pharmacy} · ${licence}`,
-                  `Total paid ${cedis(order.total)}`,
-                  `Paystack ref ${order.reference}`,
+                  tr('shareTotal', { amount: cedis(order.total) }),
+                  tr('paystackRef', { reference: order.reference }),
                 ].join('\n'),
               })
             }
           />
           <Button
-            label="Get help"
+            label={tr('help')}
             size="large"
             iconLeading="info"
             style={{ flex: 1 }}

@@ -21,6 +21,16 @@ import { useDesignScale } from '@/theme/useDesignScale';
 import { Text } from './Text';
 import { Icon, type IconName } from './Icon';
 import { Button, type ButtonVariant } from './Button';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: { close: 'Close' },
+  fr: { close: 'Fermer' },
+  tw: { close: 'To mu' },
+  gaa: { close: 'Ŋmɛ naa' },
+  ee: { close: 'Tu enu' },
+  ha: { close: 'Rufe' },
+});
 
 export type DialogAction = {
   label: string;
@@ -57,6 +67,7 @@ export function DialogHost() {
   const { d } = useDesignScale();
   const { width } = useWindowDimensions();
   const dialog = useDialogStore((s) => s.current);
+  const tr = useT(S);
 
   const run = (action?: DialogAction) => {
     hideDialog();
@@ -100,7 +111,7 @@ export function DialogHost() {
           >
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Close"
+              accessibilityLabel={tr('close')}
               onPress={() => run(cancel)}
               style={{ flex: 1, backgroundColor: t.colors.bg.overlay, opacity: 0.6 }}
             />

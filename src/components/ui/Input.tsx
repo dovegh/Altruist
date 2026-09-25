@@ -23,6 +23,16 @@ import { useTokens } from '@/theme/ThemeProvider';
 import { useDesignScale } from '@/theme/useDesignScale';
 import { Text } from './Text';
 import { Icon, type IconName } from './Icon';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: { show: 'Show password', hide: 'Hide password' },
+  fr: { show: 'Afficher le mot de passe', hide: 'Masquer le mot de passe' },
+  tw: { show: 'Kyerɛ password no', hide: 'Fa password no sie' },
+  gaa: { show: 'Tsɔɔ password lɛ', hide: 'Tee password lɛ' },
+  ee: { show: 'Ɖe password la fia', hide: 'Ɣla password la' },
+  ha: { show: 'Nuna kalmar sirri', hide: 'Ɓoye kalmar sirri' },
+});
 
 export type InputFieldProps = Omit<TextInputProps, 'style' | 'editable'> & {
   label?: string;
@@ -34,6 +44,11 @@ export type InputFieldProps = Omit<TextInputProps, 'style' | 'editable'> & {
   onTrailingPress?: () => void;
   /** Drawn inside the box, before the text (e.g. the mobile money network). */
   leading?: React.ReactNode;
+  /**
+   * Password fields get a show/hide eye automatically. Pass false where the
+   * value should never be shown (a card's CVV).
+   */
+  revealable?: boolean;
   style?: ViewStyle;
 };
 
@@ -45,6 +60,8 @@ export function InputField({
   trailingIcon,
   onTrailingPress,
   leading,
+  revealable = true,
+  secureTextEntry,
   value,
   onFocus,
   onBlur,
@@ -53,7 +70,11 @@ export function InputField({
 }: InputFieldProps) {
   const t = useTokens();
   const { d } = useDesignScale();
+  const tr = useT(S);
   const [focused, setFocused] = useState(false);
+  const [revealed, setRevealed] = useState(false);
+  // Any secret field gets the eye, unless the screen supplies its own button.
+  const showReveal = Boolean(secureTextEntry) && revealable && !trailingIcon;
 
   const hasError = !!error;
   const helperText = typeof error === 'string' && error ? error : helper;
@@ -98,6 +119,7 @@ export function InputField({
         {leading}
         <TextInput
           {...rest}
+          secureTextEntry={Boolean(secureTextEntry) && !revealed}
           value={value}
           editable={!disabled}
           placeholderTextColor={t.colors.text.placeholder}
@@ -120,7 +142,18 @@ export function InputField({
             color: t.colors.text[inkTone],
           }}
         />
-        {trailingIcon ? (
+        {showReveal ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={revealed ? tr('hide') : tr('show')}
+            accessibilityState={{ checked: revealed }}
+            hitSlop={10}
+            disabled={disabled}
+            onPress={() => setRevealed((v) => !v)}
+          >
+            <Icon name={revealed ? 'eye-off' : 'eye'} size={d(20)} tone={disabled ? 'tertiary' : 'secondary'} />
+          </Pressable>
+        ) : trailingIcon ? (
           <Pressable
             accessibilityRole="button"
             hitSlop={10}

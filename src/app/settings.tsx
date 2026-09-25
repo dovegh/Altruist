@@ -28,17 +28,197 @@ import { methodLabel, useCheckoutSelection } from '@/features/checkout/store';
 import { appVersion, ORG } from '@/lib/legal';
 import { Button, ButtonRow } from '@/components/ui/Button';
 import { resetToNewAccount } from '@/lib/resetAccount';
+import { setNotificationPref, useNotificationPrefs } from '@/features/notifications/preferences';
 import {
   scenariosAvailable,
   useScenarioStore,
   type PaymentScenario,
   type ReviewScenario,
 } from '@/lib/devScenarios';
+import { defineStrings, languageInfo, useLanguage, useT } from '@/i18n';
+
+// Developer-only rows further down stay in English: they never ship.
+const S = defineStrings({
+  en: {
+    title: 'Settings',
+    appearance: 'APPEARANCE',
+    system: 'System',
+    light: 'Light',
+    dark: 'Dark',
+    themeA11y: '{name} theme',
+    preferences: 'PREFERENCES',
+    notifications: 'Notifications',
+    notificationsSub: 'Orders, refills, wellness',
+    language: 'Language',
+    payment: 'Default payment',
+    noPayment: 'None saved yet',
+    wellness: 'Wellness reminders',
+    wellnessSub: 'Plan nudges and hydration',
+    yourData: 'YOUR DATA',
+    download: 'Download your data',
+    downloadSub: 'Everything Altruist holds, as a file',
+    scripts: 'My prescriptions',
+    scriptsSub: 'Photos, reviews and status',
+    deleteAccount: 'Delete account',
+    deleteSub: 'Permanent after a 30-day grace period',
+    about: 'ABOUT',
+    version: 'Version',
+    registered: 'Registered as',
+    company: 'Company number',
+    disclaimer:
+      'Altruist is a technology platform connecting you with certified, independent partner pharmacies. It does not dispense medication or provide medical advice.',
+  },
+  fr: {
+    title: 'Paramètres',
+    appearance: 'APPARENCE',
+    system: 'Système',
+    light: 'Clair',
+    dark: 'Sombre',
+    themeA11y: 'Thème {name}',
+    preferences: 'PRÉFÉRENCES',
+    notifications: 'Notifications',
+    notificationsSub: 'Commandes, renouvellements, bien-être',
+    language: 'Langue',
+    payment: 'Paiement par défaut',
+    noPayment: 'Aucun enregistré',
+    wellness: 'Rappels bien-être',
+    wellnessSub: 'Programme du jour et hydratation',
+    yourData: 'VOS DONNÉES',
+    download: 'Télécharger vos données',
+    downloadSub: 'Tout ce que détient Altruist, dans un fichier',
+    scripts: 'Mes ordonnances',
+    scriptsSub: 'Photos, vérifications et statut',
+    deleteAccount: 'Supprimer le compte',
+    deleteSub: 'Définitif après un délai de 30 jours',
+    about: 'À PROPOS',
+    version: 'Version',
+    registered: 'Enregistré sous',
+    company: "Numéro d'entreprise",
+    disclaimer:
+      "Altruist est une plateforme technologique qui vous met en relation avec des pharmacies partenaires certifiées et indépendantes. Elle ne délivre pas de médicaments et ne donne pas d'avis médical.",
+  },
+  tw: {
+    title: 'Nhyehyɛeɛ',
+    appearance: 'SƐNEA ƐTE',
+    system: 'Fon no deɛ',
+    light: 'Hann',
+    dark: 'Sum',
+    themeA11y: '{name} kɔla',
+    preferences: 'DEƐ WOPƐ',
+    notifications: 'Nkaeɛ',
+    notificationsSub: 'Nneɛma a woato, nnuro foforɔ, apɔmuden',
+    language: 'Kasa',
+    payment: 'Ɛkwan a wode tua ka',
+    noPayment: 'Biribiara nni hɔ',
+    wellness: 'Apɔmuden nkaeɛ',
+    wellnessSub: 'Da biara nhyehyɛeɛ ne nsuo nom',
+    yourData: 'WO NSƐM',
+    download: 'Twe wo nsɛm',
+    downloadSub: 'Deɛ Altruist kora nyinaa, wɔ fael mu',
+    scripts: 'Me nnuro krataa',
+    scriptsSub: 'Mfonini, nhwehwɛmu ne tebea',
+    deleteAccount: 'Yi wo akontaa',
+    deleteSub: 'Ɛbɛyɛ daa akyi nna 30',
+    about: 'ƐFA YƐN HO',
+    version: 'Nsesaeɛ',
+    registered: 'Din a yɛde kyerɛw',
+    company: 'Adwumakuo nɔma',
+    disclaimer:
+      'Altruist yɛ mfiridwuma a ɛde wo ka nnuro adetɔnfoɔ a wɔagye wɔn atom ho. Ɛntɔn nnuro na ɛmma ayaresa ho afotuo.',
+  },
+  gaa: {
+    title: 'Toiŋjɔlɛmɔi',
+    appearance: 'BƆ NI ETSƆ',
+    system: 'Tɛlifoŋ lɛ nɔ',
+    light: 'La',
+    dark: 'Duŋ',
+    themeA11y: '{name} kɔlɔ',
+    preferences: 'NƆ NI OSUMƆ',
+    notifications: 'Kaimɔi',
+    notificationsSub: 'Nɔ ni ohe, tsofai hei, hewalɛ',
+    language: 'Wiemɔ',
+    payment: 'Gbɛ ni okɛwoɔ nyɔmɔ',
+    noPayment: 'Nɔ ko bɛ',
+    wellness: 'Hewalɛ kaimɔi',
+    wellnessSub: 'Daa gbi nɔ ni ofeɔ kɛ nu nɔmɔ',
+    yourData: 'O SANEI',
+    download: 'Gbala o sanei',
+    downloadSub: 'Nɔ fɛɛ nɔ ni Altruist hiɛ, yɛ fael mli',
+    scripts: 'Mi tsofa woloi',
+    scriptsSub: 'Mfonirii, kpɔjiemɔ kɛ bɔ ni etsɔ',
+    deleteAccount: 'Jiemɔ o akɔŋt',
+    deleteSub: 'Ebaatsɔ daa yɛ gbii 30 sɛɛ',
+    about: 'YƐ WƆ HE',
+    version: 'Nɔ ni ji',
+    registered: 'Gbɛi ni aŋma',
+    company: 'Nitsumɔ he nɔmba',
+    disclaimer:
+      'Altruist ji tɛknoloji nɔ ni kɛ bo tsɔɔ tsofa shĩai ni ahe amɛ gbɛ. Ehɔɔɔ tsofai ni ekɛɛɛ helatsamɔ ŋaawoo.',
+  },
+  ee: {
+    title: 'Ɖoɖowo',
+    appearance: 'ALE SI WÒDZE',
+    system: 'Fon la tɔ',
+    light: 'Kekeli',
+    dark: 'Viviti',
+    themeA11y: '{name} amadede',
+    preferences: 'NU SIWO NÈDI',
+    notifications: 'Nyanyuiwo',
+    notificationsSub: 'Nudodowo, atike yeyewo, lãmesẽ',
+    language: 'Gbe',
+    payment: 'Fexexe mɔnu',
+    noPayment: 'Naneke meli o',
+    wellness: 'Lãmesẽ ŋkuɖodzinyawo',
+    wellnessSub: 'Gbesiagbe ɖoɖo kple tsinono',
+    yourData: 'WÒ NYATAKAKAWO',
+    download: 'Xɔ wò nyatakakawo',
+    downloadSub: 'Nu siwo katã Altruist lé ɖe asi, le fael me',
+    scripts: 'Nye atikeŋɔŋlɔwo',
+    scriptsSub: 'Foto, dzodzrɔ kple nɔnɔme',
+    deleteAccount: 'Tutu wò akɔnta',
+    deleteSub: 'Anɔ anyi tegbee le ŋkeke 30 megbe',
+    about: 'LE MIAƑE ŊU',
+    version: 'Tɔtrɔ',
+    registered: 'Ŋkɔ si wòŋlɔ',
+    company: 'Dɔwɔƒe xexlẽdzesi',
+    disclaimer:
+      'Altruist nye mɔ̃ɖaŋu si tsɔa wò ɖoa atikedzraƒe siwo woɖo kpe edzi gbɔ. Medzraa atike o eye metsɔa atikewɔwɔ ƒe aɖaŋu o.',
+  },
+  ha: {
+    title: 'Saituna',
+    appearance: 'KAMANNI',
+    system: 'Na waya',
+    light: 'Haske',
+    dark: 'Duhu',
+    themeA11y: 'Jigon {name}',
+    preferences: 'ZAƁUƁƁUKA',
+    notifications: 'Sanarwa',
+    notificationsSub: 'Oda, sabunta magani, lafiya',
+    language: 'Harshe',
+    payment: 'Hanyar biya ta asali',
+    noPayment: 'Babu wanda aka ajiye',
+    wellness: 'Tunatarwar lafiya',
+    wellnessSub: 'Shirin rana da shan ruwa',
+    yourData: 'BAYANANKA',
+    download: 'Sauke bayananka',
+    downloadSub: 'Duk abin da Altruist ke riƙe, a cikin fayil',
+    scripts: 'Takardun magani na',
+    scriptsSub: 'Hotuna, dubawa da matsayi',
+    deleteAccount: 'Goge asusu',
+    deleteSub: 'Na dindindin bayan kwana 30',
+    about: 'GAME DA MU',
+    version: 'Siga',
+    registered: 'An yi rajista a matsayin',
+    company: 'Lambar kamfani',
+    disclaimer:
+      "Altruist dandalin fasaha ne da ke haɗa ka da kantunan magani masu zaman kansu da aka tabbatar. Ba ya ba da magani kuma ba ya ba da shawarar likita.",
+  },
+});
 
 const THEMES = [
-  { key: 'system', label: 'System' },
-  { key: 'light', label: 'Light' },
-  { key: 'dark', label: 'Dark' },
+  { key: 'system', label: 'system' },
+  { key: 'light', label: 'light' },
+  { key: 'dark', label: 'dark' },
 ] as const;
 
 const PAYMENT_SCENARIOS: { key: PaymentScenario; label: string; note: string }[] = [
@@ -58,17 +238,20 @@ const REVIEW_SCENARIOS: { key: ReviewScenario; label: string; note: string }[] =
 
 export default function Settings() {
   const [resetting, setResetting] = useState(false);
+  const tr = useT(S);
+  const lang = useLanguage();
   // Version comes from the build, never a literal that goes stale on release.
   const ABOUT: [string, string][] = [
-    ['Version', appVersion()],
-    ['Registered as', ORG.registeredName],
-    ['Company number', ORG.companyNumber],
+    [tr('version'), appVersion()],
+    [tr('registered'), ORG.registeredName],
+    [tr('company'), ORG.companyNumber],
   ];
   const { method } = useCheckoutSelection();
   const t = useTokens();
   const { d } = useDesignScale();
   const { preference, setPreference } = useTheme();
-  const [wellnessReminders, setWellnessReminders] = React.useState(false);
+  // The same saved setting as "Wellness plan nudges" on Notification Settings.
+  const notificationPrefs = useNotificationPrefs();
 
   const payment = useScenarioStore((s) => s.payment);
   const review = useScenarioStore((s) => s.review);
@@ -126,9 +309,9 @@ export default function Settings() {
 
   return (
     <FormScreen gap={16} contentStyle={{ paddingBottom: d(60) }}>
-      <TitleAppBar title="Settings" />
+      <TitleAppBar title={tr('title')} />
 
-      <SectionLabel>APPEARANCE</SectionLabel>
+      <SectionLabel>{tr('appearance')}</SectionLabel>
 
       <View
         style={{
@@ -154,7 +337,7 @@ export default function Settings() {
                 key={x.key}
                 accessibilityRole="radio"
                 accessibilityState={{ selected: on }}
-                accessibilityLabel={`${x.label} theme`}
+                accessibilityLabel={tr('themeA11y', { name: tr(x.label) })}
                 onPress={() => setPreference(x.key)}
                 style={({ pressed }) => ({
                   flex: 1,
@@ -171,7 +354,7 @@ export default function Settings() {
                   color={on ? t.colors.text.onBrand : t.colors.text.secondary}
                   style={{ fontSize: d(14), lineHeight: d(18) }}
                 >
-                  {x.label}
+                  {tr(x.label)}
                 </Text>
               </Pressable>
             );
@@ -179,69 +362,72 @@ export default function Settings() {
         </View>
       </View>
 
-      <SectionLabel>PREFERENCES</SectionLabel>
+      <SectionLabel>{tr('preferences')}</SectionLabel>
 
       <ListRow
         icon="notification"
         hue="gold"
-        title="Notifications"
-        subtitle="Orders, refills, wellness"
+        title={tr('notifications')}
+        subtitle={tr('notificationsSub')}
         chevron
         onPress={() => router.push('/notification-settings')}
       />
       <ListRow
         icon="info"
         hue="blue"
-        title="Language"
-        subtitle="English (Ghana)"
-        // One language ships today. The row states that rather than opening an
-        // empty picker; it gains an onPress when a second locale lands.
+        title={tr('language')}
+        subtitle={languageInfo(lang).native}
+        chevron
+        onPress={() => router.push('/language')}
       />
       <ListRow
         icon="card"
         hue="teal"
-        title="Default payment"
-        subtitle={method ? methodLabel(method) : 'None saved yet'}
+        title={tr('payment')}
+        subtitle={method ? methodLabel(method) : tr('noPayment')}
         chevron
         onPress={() => router.push('/payment-methods')}
       />
       <ListRow
         icon="wellness"
         hue="pink"
-        title="Wellness reminders"
-        subtitle="Plan nudges and hydration"
+        title={tr('wellness')}
+        subtitle={tr('wellnessSub')}
         trailing={
           <Toggle
-            value={wellnessReminders}
-            onValueChange={setWellnessReminders}
-            label="Wellness reminders"
+            value={notificationPrefs?.wellnessNudges ?? false}
+            disabled={!notificationPrefs}
+            onValueChange={(next) => {
+              setNotificationPref('wellnessNudges', next).catch(() => {});
+            }}
+            label={tr('wellness')}
           />
         }
       />
 
-      <SectionLabel>YOUR DATA</SectionLabel>
+      <SectionLabel>{tr('yourData')}</SectionLabel>
 
       <ListRow
         icon="upload"
         hue="mint"
-        title="Download your data"
-        subtitle="Everything Altruist holds, as a file"
+        title={tr('download')}
+        subtitle={tr('downloadSub')}
         chevron
         onPress={() => router.push('/download-data')}
       />
       <ListRow
         icon="shield-check"
         hue="teal"
-        title="My prescriptions"
-        subtitle="Photos, reviews and status"
+        title={tr('scripts')}
+        subtitle={tr('scriptsSub')}
         chevron
         onPress={() => router.push('/prescriptions')}
       />
       <ListRow
         icon="trash"
         hue="coral"
-        title="Delete account"
-        subtitle="Permanent after a 30-day grace period"
+        title={tr('deleteAccount')}
+        subtitle={tr('deleteSub')}
         chevron
         onPress={() => router.push('/delete-account')}
       />
@@ -334,7 +520,7 @@ export default function Settings() {
         </>
       ) : null}
 
-      <SectionLabel>ABOUT</SectionLabel>
+      <SectionLabel>{tr('about')}</SectionLabel>
 
       <View
         style={{
@@ -361,8 +547,7 @@ export default function Settings() {
       </View>
 
       <Text variant="caption" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-        Altruist is a technology platform connecting you with certified, independent partner
-        pharmacies. It does not dispense medication or provide medical advice.
+        {tr('disclaimer')}
       </Text>
     </FormScreen>
   );

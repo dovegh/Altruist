@@ -27,9 +27,130 @@ import { StatusScreen } from '@/components/ui/StatusScreen';
 import { cedis } from '@/lib/money';
 import { useOrderStore } from '@/features/orders/store';
 import { REFUND_REASONS as REASONS } from '@/lib/forms';
+import { defineStrings, useT } from '@/i18n';
+import { formLabel } from '@/lib/formLabels';
+
+const S = defineStrings({
+  en: {
+    metaRx: '× {qty} · dispensed',
+    metaSealed: '× {qty} · sealed, unopened',
+    lockReason: 'Prescription medicine — cannot be returned once dispensed',
+    notFoundTitle: 'Order not found',
+    notFoundBody: 'A refund can only be requested against an order on this device.',
+    seeAll: 'See all orders',
+    title: 'Request a refund',
+    explTitle: 'Dispensed medicines cannot be returned',
+    explBody: 'If one arrived damaged or wrong, contact the pharmacy.',
+    which: 'WHICH ITEMS?',
+    whatWrong: 'WHAT WENT WRONG?',
+    photos: 'PHOTOS · HELPS THE PHARMACY DECIDE FASTER',
+    removePhoto: 'Remove photo {n}',
+    addPhoto: 'Add a photo',
+    selectedOne: '{count} item selected',
+    selectedMany: '{count} items selected',
+    review: 'Review',
+  },
+  fr: {
+    metaRx: '× {qty} · délivré',
+    metaSealed: '× {qty} · scellé, non ouvert',
+    lockReason: 'Médicament sur ordonnance — ne peut être retourné une fois délivré',
+    notFoundTitle: 'Commande introuvable',
+    notFoundBody:
+      'Un remboursement ne peut être demandé que pour une commande présente sur cet appareil.',
+    seeAll: 'Voir toutes les commandes',
+    title: 'Demander un remboursement',
+    explTitle: 'Les médicaments délivrés ne peuvent pas être retournés',
+    explBody: 'Si l’un d’eux est arrivé endommagé ou erroné, contactez la pharmacie.',
+    which: 'QUELS ARTICLES ?',
+    whatWrong: 'QUEL EST LE PROBLÈME ?',
+    photos: 'PHOTOS · AIDENT LA PHARMACIE À DÉCIDER PLUS VITE',
+    removePhoto: 'Supprimer la photo {n}',
+    addPhoto: 'Ajouter une photo',
+    selectedOne: '{count} article sélectionné',
+    selectedMany: '{count} articles sélectionnés',
+    review: 'Vérifier',
+  },
+  tw: {
+    metaRx: '× {qty} · wɔde ama',
+    metaSealed: '× {qty} · wɔmmuee',
+    lockReason: 'Nnuro a ɛhia krataa — sɛ wɔde ma wie a, wɔrentumi mfa nsan mma',
+    notFoundTitle: 'Yɛanhu adetɔ no',
+    notFoundBody: 'Adetɔ a ɛwɔ saa fon yi so nko ara na wobɛtumi abisa ne sika.',
+    seeAll: 'Hwɛ nneɛma a woato nyinaa',
+    title: 'Bisa wo sika',
+    explTitle: 'Wɔrentumi mfa nnuro a wɔde ama nsan mma',
+    explBody: 'Sɛ bi sɛeeɛ anaa ɛnyɛ deɛ wopɛ a, frɛ nnuro fie no.',
+    which: 'NNEƐMA BƐN?',
+    whatWrong: 'DEƐN NA ƐKƆƆ BƆNE?',
+    photos: 'MFONINI · ƐBOA NNURO FIE NO MA ƐSI GYINAEƐ NTƐM',
+    removePhoto: 'Yi mfonini {n}',
+    addPhoto: 'Fa mfonini ka ho',
+    selectedOne: 'Woapaw adeɛ {count}',
+    selectedMany: 'Woapaw nneɛma {count}',
+    review: 'Hwɛ bio',
+  },
+  gaa: {
+    metaRx: '× {qty} · akɛhaa',
+    metaSealed: '× {qty} · agbeleee',
+    lockReason: 'Tsofa ni hiaa wolo — kɛ akɛhaa lɛ, anyɛŋ akɛku',
+    notFoundTitle: 'Anaaa nɔ ni ohe lɛ',
+    notFoundBody: 'Nɔ ni ohe ni yɔɔ fon nɛɛ nɔ pɛ obaanyɛ obi ehe shika.',
+    seeAll: 'Kwɛmɔ nɔ ni ohe fɛɛ',
+    title: 'Bi o shika',
+    explTitle: 'Anyɛŋ akɛ tsofai ni akɛhaa aku',
+    explBody: 'Kɛji ekome fite loo jeee nɔ ni osumɔɔ, tsɛ tsofa shĩa lɛ.',
+    which: 'NIBII NƐGBƐ?',
+    whatWrong: 'MƐNI JAAA?',
+    photos: 'MFONIRII · EYEƆ ABUA TSOFA SHĨA LƐ NI EKPƐ EYITSO OYAYAYA',
+    removePhoto: 'Jiemɔ mfoniri {n}',
+    addPhoto: 'Kɛ mfoniri fata he',
+    selectedOne: 'Ohala nɔ {count}',
+    selectedMany: 'Ohala nibii {count}',
+    review: 'Kwɛmɔ ekoŋŋ',
+  },
+  ee: {
+    metaRx: '× {qty} · wona',
+    metaSealed: '× {qty} · womeʋui o',
+    lockReason: 'Atike si hiã ŋɔŋlɔ — ne wona vɔ la, womate ŋu atrɔe o',
+    notFoundTitle: 'Míekpɔ nuƒeƒle la o',
+    notFoundBody: 'Nuƒeƒle si le fon sia dzi ko ŋu nàte ŋu abia ga gbugbɔ ɖo.',
+    seeAll: 'Kpɔ nu siwo nèƒle katã',
+    title: 'Bia ga gbugbɔ',
+    explTitle: 'Womate ŋu atrɔ atike siwo wona o',
+    explBody: 'Ne ɖeka va gblẽe alo menye esi nèdi o la, yɔ atikeƒle la.',
+    which: 'NU KAWOE?',
+    whatWrong: 'NUKAE GBLẼ?',
+    photos: 'FOTOWO · WOKPENA ƉE ATIKEƑLE LA ŊU BE WÒAWƆ NYAMETSOTSO KABA',
+    removePhoto: 'Ɖe foto {n} ɖa',
+    addPhoto: 'Tsɔ foto kpe ɖe eŋu',
+    selectedOne: 'Nu {count} wotia',
+    selectedMany: 'Nu {count} wotia',
+    review: 'Gbugbɔ kpɔ',
+  },
+  ha: {
+    metaRx: '× {qty} · an bayar',
+    metaSealed: '× {qty} · a rufe, ba a buɗe ba',
+    lockReason: 'Maganin takarda — ba za a iya mayar da shi ba bayan an bayar',
+    notFoundTitle: 'Ba a sami oda ba',
+    notFoundBody: 'Ana iya neman mayar da kuɗi ne kawai kan odar da ke wannan na’ura.',
+    seeAll: 'Duba duk oda',
+    title: 'Nemi mayar da kuɗi',
+    explTitle: 'Ba za a iya mayar da magungunan da aka bayar ba',
+    explBody: 'Idan ɗaya ya iso a lalace ko ba daidai ba, tuntuɓi kantin magani.',
+    which: 'WAƊANNE KAYA?',
+    whatWrong: 'ME YA FARU?',
+    photos: 'HOTUNA · SUNA TAIMAKA WA KANTIN MAGANI YA YANKE HUKUNCI DA SAURI',
+    removePhoto: 'Cire hoto {n}',
+    addPhoto: 'Ƙara hoto',
+    selectedOne: 'An zaɓi kaya {count}',
+    selectedMany: 'An zaɓi kaya {count}',
+    review: 'Duba',
+  },
+});
 
 
 export default function RequestRefund() {
+  const tr = useT(S);
   const t = useTokens();
   const { d } = useDesignScale();
   const [picked, setPicked] = useState<Record<string, boolean>>({});
@@ -50,11 +171,11 @@ export default function RequestRefund() {
     id: l.productId,
     name: l.name,
     meta: l.requiresPrescription
-      ? `× ${l.qty} · dispensed`
-      : `× ${l.qty} · sealed, unopened`,
+      ? tr('metaRx', { qty: l.qty })
+      : tr('metaSealed', { qty: l.qty }),
     price: l.unitPrice * l.qty,
     locked: l.requiresPrescription,
-    lockReason: 'Prescription medicine — cannot be returned once dispensed',
+    lockReason: tr('lockReason'),
   }));
 
   const { count, amount } = useMemo(() => {
@@ -69,10 +190,10 @@ export default function RequestRefund() {
       <StatusScreen
         icon="danger"
         tone="danger"
-        title="Order not found"
-        body="A refund can only be requested against an order on this device."
+        title={tr('notFoundTitle')}
+        body={tr('notFoundBody')}
         actions={
-          <Button label="See all orders" size="large" onPress={() => router.replace('/order-history')} />
+          <Button label={tr('seeAll')} size="large" onPress={() => router.replace('/order-history')} />
         }
       />
     );
@@ -81,7 +202,7 @@ export default function RequestRefund() {
   return (
     <View style={{ flex: 1, backgroundColor: t.colors.bg.canvas }}>
       <FormScreen gap={16}>
-        <TitleAppBar title="Request a refund" />
+        <TitleAppBar title={tr('title')} />
 
         <View
           style={{
@@ -96,15 +217,15 @@ export default function RequestRefund() {
           <Icon name="shield-check" size={d(20)} tone="primary" />
           <View style={{ flex: 1, gap: d(4) }}>
             <Text variant="labelM" style={{ fontSize: d(14), lineHeight: d(18) }}>
-              Dispensed medicines cannot be returned
+              {tr('explTitle')}
             </Text>
             <Text variant="bodyS" tone="secondary" style={{ fontSize: d(13), lineHeight: d(19) }}>
-              If one arrived damaged or wrong, contact the pharmacy.
+              {tr('explBody')}
             </Text>
           </View>
         </View>
 
-        <SectionLabel>WHICH ITEMS?</SectionLabel>
+        <SectionLabel>{tr('which')}</SectionLabel>
 
         {items.map((i) => {
           const on = !i.locked && !!picked[i.id];
@@ -185,7 +306,7 @@ export default function RequestRefund() {
           );
         })}
 
-        <SectionLabel>WHAT WENT WRONG?</SectionLabel>
+        <SectionLabel>{tr('whatWrong')}</SectionLabel>
 
         {REASONS.map((r) => {
           const selected = reason === r;
@@ -194,7 +315,7 @@ export default function RequestRefund() {
               key={r}
               accessibilityRole="radio"
               accessibilityState={{ selected }}
-              accessibilityLabel={r}
+              accessibilityLabel={formLabel(r)}
               onPress={() => setReason(r)}
               style={({ pressed }) => ({
                 flexDirection: 'row',
@@ -211,13 +332,13 @@ export default function RequestRefund() {
             >
               <Radio selected={selected} />
               <Text variant="labelM" style={{ flex: 1, fontSize: d(14), lineHeight: d(18) }}>
-                {r}
+                {formLabel(r)}
               </Text>
             </Pressable>
           );
         })}
 
-        <SectionLabel>PHOTOS · HELPS THE PHARMACY DECIDE FASTER</SectionLabel>
+        <SectionLabel>{tr('photos')}</SectionLabel>
 
         <View style={{ flexDirection: 'row', gap: d(10) }}>
           {photos.map((p) => (
@@ -235,7 +356,7 @@ export default function RequestRefund() {
               <Icon name="image" size={d(26)} tone="tertiary" />
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={`Remove photo ${p}`}
+                accessibilityLabel={tr('removePhoto', { n: p })}
                 hitSlop={8}
                 onPress={() => setPhotos((list) => list.filter((x) => x !== p))}
                 style={{
@@ -256,7 +377,7 @@ export default function RequestRefund() {
           ))}
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Add a photo"
+            accessibilityLabel={tr('addPhoto')}
             onPress={() => setPhotos((list) => [...list, (list[list.length - 1] ?? 0) + 1])}
             style={({ pressed }) => ({
               flex: 1,
@@ -279,14 +400,14 @@ export default function RequestRefund() {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: d(14) }}>
           <View style={{ gap: d(1) }}>
             <Text variant="caption" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-              {count} item{count === 1 ? '' : 's'} selected
+              {tr(count === 1 ? 'selectedOne' : 'selectedMany', { count })}
             </Text>
             <Text variant="numericM" style={{ fontSize: d(20), lineHeight: d(26) }}>
               {cedis(amount)}
             </Text>
           </View>
           <Button
-            label="Review"
+            label={tr('review')}
             size="large"
             iconTrailing="arrow-right"
             style={{ flex: 1 }}

@@ -29,6 +29,9 @@ export function useProducts(filter: CatalogFilter = 'All') {
     // A catalogue is not a status pill — it does not change while you look at
     // it, so the aggressive 30s default in the root client is wrong here.
     staleTime: 5 * 60_000,
+    // Switching filter keeps the current grid up until the next one arrives,
+    // instead of dropping back to the skeleton on every chip tap.
+    placeholderData: (previous) => previous,
   });
 }
 

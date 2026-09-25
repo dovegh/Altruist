@@ -21,8 +21,91 @@ import { Text } from '@/components/ui/Text';
 import { Icon } from '@/components/ui/Icon';
 import { endSession } from '@/features/account/session';
 import { useProfile, usePartnerPharmacy } from '@/features/profile/store';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    heading: 'Scheduled for deletion',
+    body: 'Your account will be permanently deleted on 22 September 2026.',
+    graceTitle: 'You have 30 days',
+    graceBody: 'Sign in any time before 22 Sept to cancel and keep everything.',
+    signedOutTitle: 'You are signed out everywhere',
+    signedOutBody: 'All sessions on all devices have ended.',
+    pharmacyTitle: 'Pharmacy records are unaffected',
+    pharmacyBody: '{pharmacy} keeps its dispensing record under its own obligations.',
+    cancel: 'Cancel deletion, keep my account',
+    done: 'Done',
+    sent: 'A confirmation has been sent to {email}.',
+  },
+  fr: {
+    heading: 'Suppression programmée',
+    body: 'Votre compte sera définitivement supprimé le 22 septembre 2026.',
+    graceTitle: 'Vous avez 30 jours',
+    graceBody: 'Connectez-vous avant le 22 sept. pour annuler et tout conserver.',
+    signedOutTitle: 'Vous êtes déconnecté partout',
+    signedOutBody: 'Toutes les sessions sur tous les appareils ont été fermées.',
+    pharmacyTitle: 'Les registres de la pharmacie ne sont pas concernés',
+    pharmacyBody: '{pharmacy} conserve son registre de délivrance selon ses propres obligations.',
+    cancel: 'Annuler la suppression et garder mon compte',
+    done: 'Terminé',
+    sent: 'Une confirmation a été envoyée à {email}.',
+  },
+  tw: {
+    heading: 'Wɔahyɛ da sɛ wɔbɛyi',
+    body: 'Wɔbɛyi wo akontaa afebɔɔ wɔ September 22, 2026.',
+    graceTitle: 'Wowɔ nna 30',
+    graceBody: 'Kɔ mu bere biara ansa na September 22 aduru na twa mu na kora biribiara.',
+    signedOutTitle: 'Woafi mu wɔ baabiara',
+    signedOutBody: 'Wɔato wo mu wɔ fon ne kɔmputa nyinaa so.',
+    pharmacyTitle: 'Ɛnka nnuro adetɔnbea nsɛm',
+    pharmacyBody: '{pharmacy} kora nnuro a ɔde ama ho nsɛm sɛdeɛ n’asɛdeɛ te.',
+    cancel: 'Twa yiye no mu, gyaw me akontaa',
+    done: 'Awie',
+    sent: 'Yɛde nkra a ɛsi so pi akɔ {email}.',
+  },
+  gaa: {
+    heading: 'Ato gbi ni ajieɔ',
+    body: 'Abaajie o akɔŋt lɛ kɛya daa yɛ September 22, 2026.',
+    graceTitle: 'Oyɛ gbii 30',
+    graceBody: 'Bo mli be fɛɛ be dani September 22 ashɛ koni okpa ni oto nɔ fɛɛ nɔ.',
+    signedOutTitle: 'Ojɛ mli yɛ he fɛɛ he',
+    signedOutBody: 'Aŋmɛ o mli yɛ tɛlifoŋ kɛ kɔmputa fɛɛ nɔ.',
+    pharmacyTitle: 'Etaaa tsofa shĩa saji lɛ',
+    pharmacyBody: '{pharmacy} hiɛɔ tsofai ni ekɛha lɛ he saji yɛ ediŋŋ ehe nitsumɔ naa.',
+    cancel: 'Kpa jiemɔ lɛ, ha mi akɔŋt lɛ ahi',
+    done: 'Egbe naa',
+    sent: 'Wɔtsu kpɛmɔ he sane kɛya {email}.',
+  },
+  ee: {
+    heading: 'Woɖo ŋkeke si woatutui',
+    body: 'Woatutu wò akɔnta tegbee le September 22, 2026 dzi.',
+    graceTitle: 'Ŋkeke 30 le asiwò',
+    graceBody: 'Ge ɖe eme ɣesiaɣi hafi September 22 naɖo be nàɖe asi le eŋu eye nàlé nuwo katã ɖe asi.',
+    signedOutTitle: 'Èdo go le afisiafi',
+    signedOutBody: 'Wotu wò akɔnta le mɔ̃wo katã dzi.',
+    pharmacyTitle: 'Atikedzraƒe ƒe nuŋlɔɖiwo mele eme o',
+    pharmacyBody: '{pharmacy} lé atike siwo wòna ƒe nuŋlɔɖi ɖe asi le eya ŋutɔ ƒe agbanɔamedziwo nu.',
+    cancel: 'Ɖe asi le tutu ŋu, na nye akɔnta nanɔ anyi',
+    done: 'Ewu enu',
+    sent: 'Míeɖo kpeɖodzinya ɖe {email}.',
+  },
+  ha: {
+    heading: 'An tsara gogewa',
+    body: 'Za a goge asusunka har abada a ranar 22 ga Satumba 2026.',
+    graceTitle: 'Kana da kwana 30',
+    graceBody: 'Shiga kowane lokaci kafin 22 ga Satumba don sokewa da riƙe komai.',
+    signedOutTitle: 'An fitar da kai a ko’ina',
+    signedOutBody: 'Duk zaman shiga a duk na’urori sun ƙare.',
+    pharmacyTitle: 'Rikodin kantin magani ba ya shafa',
+    pharmacyBody: '{pharmacy} yana riƙe da rikodin bayar da magani ƙarƙashin nasa wajibai.',
+    cancel: 'Soke gogewa, riƙe asusuna',
+    done: 'An gama',
+    sent: 'An aika tabbaci zuwa {email}.',
+  },
+});
 
 export default function DeletionScheduled() {
+  const tr = useT(S);
   const profile = useProfile();
   const pharmacy = usePartnerPharmacy();
   const t = useTokens();
@@ -45,7 +128,7 @@ export default function DeletionScheduled() {
 
       <View style={{ gap: d(10) }}>
         <Text variant="displayS" center style={{ fontSize: d(28), lineHeight: d(32) }}>
-          Scheduled for deletion
+          {tr('heading')}
         </Text>
         <Text
           variant="bodyL"
@@ -53,7 +136,7 @@ export default function DeletionScheduled() {
           center
           style={{ fontSize: d(16), lineHeight: d(24) }}
         >
-          Your account will be permanently deleted on 22 September 2026.
+          {tr('body')}
         </Text>
       </View>
 
@@ -68,30 +151,30 @@ export default function DeletionScheduled() {
       >
         <FactRow
           icon="clock"
-          title="You have 30 days"
-          body="Sign in any time before 22 Sept to cancel and keep everything."
+          title={tr('graceTitle')}
+          body={tr('graceBody')}
         />
         <FactRow
           icon="logout"
-          title="You are signed out everywhere"
-          body="All sessions on all devices have ended."
+          title={tr('signedOutTitle')}
+          body={tr('signedOutBody')}
         />
         <FactRow
           icon="shield-check"
-          title="Pharmacy records are unaffected"
-          body={`${pharmacy.name} keeps its dispensing record under its own obligations.`}
+          title={tr('pharmacyTitle')}
+          body={tr('pharmacyBody', { pharmacy: pharmacy.name })}
         />
       </View>
 
       <Button
-        label="Cancel deletion, keep my account"
+        label={tr('cancel')}
         size="large"
         onPress={() => router.replace('/profile')}
       />
-      <Button label="Done" variant="tertiary" size="large" onPress={done} />
+      <Button label={tr('done')} variant="tertiary" size="large" onPress={done} />
 
       <Text variant="caption" tone="tertiary" center style={{ fontSize: d(12), lineHeight: d(16) }}>
-        A confirmation has been sent to {profile.email}.
+        {tr('sent', { email: profile.email })}
       </Text>
     </FormScreen>
   );

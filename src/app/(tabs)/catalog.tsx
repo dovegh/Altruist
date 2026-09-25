@@ -16,9 +16,14 @@
  * but nothing behind it was ever specified and the cart had no entry point on
  * any tab root — an item added from this grid was unreachable until Product
  * Detail happened to push /cart.
+ *
+ * Rendering: a virtualised two-column FlatList. It used to be a ScrollView
+ * that mounted all ~480 cards and started every photo download at once,
+ * which is what made the tab slow to open and to scroll. Cards are memoised
+ * and receive stable handlers, so a cart add does not re-render the grid.
  */
-import React, { useState } from 'react';
-import { View, ScrollView } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { View, ScrollView, FlatList, Platform } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -34,9 +39,100 @@ import { packLine, CATALOG_FILTERS, type CatalogFilter, type Product } from '@/l
 import { useProducts } from '@/features/catalog/queries';
 import { useCartStore } from '@/features/cart/store';
 import { useCartCount } from '@/features/cart/useCart';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    title: 'Catalog',
+    cart: 'Cart',
+    loadError: 'Could not load the catalogue',
+    loadErrorBody: 'Check your connection and try again.',
+    tryAgain: 'Try again',
+    emptyTitle: 'Nothing in {filter}',
+    emptyBody: 'Nothing in this category today.',
+    filterAll: 'All',
+    filterPrescription: 'Prescription',
+    filterOtc: 'OTC',
+    filterVitamins: 'Vitamins',
+  },
+  fr: {
+    title: 'Catalogue',
+    cart: 'Panier',
+    loadError: 'Impossible de charger le catalogue',
+    loadErrorBody: 'Vérifiez votre connexion et réessayez.',
+    tryAgain: 'Réessayer',
+    emptyTitle: 'Rien dans {filter}',
+    emptyBody: "Rien dans cette catégorie aujourd'hui.",
+    filterAll: 'Tout',
+    filterPrescription: 'Sur ordonnance',
+    filterOtc: 'Sans ordonnance',
+    filterVitamins: 'Vitamines',
+  },
+  tw: {
+    title: 'Nneɛma',
+    cart: 'Kɛntɛn',
+    loadError: 'Yɛntumi mfaa nneɛma no mmaeɛ',
+    loadErrorBody: 'Hwɛ wo intanɛt na san bɔ mmɔden.',
+    tryAgain: 'San bɔ mmɔden',
+    emptyTitle: 'Biribiara nni {filter} mu',
+    emptyBody: 'Biribiara nni saa akuo yi mu nnɛ.',
+    filterAll: 'Ne nyinaa',
+    filterPrescription: 'Nnuro krataa',
+    filterOtc: 'OTC',
+    filterVitamins: 'Vitamin',
+  },
+  gaa: {
+    title: 'Nibii',
+    cart: 'Kɛntɛŋ',
+    loadError: 'Wɔnyɛɛɛ nibii lɛ kɛbaa',
+    loadErrorBody: 'Kwɛ o intanɛt ni oka ekoŋŋ.',
+    tryAgain: 'Ka ekoŋŋ',
+    emptyTitle: 'Nɔ ko bɛ {filter} mli',
+    emptyBody: 'Nɔ ko bɛ akuu nɛɛ mli ŋmɛnɛ.',
+    filterAll: 'Fɛɛ',
+    filterPrescription: 'Tsofa wolo',
+    filterOtc: 'OTC',
+    filterVitamins: 'Vitamin',
+  },
+  ee: {
+    title: 'Nuwo',
+    cart: 'Kusi',
+    loadError: 'Míete ŋu xɔ nuwo o',
+    loadErrorBody: 'Kpɔ wò internet eye nàgadze agbagba.',
+    tryAgain: 'Gadze agbagba',
+    emptyTitle: 'Naneke meli le {filter} me o',
+    emptyBody: 'Naneke meli le hatsotso sia me egbe o.',
+    filterAll: 'Katã',
+    filterPrescription: 'Atikeŋɔŋlɔ',
+    filterOtc: 'OTC',
+    filterVitamins: 'Vitamin',
+  },
+  ha: {
+    title: 'Kayayyaki',
+    cart: 'Kwando',
+    loadError: 'Ba a iya loda kayayyakin ba',
+    loadErrorBody: 'Duba haɗin intanet ɗinka ka sake gwadawa.',
+    tryAgain: 'Sake gwadawa',
+    emptyTitle: 'Babu komai a {filter}',
+    emptyBody: 'Babu komai a wannan rukuni yau.',
+    filterAll: 'Duka',
+    filterPrescription: 'Takardar magani',
+    filterOtc: 'OTC',
+    filterVitamins: 'Bitamin',
+  },
+});
+
+// Filter values stay English (they are query values); only the chip text is translated.
+const FILTER_LABELS: Record<CatalogFilter, keyof (typeof S)['en']> = {
+  All: 'filterAll',
+  Prescription: 'filterPrescription',
+  OTC: 'filterOtc',
+  Vitamins: 'filterVitamins',
+};
 
 export default function Catalog() {
   const t = useTokens();
+  const tr = useT(S);
   const { d } = useDesignScale();
   const insets = useSafeAreaInsets();
   /**
@@ -52,129 +148,139 @@ export default function Catalog() {
   const add = useCartStore((s) => s.add);
   const cartCount = useCartCount();
 
-  const onAdd = (id: string) => {
-    add(id);
-    // The card gives no other confirmation — the item leaves for a screen the
-    // user is not on. The tick is the receipt.
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-  };
+  const onAdd = useCallback(
+    (id: string) => {
+      add(id);
+      // The card gives no other confirmation — the item leaves for a screen the
+      // user is not on. The tick is the receipt.
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    },
+    [add],
+  );
 
-  // Two per row, in catalogue order.
   const items = products ?? [];
-  const rows: Product[][] = [];
-  for (let i = 0; i < items.length; i += 2) rows.push(items.slice(i, i + 2));
+  const padH = d(24);
+
+  const header = (
+    <View style={{ gap: d(20), paddingBottom: d(20) }}>
+      <TitleAppBar
+        title={tr('title')}
+        showBack={false}
+        actions={[
+          { icon: 'cart', label: tr('cart'), badge: cartCount, onPress: () => router.push('/cart') },
+        ]}
+      />
+      {isPending && !products ? null : (
+        <>
+          <SearchField onPress={() => router.push('/search')} />
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: d(10) }}>
+            {CATALOG_FILTERS.map((f) => (
+              <FilterChip key={f} label={tr(FILTER_LABELS[f])} selected={filter === f} onPress={() => setFilter(f)} />
+            ))}
+          </ScrollView>
+        </>
+      )}
+    </View>
+  );
+
+  const empty = isPending ? (
+    <Shimmer style={{ gap: d(20) }}>
+      <SkeletonBlock width="100%" height={52} radius={999} />
+      <View style={{ flexDirection: 'row', gap: d(10) }}>
+        {[72, 118, 82, 96].map((w) => (
+          <SkeletonBlock key={w} width={w} height={42} radius={999} />
+        ))}
+      </View>
+      <View style={{ gap: d(14) }}>
+        {[0, 1].map((row) => (
+          <View key={row} style={{ flexDirection: 'row', gap: d(14) }}>
+            <ProductCardSkeleton />
+            <ProductCardSkeleton />
+          </View>
+        ))}
+      </View>
+    </Shimmer>
+  ) : isError ? (
+    <View style={{ gap: d(14), paddingTop: d(40) }}>
+      <Text variant="headingM" center style={{ fontSize: d(18), lineHeight: d(24) }}>
+        {tr('loadError')}
+      </Text>
+      <Text variant="bodyM" tone="secondary" center style={{ fontSize: d(14), lineHeight: d(21) }}>
+        {tr('loadErrorBody')}
+      </Text>
+      <Button label={tr('tryAgain')} variant="secondary" size="large" onPress={() => refetch()} />
+    </View>
+  ) : (
+    <View style={{ gap: d(10), paddingTop: d(40) }}>
+      <Text variant="headingM" center style={{ fontSize: d(18), lineHeight: d(24) }}>
+        {tr('emptyTitle', { filter: tr(FILTER_LABELS[filter]) })}
+      </Text>
+      <Text variant="bodyM" tone="secondary" center style={{ fontSize: d(14), lineHeight: d(21) }}>
+        {tr('emptyBody')}
+      </Text>
+    </View>
+  );
+
+  const renderItem = useCallback(
+    ({ item: p }: { item: Product }) => (
+      <CatalogCard product={p} onAdd={onAdd} />
+    ),
+    [onAdd],
+  );
 
   return (
     <View style={{ flex: 1, backgroundColor: t.colors.bg.canvas }}>
-      <ScrollView
+      <FlatList
+        data={isError ? [] : items}
+        keyExtractor={(p) => p.id}
+        renderItem={renderItem}
+        numColumns={2}
+        columnWrapperStyle={{ gap: d(12) }}
+        ItemSeparatorComponent={() => <View style={{ height: d(12) }} />}
+        ListHeaderComponent={header}
+        ListEmptyComponent={empty}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingTop: insets.top + d(18),
-          paddingHorizontal: d(24),
+          paddingHorizontal: padH,
           paddingBottom: d(120) + insets.bottom,
-          gap: d(20),
         }}
-      >
-        <TitleAppBar
-          title="Catalog"
-          showBack={false}
-          actions={[
-            { icon: 'cart', label: 'Cart', badge: cartCount, onPress: () => router.push('/cart') },
-          ]}
-        />
-
-        {isPending ? (
-          <Shimmer style={{ gap: d(20) }}>
-            <SkeletonBlock width="100%" height={52} radius={999} />
-            <View style={{ flexDirection: 'row', gap: d(10) }}>
-              {[72, 118, 82, 96].map((w) => (
-                <SkeletonBlock key={w} width={w} height={42} radius={999} />
-              ))}
-            </View>
-            <View style={{ gap: d(14) }}>
-              {[0, 1].map((row) => (
-                <View key={row} style={{ flexDirection: 'row', gap: d(14) }}>
-                  <ProductCardSkeleton />
-                  <ProductCardSkeleton />
-                </View>
-              ))}
-            </View>
-          </Shimmer>
-        ) : (
-          <>
-            <SearchField onPress={() => router.push('/search')} />
-
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: d(10) }}
-            >
-              {CATALOG_FILTERS.map((f) => (
-                <FilterChip
-                  key={f}
-                  label={f}
-                  selected={filter === f}
-                  onPress={() => setFilter(f)}
-                />
-              ))}
-            </ScrollView>
-
-            {isError ? (
-              <View style={{ gap: d(14), paddingTop: d(40) }}>
-                <Text variant="headingM" center style={{ fontSize: d(18), lineHeight: d(24) }}>
-                  Could not load the catalogue
-                </Text>
-                <Text
-                  variant="bodyM"
-                  tone="secondary"
-                  center
-                  style={{ fontSize: d(14), lineHeight: d(21) }}
-                >
-                  The pharmacy’s stock list did not come through. Your cart is untouched.
-                </Text>
-                <Button label="Try again" variant="secondary" size="large" onPress={() => refetch()} />
-              </View>
-            ) : rows.length === 0 ? (
-              <View style={{ gap: d(10), paddingTop: d(40) }}>
-                <Text variant="headingM" center style={{ fontSize: d(18), lineHeight: d(24) }}>
-                  Nothing in {filter}
-                </Text>
-                <Text
-                  variant="bodyM"
-                  tone="secondary"
-                  center
-                  style={{ fontSize: d(14), lineHeight: d(21) }}
-                >
-                  This partner does not stock anything in that category today.
-                </Text>
-              </View>
-            ) : (
-              <View style={{ gap: d(12) }}>
-                {rows.map((row, i) => (
-                  <View key={i} style={{ flexDirection: 'row', gap: d(12) }}>
-                    {row.map((p) => (
-                      <ProductCard
-                        key={p.id}
-                        name={p.name}
-                        pack={packLine(p)}
-                        price={cedis(p.price)}
-                        requiresPrescription={p.requiresPrescription}
-                        inStock={p.inStock}
-                        imageUrl={p.imageUrl}
-                        onPress={() => router.push(`/product?id=${p.id}`)}
-                        onAdd={() => onAdd(p.id)}
-                      />
-                    ))}
-                    {/* Keeps a lone last card at half width rather than
-                        stretching it across the grid. */}
-                    {row.length === 1 ? <View style={{ flex: 1 }} /> : null}
-                  </View>
-                ))}
-              </View>
-            )}
-          </>
-        )}
-      </ScrollView>
+        // A screenful and a little either side; the rest mounts as you scroll.
+        initialNumToRender={8}
+        maxToRenderPerBatch={8}
+        windowSize={7}
+        removeClippedSubviews={Platform.OS === 'android'}
+      />
     </View>
   );
 }
+
+/**
+ * One grid cell. Memoised with stable props, so adding one product to the cart
+ * re-renders one card, not the whole list. The spacer keeps a lone last card
+ * at half width — FlatList columns already handle that; the flex:1 cell does.
+ */
+const CatalogCard = React.memo(function CatalogCard({
+  product: p,
+  onAdd,
+}: {
+  product: Product;
+  onAdd: (id: string) => void;
+}) {
+  const open = useCallback(() => router.push(`/product?id=${p.id}`), [p.id]);
+  const addThis = useCallback(() => onAdd(p.id), [onAdd, p.id]);
+  return (
+    <View style={{ flex: 1, maxWidth: '50%' }}>
+      <ProductCard
+        name={p.name}
+        pack={packLine(p)}
+        price={cedis(p.price)}
+        requiresPrescription={p.requiresPrescription}
+        inStock={p.inStock}
+        imageUrl={p.imageUrl}
+        onPress={open}
+        onAdd={addThis}
+      />
+    </View>
+  );
+});

@@ -20,6 +20,76 @@ import React from 'react';
 import Svg, { Circle, Ellipse, Path, Rect, G } from 'react-native-svg';
 import { primitives as p } from '@/theme/tokens';
 import { FRUIT_ART, FRUIT_PRESETS, type FruitPreset } from './avatarsFruit';
+import { defineStrings, translate } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    wrap: 'Woman in a patterned headwrap',
+    afro: 'Person with an afro',
+    fade: 'Man with a low fade and beard',
+    braids: 'Woman with braids',
+    hijab: 'Woman in a hijab',
+    bun: 'Person with a bun and glasses',
+    locs: 'Person with locs',
+    elder: 'Older man with a grey beard',
+    fallback: 'Illustrated avatar',
+  },
+  fr: {
+    wrap: 'Femme avec un foulard à motifs',
+    afro: 'Personne avec une coupe afro',
+    fade: 'Homme avec un dégradé court et une barbe',
+    braids: 'Femme avec des tresses',
+    hijab: 'Femme portant un hijab',
+    bun: 'Personne avec un chignon et des lunettes',
+    locs: 'Personne avec des locks',
+    elder: 'Homme âgé à la barbe grise',
+    fallback: 'Avatar illustré',
+  },
+  tw: {
+    wrap: 'Ɔbaa a ɔkyekyere duku',
+    afro: 'Onipa a ne ti nwi yɛ afro',
+    fade: 'Ɔbarima a ne ti nwi yɛ tiaa na ɔwɔ abɔdwesɛ',
+    braids: 'Ɔbaa a wabɔ ne ti',
+    hijab: 'Ɔbaa a ɔhyɛ hijab',
+    bun: 'Onipa a wakyekyere ne ti nwi na ɔhyɛ ahwehwɛniwa',
+    locs: 'Onipa a ɔwɔ dreadlocks',
+    elder: "Akwakora a n'abɔdwesɛ ayɛ fitaa",
+    fallback: 'Mfonini avatar',
+  },
+  gaa: {
+    wrap: 'Yoo ni fi duku',
+    afro: 'Gbɔmɔ ni yɛ afro yitsɔi',
+    fade: 'Nuu ni yitsɔi fioo kɛ abɔdwɛi',
+    braids: 'Yoo ni eŋmɛ yitsɔi',
+    hijab: 'Yoo ni wo hijab',
+    bun: 'Gbɔmɔ ni fi yitsɔi kɛ ahwehwɛ',
+    locs: 'Gbɔmɔ ni yɛ dreadlocks',
+    elder: 'Nuumo ni eabɔdwɛi eyɛ yɔɔ',
+    fallback: 'Avatar mfoniri',
+  },
+  ee: {
+    wrap: 'Nyɔnu si bla takui',
+    afro: 'Ame si ƒe ɖa nye afro',
+    fade: 'Ŋutsu si ƒe ɖa le kpui eye wòtsi ge',
+    braids: 'Nyɔnu si bla ɖa',
+    hijab: 'Nyɔnu si ta hijab',
+    bun: 'Ame si bla ɖa ɖe ɖeka eye wòdo ŋkuɖɔ',
+    locs: 'Ame si ƒe ɖa nye dreadlocks',
+    elder: 'Ametsitsi si ƒe ge ɣi',
+    fallback: 'Avatar nɔnɔmetata',
+  },
+  ha: {
+    wrap: 'Mace mai ɗaure da kallabi',
+    afro: 'Mutum mai gashin afro',
+    fade: 'Mutum mai gajeren aski da gemu',
+    braids: 'Mace mai kitso',
+    hijab: 'Mace mai hijabi',
+    bun: 'Mutum mai ɗaurin gashi da tabarau',
+    locs: 'Mutum mai tukkun gashi',
+    elder: 'Dattijo mai furfurar gemu',
+    fallback: 'Hoton avatar',
+  },
+});
 
 type PersonPreset = 'wrap' | 'afro' | 'fade' | 'braids' | 'hijab' | 'bun' | 'locs' | 'elder';
 
@@ -27,21 +97,25 @@ export type AvatarPreset = PersonPreset | FruitPreset;
 
 export type AvatarGroup = 'people' | 'fruit';
 
-const PEOPLE: { id: PersonPreset; label: string }[] = [
-  { id: 'wrap', label: 'Woman in a patterned headwrap' },
-  { id: 'afro', label: 'Person with an afro' },
-  { id: 'fade', label: 'Man with a low fade and beard' },
-  { id: 'braids', label: 'Woman with braids' },
-  { id: 'hijab', label: 'Woman in a hijab' },
-  { id: 'bun', label: 'Person with a bun and glasses' },
-  { id: 'locs', label: 'Person with locs' },
-  { id: 'elder', label: 'Older man with a grey beard' },
-];
+const PEOPLE: PersonPreset[] = ['wrap', 'afro', 'fade', 'braids', 'hijab', 'bun', 'locs', 'elder'];
 
 /** Picker order, the group each sits under, and the screen-reader name. */
+// `label` is a getter so it reads in the current language wherever it is used.
 export const AVATAR_PRESETS: { id: AvatarPreset; label: string; group: AvatarGroup }[] = [
-  ...PEOPLE.map((a) => ({ ...a, group: 'people' as const })),
-  ...FRUIT_PRESETS.map((a) => ({ ...a, group: 'fruit' as const })),
+  ...PEOPLE.map((id) => ({
+    id,
+    group: 'people' as const,
+    get label() {
+      return translate(S, id);
+    },
+  })),
+  ...FRUIT_PRESETS.map((a) => ({
+    id: a.id,
+    group: 'fruit' as const,
+    get label() {
+      return a.label;
+    },
+  })),
 ];
 
 export function isAvatarPreset(id: string | undefined | null): id is AvatarPreset {
@@ -49,7 +123,7 @@ export function isAvatarPreset(id: string | undefined | null): id is AvatarPrese
 }
 
 export function avatarPresetLabel(id: AvatarPreset): string {
-  return AVATAR_PRESETS.find((a) => a.id === id)?.label ?? 'Illustrated avatar';
+  return AVATAR_PRESETS.find((a) => a.id === id)?.label ?? translate(S, 'fallback');
 }
 
 // --- Shared parts --------------------------------------------------------------

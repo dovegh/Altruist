@@ -9,6 +9,7 @@
  * is how a report arrives at the wrong desk.
  */
 import type { SupportParty } from './support';
+import { refundStepText } from './formLabels';
 
 /** Order cancellation, before dispatch. */
 export const CANCEL_REASONS: string[] = [
@@ -140,10 +141,6 @@ export const CANCELLATION_REFUND_STEPS: TimelineStep[] = [
 
 /** Post-delivery refund — the pharmacy decides, so there is a review step. */
 export function refundCaseSteps(pharmacyName: string, raisedAt: string): TimelineStep[] {
-  return [
-    { title: 'Request received', meta: `Altruist passed it to the pharmacy · ${raisedAt}`, state: 'done' },
-    { title: 'Pharmacy reviewing', meta: `${pharmacyName} · usually within 2 business days`, state: 'current' },
-    { title: 'Decision', meta: 'Approved in full, in part, or declined with a reason', state: 'upcoming' },
-    { title: 'Money back on your card', meta: '3–5 business days after approval', state: 'upcoming' },
-  ];
+  const states: TimelineState[] = ['done', 'current', 'upcoming', 'upcoming'];
+  return refundStepText(pharmacyName, raisedAt).map((step, i) => ({ ...step, state: states[i] }));
 }

@@ -11,6 +11,16 @@
  */
 import type { IconName } from '@/components/ui/Icon';
 import type { Pharmacy } from './pharmacies';
+import { defineStrings, languageInfo, translate, useLanguageStore } from '@/i18n';
+
+const WHEN = defineStrings({
+  en: { now: 'Just now', min: '{n} min ago', hours: '{n} h ago', yesterday: 'Yesterday', days: '{n} days ago' },
+  fr: { now: "À l'instant", min: 'Il y a {n} min', hours: 'Il y a {n} h', yesterday: 'Hier', days: 'Il y a {n} jours' },
+  tw: { now: 'Seesei ara', min: 'Simma {n} a atwam', hours: 'Dɔnhwere {n} a atwam', yesterday: 'Ɛnnora', days: 'Nna {n} a atwam' },
+  gaa: { now: 'Bianɛ nɔŋŋ', min: 'Miniti {n} ni eho', hours: 'Ŋmɛlɛtswaa {n} ni eho', yesterday: 'Nyɛ', days: 'Gbii {n} ni eho' },
+  ee: { now: 'Fifia ko', min: 'Aɖabaƒoƒo {n} va yi', hours: 'Gaƒoƒo {n} va yi', yesterday: 'Etsɔ si va yi', days: 'Ŋkeke {n} va yi' },
+  ha: { now: 'Yanzu-yanzu', min: 'Minti {n} da suka wuce', hours: 'Awa {n} da suka wuce', yesterday: 'Jiya', days: 'Kwana {n} da suka wuce' },
+});
 
 export type NotificationTone = 'brand' | 'info' | 'danger' | 'warning' | 'neutral';
 
@@ -115,12 +125,13 @@ export function isToday(at: number, now: number = Date.now()): boolean {
 /** "12 min ago", "2 h ago", "Yesterday", "19 Aug". */
 export function relativeTime(at: number, now: number = Date.now()): string {
   const delta = Math.max(0, now - at);
-  if (delta < MINUTE) return 'Just now';
-  if (delta < HOUR) return `${Math.floor(delta / MINUTE)} min ago`;
-  if (isToday(at, now)) return `${Math.floor(delta / HOUR)} h ago`;
+  if (delta < MINUTE) return translate(WHEN, 'now');
+  if (delta < HOUR) return translate(WHEN, 'min', { n: Math.floor(delta / MINUTE) });
+  if (isToday(at, now)) return translate(WHEN, 'hours', { n: Math.floor(delta / HOUR) });
   const yesterday = new Date(now);
   yesterday.setDate(yesterday.getDate() - 1);
-  if (isToday(at, yesterday.getTime())) return 'Yesterday';
-  if (delta < 7 * DAY) return `${Math.floor(delta / DAY)} days ago`;
-  return new Date(at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  if (isToday(at, yesterday.getTime())) return translate(WHEN, 'yesterday');
+  if (delta < 7 * DAY) return translate(WHEN, 'days', { n: Math.floor(delta / DAY) });
+  const locale = languageInfo(useLanguageStore.getState().lang).locale;
+  return new Date(at).toLocaleDateString(locale, { day: 'numeric', month: 'short' });
 }

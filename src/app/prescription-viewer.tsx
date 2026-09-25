@@ -44,13 +44,211 @@ import { loadPrescriptions, usePrescriptionStore } from '@/features/prescription
 import { useProducts } from '@/features/catalog/queries';
 import { prescriptionImageUrl } from '@/lib/api';
 import { SUPABASE_CONFIGURED } from '@/lib/supabase';
+import { leaveAppFor } from '@/lib/appLock';
+import { defineStrings, useLocale, useT } from '@/i18n';
+
+// The rejection reason is the pharmacist's own words and never goes through `tr`.
+const S = defineStrings({
+  en: {
+    prescriptionId: 'Prescription {id}',
+    quoteId: 'Quote this ID if you contact the pharmacy.',
+    copyId: 'Copy ID',
+    close: 'Close',
+    noSharing: 'Sharing is not available on this phone.',
+    exportFailed: 'Could not export the photo. Try again.',
+    zoomOut: 'Zoom out',
+    zoomIn: 'Zoom in',
+    tryAgain: 'Try again',
+    photoA11y: 'Your uploaded prescription',
+    loadFailed: 'Could not load the photo.',
+    noPhoto: 'No photo attached.',
+    closeViewer: 'Close viewer',
+    notFound: 'This prescription could not be found.',
+    verifiedBy: 'Verified by {name}',
+    rejectedBy: 'Rejected by {name}',
+    beingReviewed: 'Being reviewed',
+    waiting: 'Waiting for a pharmacist',
+    prescription: 'Prescription',
+    idCopied: 'ID copied',
+    idLine: 'ID {id}',
+    moreOptions: 'More options',
+    coversMany: '{name} · {count} items',
+    uploaded: 'Uploaded {when}',
+    reason: 'Reason',
+    review: 'REVIEW',
+    private: 'Private',
+    privateMeta: 'Only you and {pharmacy} can see it',
+    export: 'Export',
+    reupload: 'Re-upload',
+  },
+  fr: {
+    prescriptionId: 'Ordonnance {id}',
+    quoteId: 'Indiquez cet identifiant si vous contactez la pharmacie.',
+    copyId: "Copier l'identifiant",
+    close: 'Fermer',
+    noSharing: "Le partage n'est pas disponible sur ce téléphone.",
+    exportFailed: "Impossible d'exporter la photo. Réessayez.",
+    zoomOut: 'Dézoomer',
+    zoomIn: 'Zoomer',
+    tryAgain: 'Réessayer',
+    photoA11y: 'Votre ordonnance envoyée',
+    loadFailed: 'Impossible de charger la photo.',
+    noPhoto: 'Aucune photo jointe.',
+    closeViewer: 'Fermer la visionneuse',
+    notFound: 'Cette ordonnance est introuvable.',
+    verifiedBy: 'Vérifiée par {name}',
+    rejectedBy: 'Refusée par {name}',
+    beingReviewed: "En cours d'examen",
+    waiting: "En attente d'un pharmacien",
+    prescription: 'Ordonnance',
+    idCopied: 'Identifiant copié',
+    idLine: 'ID {id}',
+    moreOptions: "Plus d'options",
+    coversMany: '{name} · {count} articles',
+    uploaded: 'Envoyée le {when}',
+    reason: 'Motif',
+    review: 'EXAMEN',
+    private: 'Privée',
+    privateMeta: 'Seuls vous et {pharmacy} pouvez la voir',
+    export: 'Exporter',
+    reupload: 'Renvoyer',
+  },
+  tw: {
+    prescriptionId: 'Nnuro krataa {id}',
+    quoteId: 'Ka ID yi kyerɛ nnuro adetɔnbea no sɛ wofrɛ wɔn a.',
+    copyId: 'Kɔpi ID no',
+    close: 'To mu',
+    noSharing: 'Wontumi mfa nkyɛ wɔ fon yi so.',
+    exportFailed: 'Yɛantumi amfa mfonini no amfi. San bɔ mmɔden.',
+    zoomOut: 'Ma ɛnyɛ ketewa',
+    zoomIn: 'Ma ɛnyɛ kɛseɛ',
+    tryAgain: 'San bɔ mmɔden',
+    photoA11y: 'Nnuro krataa a wode too so',
+    loadFailed: 'Yɛantumi amma mfonini no amma.',
+    noPhoto: 'Mfonini biara nka ho.',
+    closeViewer: 'To mfonini hwɛbea no mu',
+    notFound: 'Yɛanhu nnuro krataa yi.',
+    verifiedBy: '{name} asi so pi',
+    rejectedBy: '{name} apo',
+    beingReviewed: 'Wɔrehwɛ mu',
+    waiting: 'Ɛretwɛn oduruyɛfoɔ',
+    prescription: 'Nnuro krataa',
+    idCopied: 'Wɔakɔpi ID no',
+    idLine: 'ID {id}',
+    moreOptions: 'Nneɛma bebree',
+    coversMany: '{name} · nneɛma {count}',
+    uploaded: 'Wɔde too so {when}',
+    reason: 'Deɛ enti',
+    review: 'NHWEHWƐMU',
+    private: 'Wo nko ara',
+    privateMeta: 'Wo ne {pharmacy} nko ara na wobɛtumi ahu',
+    export: 'Yi fi',
+    reupload: 'San fa to so',
+  },
+  gaa: {
+    prescriptionId: 'Tsofa wolo {id}',
+    quoteId: 'Tsɔɔ ID nɛɛ kɛji oobaatsɛ tsofa shĩa lɛ.',
+    copyId: 'Kɔpi ID lɛ',
+    close: 'Ŋmɛ',
+    noSharing: 'Onyɛŋ okɛ nɔ ko aha mɛi yɛ tɛlifoŋ nɛɛ nɔ.',
+    exportFailed: 'Wɔnyɛɛɛ wɔjie mfoniri lɛ. Ka ekoŋŋ.',
+    zoomOut: 'Ha efee bibioo',
+    zoomIn: 'Ha efee agbo',
+    tryAgain: 'Ka ekoŋŋ',
+    photoA11y: 'Tsofa wolo ni okɛya lɛ',
+    loadFailed: 'Wɔnyɛɛɛ wɔjie mfoniri lɛ kpo.',
+    noPhoto: 'Mfoniri ko bɛ he.',
+    closeViewer: 'Ŋmɛ mfoniri kwɛmɔ lɛ',
+    notFound: 'Wɔnaaa tsofa wolo nɛɛ.',
+    verifiedBy: '{name} ekpɛ nɔ',
+    rejectedBy: '{name} ekpoo',
+    beingReviewed: 'Akwɛɔ mli',
+    waiting: 'Emiimɛ tsofatsɛ',
+    prescription: 'Tsofa wolo',
+    idCopied: 'Akɔpi ID lɛ',
+    idLine: 'ID {id}',
+    moreOptions: 'Nibii krokomɛi',
+    coversMany: '{name} · nibii {count}',
+    uploaded: 'Akɛya {when}',
+    reason: 'Nɔ hewɔ',
+    review: 'KWƐMƆ',
+    private: 'Bo pɛ',
+    privateMeta: 'Bo kɛ {pharmacy} pɛ nyɛɔ naa',
+    export: 'Jie kpo',
+    reupload: 'Kɛya ekoŋŋ',
+  },
+  ee: {
+    prescriptionId: 'Atikeŋɔŋlɔ {id}',
+    quoteId: 'Gblɔ ID sia ne èle ka ƒom na atikedzraƒe la.',
+    copyId: 'Kɔpi ID la',
+    close: 'Tui',
+    noSharing: 'Màte ŋu ama nu le fon sia dzi o.',
+    exportFailed: 'Míete ŋu ɖe foto la do o. Gatee kpɔ.',
+    zoomOut: 'Na wòasue',
+    zoomIn: 'Na wòalolo',
+    tryAgain: 'Gatee kpɔ',
+    photoA11y: 'Atikeŋɔŋlɔ si nèɖo ɖa',
+    loadFailed: 'Míete ŋu ɖe foto la fia o.',
+    noPhoto: 'Foto aɖeke meli o.',
+    closeViewer: 'Tu fotokpɔƒe la',
+    notFound: 'Míekpɔ atikeŋɔŋlɔ sia o.',
+    verifiedBy: '{name} ɖo kpe edzi',
+    rejectedBy: '{name} gbee',
+    beingReviewed: 'Wole edzrɔ̃m',
+    waiting: 'Le atikedzrala lalam',
+    prescription: 'Atikeŋɔŋlɔ',
+    idCopied: 'Wokɔpi ID la',
+    idLine: 'ID {id}',
+    moreOptions: 'Nu bubuwo',
+    coversMany: '{name} · nu {count}',
+    uploaded: 'Woɖoe ɖa {when}',
+    reason: 'Susu',
+    review: 'DZODZRƆ̃',
+    private: 'Wò ɖeɖe',
+    privateMeta: 'Wò kple {pharmacy} koe ate ŋu akpɔe',
+    export: 'Ɖe do',
+    reupload: 'Gaɖoe ɖa',
+  },
+  ha: {
+    prescriptionId: 'Takardar magani {id}',
+    quoteId: 'Ambaci wannan ID idan za ka tuntuɓi kantin magani.',
+    copyId: 'Kwafi ID',
+    close: 'Rufe',
+    noSharing: 'Ba a iya rabawa a wannan waya ba.',
+    exportFailed: 'Ba a iya fitar da hoton ba. Sake gwadawa.',
+    zoomOut: 'Rage girma',
+    zoomIn: 'Ƙara girma',
+    tryAgain: 'Sake gwadawa',
+    photoA11y: 'Takardar maganin da ka ɗora',
+    loadFailed: 'Ba a iya buɗe hoton ba.',
+    noPhoto: 'Babu hoton da aka haɗa.',
+    closeViewer: 'Rufe mai duba hoto',
+    notFound: 'Ba a sami wannan takardar magani ba.',
+    verifiedBy: '{name} ya tabbatar',
+    rejectedBy: '{name} ya ƙi',
+    beingReviewed: 'Ana dubawa',
+    waiting: 'Ana jiran likitan magunguna',
+    prescription: 'Takardar magani',
+    idCopied: 'An kwafi ID',
+    idLine: 'ID {id}',
+    moreOptions: 'Ƙarin zaɓuɓɓuka',
+    coversMany: '{name} · abubuwa {count}',
+    uploaded: 'An ɗora {when}',
+    reason: 'Dalili',
+    review: 'DUBAWA',
+    private: 'Na sirri',
+    privateMeta: 'Kai da {pharmacy} kaɗai ke iya gani',
+    export: 'Fitar',
+    reupload: 'Sake ɗorawa',
+  },
+});
 
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 4;
 const STEP = 0.5;
 
-function formatWhen(ms: number): string {
-  return new Date(ms).toLocaleString('en-GB', {
+function formatWhen(ms: number, locale: string): string {
+  return new Date(ms).toLocaleString(locale, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -61,6 +259,8 @@ function formatWhen(ms: number): string {
 }
 
 export default function PrescriptionViewer() {
+  const tr = useT(S);
+  const locale = useLocale();
   const t = useTokens();
   const { d } = useDesignScale();
   const insets = useSafeAreaInsets();
@@ -176,11 +376,11 @@ export default function PrescriptionViewer() {
     if (!script) return;
     showDialog({
       icon: 'prescription',
-      title: `Prescription ${script.id}`,
-      message: 'Quote this ID if you contact the pharmacy.',
+      title: tr('prescriptionId', { id: script.id }),
+      message: tr('quoteId'),
       actions: [
-        { label: 'Copy ID', icon: 'check', onPress: () => void copyId() },
-        { label: 'Close', variant: 'tertiary' },
+        { label: tr('copyId'), icon: 'check', onPress: () => void copyId() },
+        { label: tr('close'), variant: 'tertiary' },
       ],
     });
   };
@@ -191,7 +391,7 @@ export default function PrescriptionViewer() {
     setExporting(true);
     try {
       if (!(await Sharing.isAvailableAsync())) {
-        setError('Sharing is not available on this phone.');
+        setError(tr('noSharing'));
         return;
       }
       let fileUri = imageUri;
@@ -202,13 +402,13 @@ export default function PrescriptionViewer() {
         const downloaded = await File.downloadFileAsync(imageUri, target, { idempotent: true });
         fileUri = downloaded.uri;
       }
-      await Sharing.shareAsync(fileUri, {
+      await leaveAppFor(() => Sharing.shareAsync(fileUri, {
         mimeType: 'image/jpeg',
-        dialogTitle: `Prescription ${script.id}`,
-      });
+        dialogTitle: tr('prescriptionId', { id: script.id }),
+      }));
     } catch (e) {
       console.warn('prescription export failed', e);
-      setError('Could not export the photo. Try again.');
+      setError(tr('exportFailed'));
     } finally {
       setExporting(false);
     }
@@ -246,7 +446,7 @@ export default function PrescriptionViewer() {
   const zoomButton = (icon: 'minus' | 'add', delta: number) => (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={delta < 0 ? 'Zoom out' : 'Zoom in'}
+      accessibilityLabel={delta < 0 ? tr('zoomOut') : tr('zoomIn')}
       hitSlop={6}
       disabled={!imageUri}
       onPress={() => zoomTo(zoomPct / 100 + delta)}
@@ -270,7 +470,7 @@ export default function PrescriptionViewer() {
       <Text variant="bodyS" tone="secondary" center style={{ fontSize: d(13), lineHeight: d(19) }}>
         {text}
       </Text>
-      {retry ? <Button label="Try again" variant="secondary" size="small" onPress={retry} /> : null}
+      {retry ? <Button label={tr('tryAgain')} variant="secondary" size="small" onPress={retry} /> : null}
     </View>
   );
 
@@ -282,7 +482,7 @@ export default function PrescriptionViewer() {
             <Image
               source={{ uri: imageUri }}
               resizeMode="contain"
-              accessibilityLabel="Your uploaded prescription"
+              accessibilityLabel={tr('photoA11y')}
               onLoad={() => setImageLoaded(true)}
               onError={() => setImageFailed(true)}
               style={{ width: '100%', height: '100%' }}
@@ -314,12 +514,12 @@ export default function PrescriptionViewer() {
       );
     }
     if (image.isError || imageFailed) {
-      return pageMessage('danger', 'Could not load the photo.', () => {
+      return pageMessage('danger', tr('loadFailed'), () => {
         setImageFailed(false);
         void image.refetch();
       });
     }
-    return pageMessage('image', 'No photo attached.');
+    return pageMessage('image', tr('noPhoto'));
   };
 
   // --- Not found ------------------------------------------------------------------
@@ -335,14 +535,14 @@ export default function PrescriptionViewer() {
         }}
       >
         <View style={{ height: d(60), justifyContent: 'center' }}>
-          {roundAction('close', 'Close viewer', close)}
+          {roundAction('close', tr('closeViewer'), close)}
         </View>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: d(12) }}>
           {hydrated ? (
             <>
               <Icon name="prescription" size={d(32)} tone="secondary" />
               <Text variant="bodyM" tone="secondary" center style={{ fontSize: d(14), lineHeight: d(21) }}>
-                This prescription could not be found.
+                {tr('notFound')}
               </Text>
             </>
           ) : (
@@ -361,18 +561,18 @@ export default function PrescriptionViewer() {
     script.status === 'VERIFIED'
       ? {
           icon: 'shield-check',
-          title: `Verified by ${reviewer}`,
-          meta: script.reviewedAt ? formatWhen(script.reviewedAt) : script.pharmacy,
+          title: tr('verifiedBy', { name: reviewer }),
+          meta: script.reviewedAt ? formatWhen(script.reviewedAt, locale) : script.pharmacy,
         }
       : script.status === 'REJECTED'
         ? {
             icon: 'danger',
-            title: `Rejected by ${reviewer}`,
-            meta: script.reviewedAt ? formatWhen(script.reviewedAt) : script.pharmacy,
+            title: tr('rejectedBy', { name: reviewer }),
+            meta: script.reviewedAt ? formatWhen(script.reviewedAt, locale) : script.pharmacy,
           }
         : {
             icon: 'clock',
-            title: script.status === 'VERIFYING' ? 'Being reviewed' : 'Waiting for a pharmacist',
+            title: script.status === 'VERIFYING' ? tr('beingReviewed') : tr('waiting'),
             meta: script.pharmacy,
           };
 
@@ -389,10 +589,10 @@ export default function PrescriptionViewer() {
           paddingHorizontal: d(24),
         }}
       >
-        {roundAction('close', 'Close viewer', close)}
+        {roundAction('close', tr('closeViewer'), close)}
         <View style={{ flex: 1, gap: d(1) }}>
           <Text variant="labelM" center style={{ fontSize: d(14), lineHeight: d(18) }}>
-            Prescription
+            {tr('prescription')}
           </Text>
           <Text
             variant="caption"
@@ -401,10 +601,10 @@ export default function PrescriptionViewer() {
             accessibilityLiveRegion="polite"
             style={{ fontSize: d(12), lineHeight: d(16) }}
           >
-            {copied ? 'ID copied' : `ID ${script.id}`}
+            {copied ? tr('idCopied') : tr('idLine', { id: script.id })}
           </Text>
         </View>
-        {roundAction('more', 'More options', moreOptions)}
+        {roundAction('more', tr('moreOptions'), moreOptions)}
       </View>
 
       {/* Stage — fills the space between the bar and the sheet. The zoom pill
@@ -480,11 +680,13 @@ export default function PrescriptionViewer() {
             <View style={{ flex: 1, gap: d(3) }}>
               <Text variant="labelL" numberOfLines={2} style={{ fontSize: d(16), lineHeight: d(20) }}>
                 {covers.length
-                  ? `${covers[0]}${covers.length > 1 ? ` · ${covers.length} items` : ''}`
-                  : 'Prescription'}
+                  ? covers.length > 1
+                    ? tr('coversMany', { name: covers[0], count: covers.length })
+                    : covers[0]
+                  : tr('prescription')}
               </Text>
               <Text variant="caption" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-                Uploaded {formatWhen(script.uploadedAt)}
+                {tr('uploaded', { when: formatWhen(script.uploadedAt, locale) })}
               </Text>
             </View>
             <StatusPill status={script.status} />
@@ -501,7 +703,7 @@ export default function PrescriptionViewer() {
               }}
             >
               <Text variant="labelS" tone="danger" style={{ fontSize: d(12), lineHeight: d(16) }}>
-                Reason
+                {tr('reason')}
               </Text>
               <Text variant="bodyS" style={{ fontSize: d(13), lineHeight: d(19) }}>
                 {script.note}
@@ -519,14 +721,14 @@ export default function PrescriptionViewer() {
             }}
           >
             <Text variant="labelXS" tone="tertiary" style={{ fontSize: d(11), lineHeight: d(14) }}>
-              REVIEW
+              {tr('review')}
             </Text>
             {[
               review,
               {
                 icon: 'profile' as IconName,
-                title: 'Private',
-                meta: `Only you and ${script.pharmacy} can see it`,
+                title: tr('private'),
+                meta: tr('privateMeta', { pharmacy: script.pharmacy }),
               },
             ].map((row) => (
               <View key={row.title} style={{ flexDirection: 'row', gap: d(10) }}>
@@ -547,7 +749,7 @@ export default function PrescriptionViewer() {
 
           <View style={{ flexDirection: 'row', gap: d(12) }}>
             <Button
-              label="Export"
+              label={tr('export')}
               variant="secondary"
               size="medium"
               iconLeading="upload"
@@ -558,7 +760,7 @@ export default function PrescriptionViewer() {
             />
             {script.status === 'REJECTED' ? (
               <Button
-                label="Re-upload"
+                label={tr('reupload')}
                 size="medium"
                 iconLeading="camera"
                 style={{ flex: 1 }}

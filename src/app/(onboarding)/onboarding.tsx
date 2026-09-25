@@ -22,8 +22,262 @@ import { shortName, type Pharmacy } from '@/lib/pharmacies';
 import { FREE_DELIVERY_OVER } from '@/features/cart/useCart';
 import { cedis } from '@/lib/money';
 import { PRODUCTS } from '@/lib/catalog';
-import { ARTICLES, cardMeta } from '@/lib/articles';
+import { ARTICLES } from '@/lib/articles';
 import { programmeById } from '@/lib/wellness';
+import { defineStrings, useT } from '@/i18n';
+
+// Each headline is up to three pieces, the middle one highlighted. An empty
+// piece is dropped, so a language can put the highlight last.
+const S = defineStrings({
+  en: {
+    skip: 'Skip',
+    skipA11y: 'Skip onboarding',
+    next: 'Next',
+    getStarted: 'Get started',
+    s1HeadA: 'Upload your',
+    s1HeadB: 'prescription',
+    s1HeadC: '',
+    s1Body:
+      'Upload prescriptions instantly and connect directly with certified local pharmacies for doorstep fulfilment.',
+    verifiedPartner: 'Verified partner',
+    reviewed: 'Reviewed in 4 min',
+    realPharmacist: 'Real pharmacist',
+    kmAway: '{km} km away',
+    rxApproved: 'Rx approved',
+    readyDispatch: 'Ready to dispatch',
+    s2HeadA: 'Everything the',
+    s2HeadB: 'cabinet',
+    s2HeadC: 'needs',
+    s2Body:
+      'Browse everyday medicines, vitamins, and healthcare essentials with secure checkout.',
+    inStockToday: 'In stock today',
+    priceInStock: '{price} · in stock',
+    otc: 'Over the counter',
+    priceOtc: '{price} · OTC',
+    noRx: 'No prescription needed',
+    items: '{count} items',
+    fromPartner: 'From {name}',
+    freeDelivery: 'Free delivery',
+    ordersOver: 'Orders over {amount}',
+    s3HeadA: 'Stay',
+    s3HeadB: 'well',
+    s3HeadC: 'between refills',
+    s3Body:
+      'Access expert health tips, nutrition advice, and structured workout routines to stay on top of your goals.',
+    sessionPlan: '{count}-session plan',
+    restingHr: 'Resting HR 64',
+    steady: 'Steady this week',
+    minRead: '{min} min read',
+    heart: 'Heart',
+  },
+  fr: {
+    skip: 'Passer',
+    skipA11y: "Passer l'introduction",
+    next: 'Suivant',
+    getStarted: 'Commencer',
+    s1HeadA: 'Envoyez votre',
+    s1HeadB: 'ordonnance',
+    s1HeadC: '',
+    s1Body:
+      'Envoyez vos ordonnances en un instant et échangez directement avec des pharmacies locales certifiées, pour une livraison à votre porte.',
+    verifiedPartner: 'Partenaire vérifié',
+    reviewed: 'Vérifiée en 4 min',
+    realPharmacist: 'Un vrai pharmacien',
+    kmAway: 'À {km} km',
+    rxApproved: 'Ordonnance validée',
+    readyDispatch: "Prête à l'envoi",
+    s2HeadA: 'Tout pour votre',
+    s2HeadB: 'armoire à pharmacie',
+    s2HeadC: '',
+    s2Body:
+      'Parcourez médicaments du quotidien, vitamines et produits de santé essentiels, avec un paiement sécurisé.',
+    inStockToday: "En stock aujourd'hui",
+    priceInStock: '{price} · en stock',
+    otc: 'Sans ordonnance',
+    priceOtc: '{price} · sans ordonnance',
+    noRx: 'Aucune ordonnance requise',
+    items: '{count} articles',
+    fromPartner: 'Chez {name}',
+    freeDelivery: 'Livraison gratuite',
+    ordersOver: 'Commandes de plus de {amount}',
+    s3HeadA: 'Restez en',
+    s3HeadB: 'forme',
+    s3HeadC: 'entre deux renouvellements',
+    s3Body:
+      "Accédez à des conseils santé d'experts, des conseils en nutrition et des séances d'exercice structurées pour atteindre vos objectifs.",
+    sessionPlan: 'Programme de {count} séances',
+    restingHr: 'FC au repos 64',
+    steady: 'Stable cette semaine',
+    minRead: '{min} min de lecture',
+    heart: 'Cœur',
+  },
+  tw: {
+    skip: 'Twa mu',
+    skipA11y: 'Twa nkyerɛkyerɛmu no mu',
+    next: 'Deɛ ɛdi so',
+    getStarted: 'Hyɛ ase',
+    s1HeadA: 'Fa wo',
+    s1HeadB: 'nnuro krataa',
+    s1HeadC: 'to so',
+    s1Body:
+      'Fa wo nnuro nkrataa to so ntɛm na di nkitaho tẽẽ ne nnuro adetɔnfoɔ a wɔagye wɔn atom, na wɔde nnuro no abrɛ wo fie.',
+    verifiedPartner: 'Ɔhokafoɔ a yɛagye no atom',
+    reviewed: 'Yɛhwɛɛ mu wɔ simma 4 mu',
+    realPharmacist: 'Oduruyɛfoɔ ankasa',
+    kmAway: 'Ɛwɔ {km} km',
+    rxApproved: 'Yɛapene Rx no so',
+    readyDispatch: 'Ɛasiesie ama akɔ',
+    s2HeadA: 'Biribiara a wo',
+    s2HeadB: 'nnuro adaka',
+    s2HeadC: 'hia',
+    s2Body:
+      'Hwehwɛ nnuro a wode di dwuma da biara, vitamin ne apɔmuden nneɛma, na tua ka wɔ ɛkwan a ahobammɔ wom so.',
+    inStockToday: 'Ɛwɔ hɔ ɛnnɛ',
+    priceInStock: '{price} · ɛwɔ hɔ',
+    otc: 'Nnuro krataa nhia',
+    priceOtc: '{price} · OTC',
+    noRx: 'Nnuro krataa nhia',
+    items: 'Nneɛma {count}',
+    fromPartner: 'Efi {name}',
+    freeDelivery: 'Yɛde bɛbrɛ wo kwa',
+    ordersOver: 'Nneɛma a ɛboro {amount}',
+    s3HeadA: 'Kɔ so nya',
+    s3HeadB: 'apɔmuden',
+    s3HeadC: 'bere biara',
+    s3Body:
+      'Nya apɔmuden ho afotuo fi abenfoɔ hɔ, aduane ho afotuo ne apɔw-mu-teɛteɛ nhyehyɛeɛ a ɛbɛboa wo.',
+    sessionPlan: 'Nhyehyɛeɛ a ɛwɔ bere {count}',
+    restingHr: 'Akoma bɔ 64',
+    steady: 'Ɛyɛ pɛ nnawɔtwe yi',
+    minRead: 'Simma {min} kenkan',
+    heart: 'Akoma',
+  },
+  gaa: {
+    skip: 'Fa nɔ',
+    skipA11y: 'Fa shishitsɔɔmɔ lɛ nɔ',
+    next: 'Nɔ ni nyiɛ sɛɛ',
+    getStarted: 'Je shishi',
+    s1HeadA: 'Kɛ o',
+    s1HeadB: 'tsofa wolo',
+    s1HeadC: 'ha wɔ',
+    s1Body:
+      'Kɛ o tsofa woloi ha wɔ oya nɔŋŋ ni okɛ tsofa shĩai ni ahe amɛ gbɛ ni bɛŋkɛ bo awie, ni amɛkɛ tsofai lɛ aba o shĩa.',
+    verifiedPartner: 'Hefatalɔ ni ahe gbɛ',
+    reviewed: 'Akwɛ mli yɛ minitii 4 mli',
+    realPharmacist: 'Tsofatsɛ diɛŋtsɛ',
+    kmAway: 'Eje {km} km',
+    rxApproved: 'Akpɛlɛ Rx lɛ nɔ',
+    readyDispatch: 'Esaa ni aha eya',
+    s2HeadA: 'Nɔ fɛɛ nɔ ni o',
+    s2HeadB: 'tsofa adeka',
+    s2HeadC: 'he hiaa',
+    s2Body:
+      'Kwɛ tsofai ni otsuɔ nii daa, vitamin kɛ hewalɛ nibii, ni owo nyɔmɔ yɛ gbɛ ni hi nɔ.',
+    inStockToday: 'Eyɛ ŋmɛnɛ',
+    priceInStock: '{price} · eyɛ',
+    otc: 'Tsofa wolo he ehiaaa',
+    priceOtc: '{price} · OTC',
+    noRx: 'Tsofa wolo he ehiaaa',
+    items: 'Nibii {count}',
+    fromPartner: 'Kɛjɛ {name}',
+    freeDelivery: 'Wɔkɛbaa yaka',
+    ordersOver: 'Nɔ ni ohe ni fe {amount}',
+    s3HeadA: 'Hi',
+    s3HeadB: 'hewalɛ mli',
+    s3HeadC: 'daa',
+    s3Body:
+      'Na hewalɛ he ŋaawoo kɛjɛ nilelɔi aŋɔɔ, niyenii he ŋaawoo kɛ gbɔmɔtso he nitsumɔ ni aŋmɛ gbɛ, koni otsu o yiŋtoi anɔ nii.',
+    sessionPlan: 'Nitsumɔ {count} gbɛjianɔtoo',
+    restingHr: 'Tsui fɔ 64',
+    steady: 'Etsɔ shi otsi nɛɛ',
+    minRead: 'Minitii {min} kanemɔ',
+    heart: 'Tsui',
+  },
+  ee: {
+    skip: 'Dzo le eŋu',
+    skipA11y: 'Dzo le ɖeɖefia la ŋu',
+    next: 'Si kplɔe ɖo',
+    getStarted: 'Dze egɔme',
+    s1HeadA: 'Ɖo wò',
+    s1HeadB: 'atikeŋɔŋlɔ',
+    s1HeadC: 'ɖa',
+    s1Body:
+      'Ɖo wò atikeŋɔŋlɔwo ɖa enumake eye nàdo ka atikedzraƒe siwo woɖo kpe edzi le afi si nèle, woatsɔ atikeawo vɛ na wò le aƒeme.',
+    verifiedPartner: 'Hadɔwɔla si woɖo kpe edzi',
+    reviewed: 'Wodzrɔe me le aɖabaƒoƒo 4 me',
+    realPharmacist: 'Atikedzraɖola vavã',
+    kmAway: '{km} km didi',
+    rxApproved: 'Wolɔ̃ ɖe Rx dzi',
+    readyDispatch: 'Esɔ na ɖoɖo',
+    s2HeadA: 'Nu sia nu si wò',
+    s2HeadB: 'atikedaka',
+    s2HeadC: 'hiã',
+    s2Body:
+      'Kpɔ gbesiagbe atikewo, vitamin kple lãmesẽ nuhiãwo eye nàxe fe le mɔ si le dedie dzi.',
+    inStockToday: 'Eli egbe',
+    priceInStock: '{price} · eli',
+    otc: 'Mehiã atikeŋɔŋlɔ o',
+    priceOtc: '{price} · OTC',
+    noRx: 'Atikeŋɔŋlɔ mehiã o',
+    items: 'Nu {count}',
+    fromPartner: 'Tso {name}',
+    freeDelivery: 'Nuɖoɖo femaxee',
+    ordersOver: 'Nudodo siwo wu {amount}',
+    s3HeadA: 'Nɔ',
+    s3HeadB: 'lãmesẽ',
+    s3HeadC: 'me ɣesiaɣi',
+    s3Body:
+      'Xɔ lãmesẽ ŋuti aɖaŋuɖoɖo tso nunyalawo gbɔ, nuɖuɖu ŋuti aɖaŋu kple kamedefefe ɖoɖowo be nàɖo wò taɖodzinuwo gbɔ.',
+    sessionPlan: 'Ɖoɖo si me akpa {count} le',
+    restingHr: 'Dzi ƒe ƒoƒo 64',
+    steady: 'Eli ke kwasiɖa sia',
+    minRead: 'Aɖabaƒoƒo {min} xexlẽ',
+    heart: 'Dzi',
+  },
+  ha: {
+    skip: 'Tsallake',
+    skipA11y: 'Tsallake gabatarwa',
+    next: 'Na gaba',
+    getStarted: 'Fara',
+    s1HeadA: 'Ɗora',
+    s1HeadB: 'takardar maganinka',
+    s1HeadC: '',
+    s1Body:
+      'Ɗora takardun magani nan take ka haɗu kai tsaye da kantunan magani na gida da aka tabbatar, don a kawo maka har ƙofa.',
+    verifiedPartner: 'Abokin hulɗa da aka tabbatar',
+    reviewed: 'An duba cikin minti 4',
+    realPharmacist: 'Ainihin mai harhaɗa magani',
+    kmAway: 'Nisan km {km}',
+    rxApproved: 'An amince da Rx',
+    readyDispatch: 'A shirye don aikawa',
+    s2HeadA: 'Duk abin da',
+    s2HeadB: 'akwatin magani',
+    s2HeadC: 'ke buƙata',
+    s2Body:
+      'Duba magungunan yau da kullum, bitamin da kayayyakin lafiya masu muhimmanci, tare da biya mai tsaro.',
+    inStockToday: 'Akwai yau',
+    priceInStock: '{price} · akwai',
+    otc: 'Ba sai da takarda ba',
+    priceOtc: '{price} · OTC',
+    noRx: 'Ba a buƙatar takardar magani',
+    items: 'Kaya {count}',
+    fromPartner: 'Daga {name}',
+    freeDelivery: 'Kawowa kyauta',
+    ordersOver: 'Oda sama da {amount}',
+    s3HeadA: 'Kasance cikin',
+    s3HeadB: 'ƙoshin lafiya',
+    s3HeadC: 'koyaushe',
+    s3Body:
+      'Samu shawarwarin lafiya daga ƙwararru, shawarar abinci mai gina jiki da tsararrun motsa jiki don cimma burinka.',
+    sessionPlan: 'Shirin zama {count}',
+    restingHr: 'Bugun zuciya 64',
+    steady: 'Daidai a wannan mako',
+    minRead: 'Karatun minti {min}',
+    heart: 'Zuciya',
+  },
+});
+
+type Tr = (key: keyof (typeof S)['en'], vars?: Record<string, string | number>) => string;
 
 type Chip = {
   /** Rotated bounding box from Figma, design-canvas units. */
@@ -57,12 +311,16 @@ const samples = () => {
   return [inStock[0], inStock[Math.min(1, inStock.length - 1)]].filter(Boolean);
 };
 
-const slidesFor = (p: Pharmacy): Slide[] => [
+const slidesFor = (p: Pharmacy, tr: Tr): Slide[] => [
   {
     card: 'brand',
-    head: [{ text: 'Upload your' }, { text: 'prescription', highlight: true }],
-    body: 'Upload prescriptions instantly and connect directly with certified local pharmacies for doorstep fulfilment.',
-    cta: 'Next',
+    head: [
+      { text: tr('s1HeadA') },
+      { text: tr('s1HeadB'), highlight: true },
+      { text: tr('s1HeadC') },
+    ].filter((w) => w.text),
+    body: tr('s1Body'),
+    cta: tr('next'),
     chips: [
       {
         box: { left: 15.19, top: 296, width: 151.998, height: 61.218 },
@@ -71,7 +329,7 @@ const slidesFor = (p: Pharmacy): Slide[] => [
         thumb: 'surface',
         icon: 'prescription',
         title: shortName(p),
-        sub: 'Verified partner',
+        sub: tr('verifiedPartner'),
       },
       {
         box: { left: 176, top: 267.88, width: 165.393, height: 59.944 },
@@ -79,8 +337,8 @@ const slidesFor = (p: Pharmacy): Slide[] => [
         surface: 'surface',
         thumb: 'accentGold',
         icon: 'prescription',
-        title: 'Reviewed in 4 min',
-        sub: 'Real pharmacist',
+        title: tr('reviewed'),
+        sub: tr('realPharmacist'),
       },
       {
         box: { left: 36, top: 349.68, width: 129.899, height: 54.747 },
@@ -89,7 +347,7 @@ const slidesFor = (p: Pharmacy): Slide[] => [
         thumb: 'surface',
         icon: 'prescription',
         title: p.locality,
-        sub: `${p.distanceKm} km away`,
+        sub: tr('kmAway', { km: p.distanceKm }),
       },
       {
         box: { left: 164.79, top: 366, width: 165.812, height: 57.258 },
@@ -97,16 +355,20 @@ const slidesFor = (p: Pharmacy): Slide[] => [
         surface: 'surface',
         thumb: 'accentPink',
         icon: 'check',
-        title: 'Rx approved',
-        sub: 'Ready to dispatch',
+        title: tr('rxApproved'),
+        sub: tr('readyDispatch'),
       },
     ],
   },
   {
     card: 'accentCream',
-    head: [{ text: 'Everything the' }, { text: 'cabinet', highlight: true }, { text: 'needs' }],
-    body: 'Browse everyday medicines, vitamins, and healthcare essentials with secure checkout.',
-    cta: 'Next',
+    head: [
+      { text: tr('s2HeadA') },
+      { text: tr('s2HeadB'), highlight: true },
+      { text: tr('s2HeadC') },
+    ].filter((w) => w.text),
+    body: tr('s2Body'),
+    cta: tr('next'),
     chips: [
       {
         box: { left: 15.19, top: 296, width: 151.998, height: 61.218 },
@@ -114,8 +376,10 @@ const slidesFor = (p: Pharmacy): Slide[] => [
         surface: 'surface',
         thumb: 'accentBlue',
         icon: 'cart',
-        title: samples()[0]?.name ?? 'In stock today',
-        sub: samples()[0] ? `${cedis(samples()[0].price)} · in stock` : 'Ready to dispatch',
+        title: samples()[0]?.name ?? tr('inStockToday'),
+        sub: samples()[0]
+          ? tr('priceInStock', { price: cedis(samples()[0].price) })
+          : tr('readyDispatch'),
       },
       {
         box: { left: 176, top: 267.88, width: 165.393, height: 59.944 },
@@ -123,8 +387,8 @@ const slidesFor = (p: Pharmacy): Slide[] => [
         surface: 'accentBlue',
         thumb: 'surface',
         icon: 'catalog',
-        title: samples()[1]?.name ?? 'Over the counter',
-        sub: samples()[1] ? `${cedis(samples()[1].price)} · OTC` : 'No prescription needed',
+        title: samples()[1]?.name ?? tr('otc'),
+        sub: samples()[1] ? tr('priceOtc', { price: cedis(samples()[1].price) }) : tr('noRx'),
       },
       {
         box: { left: 36, top: 349.68, width: 129.899, height: 54.747 },
@@ -132,8 +396,8 @@ const slidesFor = (p: Pharmacy): Slide[] => [
         surface: 'surface',
         thumb: 'accentPink',
         icon: 'cart',
-        title: `${PRODUCTS.length} items`,
-        sub: `From ${shortName(p)}`,
+        title: tr('items', { count: PRODUCTS.length }),
+        sub: tr('fromPartner', { name: shortName(p) }),
       },
       {
         box: { left: 164.79, top: 366, width: 165.812, height: 57.258 },
@@ -141,16 +405,20 @@ const slidesFor = (p: Pharmacy): Slide[] => [
         surface: 'accentCream',
         thumb: 'surface',
         icon: 'send',
-        title: 'Free delivery',
-        sub: `Orders over ${cedis(FREE_DELIVERY_OVER)}`,
+        title: tr('freeDelivery'),
+        sub: tr('ordersOver', { amount: cedis(FREE_DELIVERY_OVER) }),
       },
     ],
   },
   {
     card: 'accentGold',
-    head: [{ text: 'Stay' }, { text: 'well', highlight: true }, { text: 'between refills' }],
-    body: 'Access expert health tips, nutrition advice, and structured workout routines to stay on top of your goals.',
-    cta: 'Get started',
+    head: [
+      { text: tr('s3HeadA') },
+      { text: tr('s3HeadB'), highlight: true },
+      { text: tr('s3HeadC') },
+    ].filter((w) => w.text),
+    body: tr('s3Body'),
+    cta: tr('getStarted'),
     chips: [
       {
         box: { left: 15.19, top: 296, width: 151.998, height: 61.218 },
@@ -158,7 +426,7 @@ const slidesFor = (p: Pharmacy): Slide[] => [
         surface: 'surface',
         thumb: 'accentGold',
         icon: 'award',
-        title: `${programmeById().sessionsTotal}-session plan`,
+        title: tr('sessionPlan', { count: programmeById().sessionsTotal }),
         sub: programmeById().title,
       },
       {
@@ -167,8 +435,8 @@ const slidesFor = (p: Pharmacy): Slide[] => [
         surface: 'accentCream',
         thumb: 'surface',
         icon: 'heart',
-        title: 'Resting HR 64',
-        sub: 'Steady this week',
+        title: tr('restingHr'),
+        sub: tr('steady'),
       },
       {
         box: { left: 36, top: 349.68, width: 129.899, height: 54.747 },
@@ -177,7 +445,7 @@ const slidesFor = (p: Pharmacy): Slide[] => [
         thumb: 'surface',
         icon: 'wellness',
         title: ARTICLES[1].category,
-        sub: cardMeta(ARTICLES[1]).split(' · ')[1] + ' read',
+        sub: tr('minRead', { min: ARTICLES[1].minutes }),
       },
       {
         box: { left: 164.79, top: 366, width: 165.812, height: 57.258 },
@@ -185,18 +453,21 @@ const slidesFor = (p: Pharmacy): Slide[] => [
         surface: 'surface',
         thumb: 'accentPink',
         icon: 'info',
-        title: ARTICLES.find((a) => a.id === 'blood-pressure')?.category ?? 'Heart',
-        sub: `${ARTICLES.find((a) => a.id === 'blood-pressure')?.minutes ?? 6} min read`,
+        title: ARTICLES.find((a) => a.id === 'blood-pressure')?.category ?? tr('heart'),
+        sub: tr('minRead', {
+          min: ARTICLES.find((a) => a.id === 'blood-pressure')?.minutes ?? 6,
+        }),
       },
     ],
   },
 ];
 
 export default function Onboarding() {
+  const tr = useT(S);
   const t = useTokens();
   const { d, width } = useDesignScale();
   const pharmacy = usePartnerPharmacy();
-  const SLIDES = slidesFor(pharmacy);
+  const SLIDES = slidesFor(pharmacy, tr);
   const insets = useSafeAreaInsets();
   const [index, setIndex] = useState(0);
   const scroller = useRef<ScrollView>(null);
@@ -256,7 +527,7 @@ export default function Onboarding() {
               <Pressable
                 onPress={finish}
                 accessibilityRole="button"
-                accessibilityLabel="Skip onboarding"
+                accessibilityLabel={tr('skipA11y')}
                 style={{
                   position: 'absolute',
                   left: d(264),
@@ -273,7 +544,7 @@ export default function Onboarding() {
                 }}
               >
                 <Text variant="labelS" color={cardInk}>
-                  Skip
+                  {tr('skip')}
                 </Text>
                 <Icon name="arrow-right" size={d(14)} color={cardInk} />
               </Pressable>

@@ -23,7 +23,64 @@ import { Icon, type IconName } from '@/components/ui/Icon';
 import { usePartnerPharmacy } from '@/features/profile/store';
 import { initialsOf } from '@/lib/profile';
 import { ARTICLES, byId, withReviewer } from '@/lib/articles';
+import { defineStrings, useT } from '@/i18n';
 
+const S = defineStrings({
+  en: {
+    goBack: 'Go back',
+    save: 'Save this article',
+    reviewedBy: 'Reviewed by {name}',
+    meta: '{role} · {registration} · {minutes} min read',
+    ask: 'Ask your partner pharmacy',
+    disclaimer:
+      'Reviewed by a registered pharmacist for general accuracy. It is not a diagnosis and does not replace advice about your own prescription.',
+  },
+  fr: {
+    goBack: 'Retour',
+    save: 'Enregistrer cet article',
+    reviewedBy: 'Relu par {name}',
+    meta: '{role} · {registration} · {minutes} min de lecture',
+    ask: 'Demandez à votre pharmacie partenaire',
+    disclaimer:
+      "Relu par un pharmacien agréé pour en vérifier l'exactitude générale. Ce n'est pas un diagnostic et cela ne remplace pas un conseil sur votre propre ordonnance.",
+  },
+  tw: {
+    goBack: 'San kɔ akyi',
+    save: 'Kora saa asɛm yi',
+    reviewedBy: '{name} na ɔhwɛɛ mu',
+    meta: '{role} · {registration} · simma {minutes} kenkan',
+    ask: 'Bisa wo nnuro adetɔnfoɔ',
+    disclaimer:
+      'Nnuro ho ɔbenfoɔ a wɔagye no atom na ɔhwɛɛ mu. Ɛnyɛ yareɛ ho nhwehwɛmu, na ɛnsi afotuo a ɛfa wo ankasa nnuro ho anan.',
+  },
+  gaa: {
+    goBack: 'Ku sɛɛ',
+    save: 'Toɔ nɔ ni aŋma nɛɛ',
+    reviewedBy: '{name} kwɛ mli',
+    meta: '{role} · {registration} · minitii {minutes} kanemɔ',
+    ask: 'Bi bo tsofa hejɔɔ he lɛ',
+    disclaimer:
+      'Tsofatsɛ ni akpɛlɛ enɔ lɛ kwɛ mli. Jeee hela he taomɔ ni, ni enyɛŋ eye ŋaawoo ni kɔɔ bo diɛŋtsɛ otsofa he lɛ najiaŋ.',
+  },
+  ee: {
+    goBack: 'Trɔ yi megbe',
+    save: 'Dzra nyati sia ɖo',
+    reviewedBy: '{name} ye dzro eme',
+    meta: '{role} · {registration} · miniti {minutes} xexlẽ',
+    ask: 'Bia wò atikedzraƒe',
+    disclaimer:
+      'Atikewɔla si woɖo la ye dzro eme. Menye dɔléle ƒe nyanya o, eye mexɔ ɖe aɖaŋuɖoɖo si ku ɖe wò ŋutɔ wò atike ŋu teƒe o.',
+  },
+  ha: {
+    goBack: 'Koma baya',
+    save: 'Ajiye wannan labarin',
+    reviewedBy: '{name} ne ya duba',
+    meta: '{role} · {registration} · karatun minti {minutes}',
+    ask: 'Tambayi kantin maganinka',
+    disclaimer:
+      'Likitan magunguna mai rajista ne ya duba shi. Ba ganewar cuta ba ne, kuma ba ya maye gurbin shawara game da maganinka ba.',
+  },
+});
 
 export default function Article() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -35,6 +92,7 @@ export default function Article() {
   const t = useTokens();
   const { d } = useDesignScale();
   const insets = useSafeAreaInsets();
+  const tr = useT(S);
   const [saved, setSaved] = React.useState(false);
 
   const round = (icon: IconName, label: string, onPress?: () => void, active?: boolean) => (
@@ -96,8 +154,8 @@ export default function Article() {
             justifyContent: 'space-between',
           }}
         >
-          {round('arrow-left', 'Go back', () => router.back())}
-          {round('heart', 'Save this article', () => setSaved((v) => !v), saved)}
+          {round('arrow-left', tr('goBack'), () => router.back())}
+          {round('heart', tr('save'), () => setSaved((v) => !v), saved)}
         </View>
 
         {/* Body */}
@@ -117,10 +175,14 @@ export default function Article() {
             <Avatar initials={initialsOf(reviewer.name)} size={44} label={reviewer.name} />
             <View style={{ flex: 1, gap: d(3) }}>
               <Text variant="labelM" style={{ fontSize: d(14), lineHeight: d(18) }}>
-                Reviewed by {reviewer.name}
+                {tr('reviewedBy', { name: reviewer.name })}
               </Text>
               <Text variant="caption" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-                {reviewer.role} · {reviewer.registration} · {article.minutes} min read
+                {tr('meta', {
+                  role: reviewer.role,
+                  registration: reviewer.registration,
+                  minutes: article.minutes,
+                })}
               </Text>
             </View>
           </View>
@@ -148,14 +210,14 @@ export default function Article() {
           )}
 
           <Button
-            label="Ask your partner pharmacy"
+            label={tr('ask')}
             variant="secondary"
             size="large"
             iconLeading="call"
             onPress={() => router.push('/support')}
           />
 
-          <MedicalDisclaimer body="Reviewed by a registered pharmacist for general accuracy. It is not a diagnosis and does not replace advice about your own prescription." />
+          <MedicalDisclaimer body={tr('disclaimer')} />
         </View>
       </ScrollView>
     </View>

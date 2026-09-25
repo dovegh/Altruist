@@ -13,6 +13,7 @@ import type { IconName } from '@/components/ui/Icon';
 import type { TileHue } from '@/components/ui/ListRow';
 import type { Pharmacy } from './pharmacies';
 import { initialsOf, firstName } from './profile';
+import { languageInfo, useLanguageStore } from '@/i18n';
 
 export type SupportParty = 'pharmacy' | 'altruist';
 
@@ -127,7 +128,8 @@ export const FAQ: string[] = [
 
 /** "05:41 PM" — the bubble stamp. */
 export function messageTime(at: number): string {
+  const locale = languageInfo(useLanguageStore.getState().lang).locale;
   return new Date(at)
-    .toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true })
+    .toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: true })
     .toUpperCase();
 }

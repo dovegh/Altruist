@@ -30,11 +30,154 @@ import { Icon, type IconName } from '@/components/ui/Icon';
 import { MovementFigure } from '@/components/MovementFigure';
 import { equipmentFor, nextDay, programmeById, resolveExercises } from '@/lib/wellness';
 import { sessionsDoneFor, useWellnessStore } from '@/features/wellness/store';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    eyebrowComplete: '{category} · PROGRAMME COMPLETE',
+    eyebrowSession: '{category} · SESSION {n} OF {total}',
+    minutes: '{min} min',
+    exercises: '{count} exercises',
+    goBack: 'Go back',
+    unsave: 'Remove from saved routines',
+    save: 'Save this routine',
+    restart: 'Restart programme',
+    resumeSession: 'Resume session',
+    startSession: 'Start session',
+    progress: 'Programme progress',
+    allDone: 'All sessions done',
+    oneLeft: '1 session left',
+    manyLeft: '{count} sessions left',
+    inProgressDay: 'IN PROGRESS · {day}',
+    todayDay: 'TODAY · {day}',
+    metaDone: '{sets} × {reps} · done',
+    metaSet: '{sets} × {reps} · set {n} of {total}',
+    equipment: 'EQUIPMENT',
+    resume: 'Resume',
+    today: 'Today',
+  },
+  fr: {
+    eyebrowComplete: '{category} · PROGRAMME TERMINÉ',
+    eyebrowSession: '{category} · SÉANCE {n} SUR {total}',
+    minutes: '{min} min',
+    exercises: '{count} exercices',
+    goBack: 'Retour',
+    unsave: 'Retirer des routines enregistrées',
+    save: 'Enregistrer cette routine',
+    restart: 'Recommencer le programme',
+    resumeSession: 'Reprendre la séance',
+    startSession: 'Commencer la séance',
+    progress: 'Progression du programme',
+    allDone: 'Toutes les séances terminées',
+    oneLeft: '1 séance restante',
+    manyLeft: '{count} séances restantes',
+    inProgressDay: 'EN COURS · {day}',
+    todayDay: "AUJOURD'HUI · {day}",
+    metaDone: '{sets} × {reps} · fait',
+    metaSet: '{sets} × {reps} · série {n} sur {total}',
+    equipment: 'MATÉRIEL',
+    resume: 'Reprendre',
+    today: "Aujourd'hui",
+  },
+  tw: {
+    eyebrowComplete: '{category} · NHYEHYƐEƐ NO AWIE',
+    eyebrowSession: '{category} · ƐKYƐFA {n} WƆ {total} MU',
+    minutes: 'simma {min}',
+    exercises: 'apɔmuhyɛ {count}',
+    goBack: 'San kɔ akyi',
+    unsave: 'Yi fi deɛ woakora mu',
+    save: 'Kora saa nhyehyɛeɛ yi',
+    restart: 'Hyɛ nhyehyɛeɛ no ase bio',
+    resumeSession: 'Toa ɛkyɛfa no so',
+    startSession: 'Hyɛ ɛkyɛfa no ase',
+    progress: 'Nhyehyɛeɛ no nkɔsoɔ',
+    allDone: 'Ɛkyɛfa nyinaa awie',
+    oneLeft: 'Ɛkyɛfa 1 aka',
+    manyLeft: 'Ɛkyɛfa {count} aka',
+    inProgressDay: 'ƐREKƆ SO · {day}',
+    todayDay: 'ƐNNƐ · {day}',
+    metaDone: '{sets} × {reps} · awie',
+    metaSet: '{sets} × {reps} · nkyekyɛmu {n} wɔ {total} mu',
+    equipment: 'NNEƐMA',
+    resume: 'Toa so',
+    today: 'Ɛnnɛ',
+  },
+  gaa: {
+    eyebrowComplete: '{category} · TOIŊJƆLƐMƆ LƐ EGBE NAA',
+    eyebrowSession: '{category} · BƆ {n} YƐ {total} MLI',
+    minutes: 'minitii {min}',
+    exercises: 'gbɔmɔtsoŋ kpaai {count}',
+    goBack: 'Ku sɛɛ',
+    unsave: 'Jie kɛjɛ nɔ ni otoɔ lɛ mli',
+    save: 'Toɔ toiŋjɔlɛmɔ nɛɛ',
+    restart: 'Je toiŋjɔlɛmɔ lɛ shishi ekoŋŋ',
+    resumeSession: 'Ya nɔ kɛ bɔ lɛ',
+    startSession: 'Je bɔ lɛ shishi',
+    progress: 'Toiŋjɔlɛmɔ lɛ yaa hiɛ',
+    allDone: 'Bɔi lɛ fɛɛ egbe naa',
+    oneLeft: 'Bɔ 1 shwɛ',
+    manyLeft: 'Bɔi {count} ashwɛ',
+    inProgressDay: 'EMIIYA NƆ · {day}',
+    todayDay: 'ŊMƐNƐ · {day}',
+    metaDone: '{sets} × {reps} · egbe naa',
+    metaSet: '{sets} × {reps} · ku {n} yɛ {total} mli',
+    equipment: 'NIBII',
+    resume: 'Ya nɔ',
+    today: 'Ŋmɛnɛ',
+  },
+  ee: {
+    eyebrowComplete: '{category} · ƉOƉOA WU ENU',
+    eyebrowSession: '{category} · AKPA {n} LE {total} ME',
+    minutes: 'miniti {min}',
+    exercises: 'kamedefefe {count}',
+    goBack: 'Trɔ yi megbe',
+    unsave: 'Ɖee ɖa le nu siwo nèdzra ɖo me',
+    save: 'Dzra ɖoɖo sia ɖo',
+    restart: 'Gadze ɖoɖoa gɔme',
+    resumeSession: 'Yi akpaa dzi',
+    startSession: 'Dze akpaa gɔme',
+    progress: 'Ɖoɖoa ƒe ŋgɔyiyi',
+    allDone: 'Akpawo katã wu enu',
+    oneLeft: 'Akpa 1 susɔ',
+    manyLeft: 'Akpa {count} susɔ',
+    inProgressDay: 'ELE EDZI YIM · {day}',
+    todayDay: 'EGBE · {day}',
+    metaDone: '{sets} × {reps} · wu enu',
+    metaSet: '{sets} × {reps} · ƒuƒoƒo {n} le {total} me',
+    equipment: 'DƆWƆNUWO',
+    resume: 'Yi edzi',
+    today: 'Egbe',
+  },
+  ha: {
+    eyebrowComplete: '{category} · AN KAMMALA SHIRIN',
+    eyebrowSession: '{category} · ZAMA {n} CIKIN {total}',
+    minutes: 'minti {min}',
+    exercises: 'motsa jiki {count}',
+    goBack: 'Koma baya',
+    unsave: 'Cire daga ajiyayyun tsare-tsare',
+    save: 'Ajiye wannan tsarin',
+    restart: 'Sake fara shirin',
+    resumeSession: 'Ci gaba da zama',
+    startSession: 'Fara zama',
+    progress: 'Ci gaban shiri',
+    allDone: 'An gama duk zama',
+    oneLeft: 'Zama 1 ya rage',
+    manyLeft: 'Zama {count} sun rage',
+    inProgressDay: 'ANA CIKI · {day}',
+    todayDay: 'YAU · {day}',
+    metaDone: '{sets} × {reps} · an gama',
+    metaSet: '{sets} × {reps} · zagaye {n} cikin {total}',
+    equipment: 'KAYAN AIKI',
+    resume: 'Ci gaba',
+    today: 'Yau',
+  },
+});
 
 export default function RoutineDetail() {
   const t = useTokens();
   const { d } = useDesignScale();
   const insets = useSafeAreaInsets();
+  const tr = useT(S);
 
   /** Which plan. Absent means the strength programme, the app's default. */
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -61,9 +204,17 @@ export default function RoutineDetail() {
   const equipment = equipmentFor(exercises);
 
   const eyebrow = complete
-    ? `${PROGRAMME.category} · PROGRAMME COMPLETE`
-    : `${PROGRAMME.category} · SESSION ${Math.min(sessionsDone + 1, total)} OF ${total}`;
-  const facts = [`${day.durationMin} min`, `${exercises.length} exercises`, PROGRAMME.level];
+    ? tr('eyebrowComplete', { category: PROGRAMME.category })
+    : tr('eyebrowSession', {
+        category: PROGRAMME.category,
+        n: Math.min(sessionsDone + 1, total),
+        total,
+      });
+  const facts = [
+    tr('minutes', { min: day.durationMin }),
+    tr('exercises', { count: exercises.length }),
+    PROGRAMME.level,
+  ];
 
   const round = (icon: IconName, label: string, onPress?: () => void, on?: boolean) => (
     <Pressable
@@ -85,7 +236,7 @@ export default function RoutineDetail() {
     </Pressable>
   );
 
-  const startLabel = complete ? 'Restart programme' : mine ? 'Resume session' : 'Start session';
+  const startLabel = complete ? tr('restart') : mine ? tr('resumeSession') : tr('startSession');
   const onStart = () => {
     if (complete) {
       restartProgramme(PROGRAMME.id);
@@ -166,10 +317,10 @@ export default function RoutineDetail() {
             justifyContent: 'space-between',
           }}
         >
-          {round('arrow-left', 'Go back', () => router.back())}
+          {round('arrow-left', tr('goBack'), () => router.back())}
           {round(
             'heart',
-            saved ? 'Remove from saved routines' : 'Save this routine',
+            saved ? tr('unsave') : tr('save'),
             () => toggleSaved(PROGRAMME.id),
             saved,
           )}
@@ -189,10 +340,14 @@ export default function RoutineDetail() {
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: d(12) }}>
               <Text variant="labelM" style={{ flex: 1, fontSize: d(14), lineHeight: d(18) }}>
-                Programme progress
+                {tr('progress')}
               </Text>
               <Text variant="caption" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-                {left <= 0 ? 'All sessions done' : `${left} ${left === 1 ? 'session' : 'sessions'} left`}
+                {left <= 0
+                  ? tr('allDone')
+                  : left === 1
+                    ? tr('oneLeft')
+                    : tr('manyLeft', { count: left })}
               </Text>
             </View>
             <View
@@ -209,7 +364,7 @@ export default function RoutineDetail() {
           </View>
 
           <Text variant="labelXS" tone="tertiary" style={{ fontSize: d(11), lineHeight: d(14) }}>
-            {mine ? 'IN PROGRESS' : 'TODAY'} · {day.title.toUpperCase()}
+            {tr(mine ? 'inProgressDay' : 'todayDay', { day: day.title.toUpperCase() })}
           </Text>
 
           <Stagger step={45}>
@@ -217,9 +372,9 @@ export default function RoutineDetail() {
               const done = !!mine?.completed.includes(e.id);
               const current = !!mine && mine.index === i;
               const meta = done
-                ? `${e.sets} × ${e.reps} · done`
+                ? tr('metaDone', { sets: e.sets, reps: e.reps })
                 : current
-                  ? `${e.sets} × ${e.reps} · set ${mine.setsDone + 1} of ${e.sets}`
+                  ? tr('metaSet', { sets: e.sets, reps: e.reps, n: mine.setsDone + 1, total: e.sets })
                   : `${e.sets} × ${e.reps}`;
               return (
                 <Pressable
@@ -284,7 +439,7 @@ export default function RoutineDetail() {
           </Stagger>
 
           <Text variant="labelXS" tone="tertiary" style={{ fontSize: d(11), lineHeight: d(14) }}>
-            EQUIPMENT
+            {tr('equipment')}
           </Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: d(8) }}>
             {equipment.map((e) => (
@@ -300,10 +455,10 @@ export default function RoutineDetail() {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: d(14) }}>
           <View style={{ gap: d(1) }}>
             <Text variant="caption" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-              {mine ? 'Resume' : 'Today'}
+              {mine ? tr('resume') : tr('today')}
             </Text>
             <Text variant="numericM" style={{ fontSize: d(20), lineHeight: d(26) }}>
-              {day.durationMin} min
+              {tr('minutes', { min: day.durationMin })}
             </Text>
           </View>
           <Button

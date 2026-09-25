@@ -18,35 +18,31 @@
  * Logic (SRS §4.A) is unchanged: ask who is signed in, hold a minimum beat so
  * the brand registers, and never hold longer than the cap.
  */
-import React, { useEffect, useRef } from 'react';
-import { Animated, Easing } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, useColorScheme } from 'react-native';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useDesignScale } from '@/theme/useDesignScale';
-import { FixedScreen } from '@/components/ui/Surface';
 import { Wordmark } from '@/components/Wordmark';
 import { getToken, hasOnboarded } from '@/lib/session';
+import { shouldLockOnLaunch } from '@/lib/appLock';
 import { currentSession } from '@/lib/api';
 import { SUPABASE_CONFIGURED } from '@/lib/supabase';
 
 const MIN_MS = 800;
 const MAX_MS = 2000;
 
-/** Figma: the wordmark layer is 190pt wide on a 390pt frame. */
+/**
+ * Must match the native splash exactly (app.json → expo-splash-screen), or the
+ * handoff shows as a jump — which it did on iOS: 190pt, not scaled to the
+ * screen; the phone's light/dark setting, not the app theme; centred on the
+ * full screen, not inside safe-area padding; and no entrance animation.
+ */
 const WORDMARK_W = 190;
+const NATIVE_SPLASH_BG = { light: '#093F3F', dark: '#041A1A' } as const;
 
 export default function Splash() {
-  const { d } = useDesignScale();
-  const enter = useRef(new Animated.Value(0)).current;
+  const scheme = useColorScheme();
 
-  useEffect(() => {
-    Animated.timing(enter, {
-      toValue: 1,
-      duration: 520,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
-  }, [enter]);
 
   useEffect(() => {
     let cancelled = false;
@@ -70,10 +66,14 @@ export default function Splash() {
       ]);
       const elapsed = Date.now() - started;
       const wait = Math.max(0, MIN_MS - elapsed);
+      // A cold start is a return too: biometric unlock guards it the same way.
+      const lockFirst = signedIn && (await shouldLockOnLaunch());
       setTimeout(() => {
         if (cancelled) return;
-        if (signedIn) router.replace('/home');
-        else if (onboarded) router.replace('/welcome');
+        if (signedIn) {
+          router.replace('/home');
+          if (lockFirst) router.push('/app-lock');
+        } else if (onboarded) router.replace('/welcome');
         else router.replace('/onboarding');
       }, wait);
     };
@@ -90,25 +90,17 @@ export default function Splash() {
     };
   }, []);
 
-  // A short rise into place, so the handoff from the native splash — which
-  // shows the same mark on the same teal — reads as one continuous screen.
-  const rise = enter.interpolate({ inputRange: [0, 1], outputRange: [d(10), 0] });
-
   return (
-    <FixedScreen tone="brandCanvas">
+    <View
+      style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: NATIVE_SPLASH_BG[scheme === 'dark' ? 'dark' : 'light'],
+      }}
+    >
       <StatusBar style="light" />
-
-      <Animated.View
-        style={{
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-          opacity: enter,
-          transform: [{ translateY: rise }],
-        }}
-      >
-        <Wordmark width={d(WORDMARK_W)} />
-      </Animated.View>
-    </FixedScreen>
+      <Wordmark width={WORDMARK_W} />
+    </View>
   );
 }

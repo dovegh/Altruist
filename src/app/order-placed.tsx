@@ -23,8 +23,73 @@ import { Button } from '@/components/ui/Button';
 import { Text } from '@/components/ui/Text';
 import { cedis } from '@/lib/money';
 import { useOrderStore } from '@/features/orders/store';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    title: 'Order placed',
+    body: '{pharmacy} has your order. You will get a push the moment the pharmacist verifies it.',
+    bodyFallback:
+      'The partner pharmacy has your order. You will get a push the moment the pharmacist verifies it.',
+    track: 'Track this order',
+    home: 'Back to home',
+    paidOne: '{count} item · {total} paid',
+    paidMany: '{count} items · {total} paid',
+  },
+  fr: {
+    title: 'Commande passée',
+    body: '{pharmacy} a reçu votre commande. Vous recevrez une notification dès que le pharmacien l’aura vérifiée.',
+    bodyFallback:
+      'La pharmacie partenaire a reçu votre commande. Vous recevrez une notification dès que le pharmacien l’aura vérifiée.',
+    track: 'Suivre cette commande',
+    home: 'Retour à l’accueil',
+    paidOne: '{count} article · {total} payé',
+    paidMany: '{count} articles · {total} payé',
+  },
+  tw: {
+    title: 'Wɔagye w’adetɔ',
+    body: '{pharmacy} anya w’adetɔ no. Sɛ nnuroyɛfoɔ no hwɛ wie pɛ a, wobɛnya nkaeɛ.',
+    bodyFallback:
+      'Nnuro fie a yɛne wɔn yɛ adwuma no anya w’adetɔ no. Sɛ nnuroyɛfoɔ no hwɛ wie pɛ a, wobɛnya nkaeɛ.',
+    track: 'Di saa adetɔ yi akyi',
+    home: 'San kɔ fie',
+    paidOne: 'Adeɛ {count} · wotuaa {total}',
+    paidMany: 'Nneɛma {count} · wotuaa {total}',
+  },
+  gaa: {
+    title: 'Ahe nɔ ni ohe lɛ',
+    body: '{pharmacy} ena nɔ ni ohe lɛ. Beni tsofatsɛ lɛ baakwɛ lɛ, obaana kaimɔ.',
+    bodyFallback:
+      'Tsofa shĩa ni wɔkɛ lɛ tsuɔ nii lɛ ena nɔ ni ohe lɛ. Beni tsofatsɛ lɛ baakwɛ lɛ, obaana kaimɔ.',
+    track: 'Nyiɛ nɔ nɛɛ sɛɛ',
+    home: 'Kua shĩa',
+    paidOne: 'Nɔ {count} · owo {total}',
+    paidMany: 'Nibii {count} · owo {total}',
+  },
+  ee: {
+    title: 'Woxɔ wò nuƒeƒle',
+    body: '{pharmacy} xɔ wò nuƒeƒle. Ne atikewɔla la kpɔe ko la, àxɔ gbedasi.',
+    bodyFallback:
+      'Atikeƒle si míewɔa dɔ kplii la xɔ wò nuƒeƒle. Ne atikewɔla la kpɔe ko la, àxɔ gbedasi.',
+    track: 'Kpɔ nuƒeƒle sia ƒe mɔzɔzɔ',
+    home: 'Trɔ yi aƒeme',
+    paidOne: 'Nu {count} · èxe {total}',
+    paidMany: 'Nu {count} · èxe {total}',
+  },
+  ha: {
+    title: 'An yi oda',
+    body: '{pharmacy} ya karɓi odarka. Za ka sami sanarwa da zarar mai harhaɗa magani ya tabbatar da ita.',
+    bodyFallback:
+      'Kantin magani abokin hulɗa ya karɓi odarka. Za ka sami sanarwa da zarar mai harhaɗa magani ya tabbatar da ita.',
+    track: 'Bi sawun wannan oda',
+    home: 'Koma gida',
+    paidOne: 'Kaya {count} · an biya {total}',
+    paidMany: 'Kaya {count} · an biya {total}',
+  },
+});
 
 export default function OrderPlaced() {
+  const tr = useT(S);
   const t = useTokens();
   const { d } = useDesignScale();
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -37,19 +102,17 @@ export default function OrderPlaced() {
     <StatusScreen
       icon="check"
       tone="brand"
-      title="Order placed"
-      body={`${
-        order?.pharmacy ?? 'The partner pharmacy'
-      } has your order. You will get a push the moment the pharmacist verifies it.`}
+      title={tr('title')}
+      body={order?.pharmacy ? tr('body', { pharmacy: order.pharmacy }) : tr('bodyFallback')}
       actions={
         <>
           <Button
-            label="Track this order"
+            label={tr('track')}
             size="large"
             onPress={() => router.replace(order ? `/order-tracking?id=${order.id}` : '/order-history')}
           />
           <Button
-            label="Back to home"
+            label={tr('home')}
             variant="tertiary"
             size="large"
             onPress={() => router.replace('/home')}
@@ -74,7 +137,7 @@ export default function OrderPlaced() {
               TrxID {order.id}
             </Text>
             <Text variant="caption" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-              {units} item{units === 1 ? '' : 's'} · {cedis(order.total)} paid
+              {tr(units === 1 ? 'paidOne' : 'paidMany', { count: units, total: cedis(order.total) })}
             </Text>
           </View>
           <StatusPill status={order.status} />

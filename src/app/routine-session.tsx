@@ -46,6 +46,178 @@ import {
   resolveExercises,
 } from '@/lib/wellness';
 import { sessionsDoneFor, useWellnessStore } from '@/features/wellness/store';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    sessionComplete: 'Session complete',
+    lastBody: '{day} · {count} exercises · {min} min. That was the last session of {programme}.',
+    oneLeftBody: '{day} · {count} exercises · {min} min. 1 session left in {programme}.',
+    manyLeftBody: '{day} · {count} exercises · {min} min. {left} sessions left in {programme}.',
+    backToPlan: 'Back to plan',
+    weight: 'Weight (current configuration)',
+    weightValue: '{kg} kg',
+    bodyweight: 'Bodyweight',
+    reps: 'Reps',
+    restTime: 'Rest time',
+    restValue: '{sec} sec',
+    equipment: 'Equipment',
+    grip: 'Grip',
+    leave: 'Leave session',
+    howTo: 'How to do this exercise',
+    exerciseOf: '{day} · EXERCISE {n} OF {total}',
+    rest: 'REST',
+    next: 'Next: set {n} of {total}',
+    information: 'INFORMATION',
+    cancelRest: 'Cancel rest timer',
+    startRest: 'Start rest timer',
+    finishExercise: 'Finish exercise',
+    completeSet: 'Complete set',
+    swapFor: 'Swap for {name}',
+    noAlternative: 'No alternative exercise',
+    skip: 'Skip to next exercise',
+  },
+  fr: {
+    sessionComplete: 'Séance terminée',
+    lastBody: "{day} · {count} exercices · {min} min. C'était la dernière séance de {programme}.",
+    oneLeftBody: '{day} · {count} exercices · {min} min. Il reste 1 séance dans {programme}.',
+    manyLeftBody: '{day} · {count} exercices · {min} min. Il reste {left} séances dans {programme}.',
+    backToPlan: 'Retour au programme',
+    weight: 'Poids (configuration actuelle)',
+    weightValue: '{kg} kg',
+    bodyweight: 'Poids du corps',
+    reps: 'Répétitions',
+    restTime: 'Temps de repos',
+    restValue: '{sec} s',
+    equipment: 'Matériel',
+    grip: 'Prise',
+    leave: 'Quitter la séance',
+    howTo: 'Comment faire cet exercice',
+    exerciseOf: '{day} · EXERCICE {n} SUR {total}',
+    rest: 'REPOS',
+    next: 'Suivant : série {n} sur {total}',
+    information: 'INFORMATIONS',
+    cancelRest: 'Annuler le minuteur de repos',
+    startRest: 'Lancer le minuteur de repos',
+    finishExercise: "Terminer l'exercice",
+    completeSet: 'Valider la série',
+    swapFor: 'Remplacer par {name}',
+    noAlternative: "Pas d'exercice de remplacement",
+    skip: "Passer à l'exercice suivant",
+  },
+  tw: {
+    sessionComplete: 'Ɛkyɛfa no awie',
+    lastBody: '{day} · apɔmuhyɛ {count} · simma {min}. Na ɛyɛ {programme} ɛkyɛfa a ɛtwa toɔ.',
+    oneLeftBody: '{day} · apɔmuhyɛ {count} · simma {min}. Ɛkyɛfa 1 aka wɔ {programme} mu.',
+    manyLeftBody: '{day} · apɔmuhyɛ {count} · simma {min}. Ɛkyɛfa {left} aka wɔ {programme} mu.',
+    backToPlan: 'San kɔ nhyehyɛeɛ no so',
+    weight: 'Emu duru (seesei nhyehyɛeɛ)',
+    weightValue: '{kg} kg',
+    bodyweight: 'Wo nipadua duru',
+    reps: 'Mpɛn dodoɔ',
+    restTime: 'Home bere',
+    restValue: 'sikani {sec}',
+    equipment: 'Nneɛma',
+    grip: 'Sɛnea wokura',
+    leave: 'Fi ɛkyɛfa no mu',
+    howTo: 'Sɛnea wobɛyɛ saa apɔmuhyɛ yi',
+    exerciseOf: '{day} · APƆMUHYƐ {n} WƆ {total} MU',
+    rest: 'HOME',
+    next: 'Deɛ ɛdi hɔ: nkyekyɛmu {n} wɔ {total} mu',
+    information: 'NSƐM',
+    cancelRest: 'Gyae home bere no',
+    startRest: 'Hyɛ home bere no ase',
+    finishExercise: 'Wie apɔmuhyɛ no',
+    completeSet: 'Wie nkyekyɛmu no',
+    swapFor: 'Sesa fa {name}',
+    noAlternative: 'Apɔmuhyɛ foforɔ biara nni hɔ',
+    skip: 'Kɔ apɔmuhyɛ a ɛdi hɔ so',
+  },
+  gaa: {
+    sessionComplete: 'Bɔ lɛ egbe naa',
+    lastBody: '{day} · gbɔmɔtsoŋ kpaai {count} · minitii {min}. No ji {programme} bɔ ni sɛɛ fɛɛ.',
+    oneLeftBody: '{day} · gbɔmɔtsoŋ kpaai {count} · minitii {min}. Bɔ 1 shwɛ yɛ {programme} mli.',
+    manyLeftBody: '{day} · gbɔmɔtsoŋ kpaai {count} · minitii {min}. Bɔi {left} ashwɛ yɛ {programme} mli.',
+    backToPlan: 'Ku sɛɛ kɛya toiŋjɔlɛmɔ lɛ nɔ',
+    weight: 'Tsii (bɔ ni eyɔɔ amrɔ nɛɛ)',
+    weightValue: '{kg} kg',
+    bodyweight: 'Bo gbɔmɔtso tsii',
+    reps: 'Shii abɔ',
+    restTime: 'Hejɔɔmɔ be',
+    restValue: 'sekɛnd {sec}',
+    equipment: 'Nibii',
+    grip: 'Hiɛmɔ',
+    leave: 'Shi bɔ lɛ',
+    howTo: 'Bɔ ni oaafee gbɔmɔtsoŋ kpaa nɛɛ',
+    exerciseOf: '{day} · GBƆMƆTSOŊ KPAA {n} YƐ {total} MLI',
+    rest: 'HEJƆƆMƆ',
+    next: 'Nɔ ni nyiɛ sɛɛ: ku {n} yɛ {total} mli',
+    information: 'SAJI',
+    cancelRest: 'Kpa hejɔɔmɔ be lɛ',
+    startRest: 'Je hejɔɔmɔ be lɛ shishi',
+    finishExercise: 'Gbe gbɔmɔtsoŋ kpaa lɛ naa',
+    completeSet: 'Gbe ku lɛ naa',
+    swapFor: 'Tsake kɛ {name}',
+    noAlternative: 'Gbɔmɔtsoŋ kpaa kroko bɛ',
+    skip: 'Ya gbɔmɔtsoŋ kpaa ni nyiɛ sɛɛ lɛ nɔ',
+  },
+  ee: {
+    sessionComplete: 'Akpaa wu enu',
+    lastBody: '{day} · kamedefefe {count} · miniti {min}. Enye {programme} ƒe akpa mamlɛtɔ.',
+    oneLeftBody: '{day} · kamedefefe {count} · miniti {min}. Akpa 1 susɔ le {programme} me.',
+    manyLeftBody: '{day} · kamedefefe {count} · miniti {min}. Akpa {left} susɔ le {programme} me.',
+    backToPlan: 'Trɔ yi ɖoɖoa gbɔ',
+    weight: 'Kpekpeme (ɖoɖo si li fifia)',
+    weightValue: '{kg} kg',
+    bodyweight: 'Wò ŋutilã ƒe kpekpeme',
+    reps: 'Zi nenie',
+    restTime: 'Gbɔɖeme ɣeyiɣi',
+    restValue: 'sekend {sec}',
+    equipment: 'Dɔwɔnuwo',
+    grip: 'Alɔlele',
+    leave: 'Dzo le akpaa me',
+    howTo: 'Alesi nàwɔ kamedefefe sia',
+    exerciseOf: '{day} · KAMEDEFEFE {n} LE {total} ME',
+    rest: 'GBƆƉEME',
+    next: 'Esi kplɔe ɖo: ƒuƒoƒo {n} le {total} me',
+    information: 'NYATAKAKAWO',
+    cancelRest: 'Tɔ te gbɔɖeme ɣeyiɣia',
+    startRest: 'Dze gbɔɖeme ɣeyiɣia gɔme',
+    finishExercise: 'Wu kamedefefea nu',
+    completeSet: 'Wu ƒuƒoƒoa nu',
+    swapFor: 'Ɖɔli kple {name}',
+    noAlternative: 'Kamedefefe bubu aɖeke meli o',
+    skip: 'Yi kamedefefe si kplɔe ɖo dzi',
+  },
+  ha: {
+    sessionComplete: 'An gama zama',
+    lastBody: '{day} · motsa jiki {count} · minti {min}. Wannan shi ne zaman ƙarshe na {programme}.',
+    oneLeftBody: '{day} · motsa jiki {count} · minti {min}. Zama 1 ya rage a {programme}.',
+    manyLeftBody: '{day} · motsa jiki {count} · minti {min}. Zama {left} sun rage a {programme}.',
+    backToPlan: 'Koma ga shiri',
+    weight: 'Nauyi (tsarin yanzu)',
+    weightValue: '{kg} kg',
+    bodyweight: 'Nauyin jiki',
+    reps: 'Maimaitawa',
+    restTime: 'Lokacin hutu',
+    restValue: 'daƙiƙa {sec}',
+    equipment: 'Kayan aiki',
+    grip: 'Riƙo',
+    leave: 'Bar zama',
+    howTo: 'Yadda ake wannan motsa jiki',
+    exerciseOf: '{day} · MOTSA JIKI {n} CIKIN {total}',
+    rest: 'HUTU',
+    next: 'Na gaba: zagaye {n} cikin {total}',
+    information: 'BAYANI',
+    cancelRest: 'Soke lokacin hutu',
+    startRest: 'Fara lokacin hutu',
+    finishExercise: 'Gama motsa jiki',
+    completeSet: 'Gama zagaye',
+    swapFor: 'Maye da {name}',
+    noAlternative: 'Babu wani motsa jiki madadin',
+    skip: 'Tsallake zuwa motsa jiki na gaba',
+  },
+});
 
 /**
  * One set marker. Fills by cross-fade as sets complete — the strip is a status
@@ -93,6 +265,7 @@ export default function RoutineSession() {
   const t = useTokens();
   const { d } = useDesignScale();
   const insets = useSafeAreaInsets();
+  const tr = useT(S);
 
   const { id } = useLocalSearchParams<{ id?: string }>();
   // Opening this screen IS starting the session; a second open resumes it.
@@ -130,16 +303,25 @@ export default function RoutineSession() {
       <StatusScreen
         icon="award"
         tone="brand"
-        title="Session complete"
-        body={`${finished.dayTitle} · ${finished.exercises} exercises · ${finished.durationMin} min. ${
+        title={tr('sessionComplete')}
+        body={tr(
           finished.sessionsLeft <= 0
-            ? `That was the last session of ${PROGRAMME.title}.`
-            : `${finished.sessionsLeft} ${finished.sessionsLeft === 1 ? 'session' : 'sessions'} left in ${PROGRAMME.title}.`
-        }`}
+            ? 'lastBody'
+            : finished.sessionsLeft === 1
+              ? 'oneLeftBody'
+              : 'manyLeftBody',
+          {
+            day: finished.dayTitle,
+            count: finished.exercises,
+            min: finished.durationMin,
+            left: finished.sessionsLeft,
+            programme: PROGRAMME.title,
+          },
+        )}
         actions={
           <View style={{ gap: d(10) }}>
             <Button
-              label="Back to plan"
+              label={tr('backToPlan')}
               size="large"
               onPress={() => (router.canGoBack() ? router.back() : router.replace('/routine'))}
             />
@@ -173,11 +355,14 @@ export default function RoutineSession() {
   };
 
   const info: [string, string][] = [
-    ['Weight (current configuration)', exercise.weightKg ? `${exercise.weightKg} kg` : 'Bodyweight'],
-    ['Reps', `${exercise.sets} × ${exercise.reps}`],
-    ['Rest time', `${exercise.restSec} sec`],
-    ['Equipment', exercise.equipment],
-    ...(exercise.grip ? ([['Grip', exercise.grip]] as [string, string][]) : []),
+    [
+      tr('weight'),
+      exercise.weightKg ? tr('weightValue', { kg: exercise.weightKg }) : tr('bodyweight'),
+    ],
+    [tr('reps'), `${exercise.sets} × ${exercise.reps}`],
+    [tr('restTime'), tr('restValue', { sec: exercise.restSec })],
+    [tr('equipment'), exercise.equipment],
+    ...(exercise.grip ? ([[tr('grip'), exercise.grip]] as [string, string][]) : []),
   ];
 
   const control = (icon: IconName, label: string, onPress?: () => void, disabled?: boolean) => (
@@ -234,7 +419,7 @@ export default function RoutineSession() {
         {/* Session bar */}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: d(16) }}>
           {/* Leaving keeps the session; the plan screen offers Resume. */}
-          {barControl('close', 'Leave session', () => router.back())}
+          {barControl('close', tr('leave'), () => router.back())}
 
           <View style={{ flex: 1, gap: d(8), alignItems: 'center' }}>
             <Text variant="labelM" center style={{ fontSize: d(14), lineHeight: d(18) }}>
@@ -263,14 +448,18 @@ export default function RoutineSession() {
             </View>
           </View>
 
-          {barControl('info', 'How to do this exercise', () =>
+          {barControl('info', tr('howTo'), () =>
             router.push(`/exercise?id=${exercise.id}`),
           )}
         </View>
 
         <View style={{ gap: d(6) }}>
           <Text variant="labelXS" tone="tertiary" center style={{ fontSize: d(11), lineHeight: d(14) }}>
-            {day.title.toUpperCase()} · EXERCISE {active.index + 1} OF {exercises.length}
+            {tr('exerciseOf', {
+              day: day.title.toUpperCase(),
+              n: active.index + 1,
+              total: exercises.length,
+            })}
           </Text>
           <Text variant="headingXL" center style={{ fontSize: d(24), lineHeight: d(30) }}>
             {exercise.name}
@@ -319,13 +508,13 @@ export default function RoutineSession() {
           {restLeft !== null ? (
             <View style={{ alignItems: 'center', gap: d(6) }}>
               <Text variant="labelS" tone="brand" style={{ fontSize: d(12), lineHeight: d(16) }}>
-                REST
+                {tr('rest')}
               </Text>
               <Text variant="numericXL" tone="brand" style={{ fontSize: d(56), lineHeight: d(60) }}>
                 {formatSeconds(restLeft)}
               </Text>
               <Text variant="caption" tone="secondary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-                Next: set {set} of {totalSets}
+                {tr('next', { n: set, total: totalSets })}
               </Text>
             </View>
           ) : (
@@ -345,7 +534,7 @@ export default function RoutineSession() {
         </View>
 
         <Text variant="labelXS" tone="tertiary" style={{ fontSize: d(11), lineHeight: d(14) }}>
-          INFORMATION
+          {tr('information')}
         </Text>
 
         <View style={{ gap: d(6) }}>
@@ -380,22 +569,22 @@ export default function RoutineSession() {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: d(10) }}>
           {control(
             'clock',
-            restLeft !== null ? 'Cancel rest timer' : 'Start rest timer',
+            restLeft !== null ? tr('cancelRest') : tr('startRest'),
             () => setRestLeft((r) => (r === null ? exercise.restSec : null)),
           )}
           <Button
-            label={set === totalSets ? 'Finish exercise' : 'Complete set'}
+            label={set === totalSets ? tr('finishExercise') : tr('completeSet')}
             size="large"
             style={{ flex: 1 }}
             onPress={() => finishWith(completeSet())}
           />
           {control(
             'catalog',
-            swapTarget ? `Swap for ${EXERCISES[swapTarget].name}` : 'No alternative exercise',
+            swapTarget ? tr('swapFor', { name: EXERCISES[swapTarget].name }) : tr('noAlternative'),
             () => swapTarget && swapExercise(originalId, swapTarget),
             !swapTarget,
           )}
-          {control('arrow-right', 'Skip to next exercise', () => finishWith(skipExercise()))}
+          {control('arrow-right', tr('skip'), () => finishWith(skipExercise()))}
         </View>
       </ScrollView>
     </View>

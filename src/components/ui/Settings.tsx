@@ -19,6 +19,16 @@ import { useDesignScale } from '@/theme/useDesignScale';
 import { Text } from './Text';
 import { Icon, type IconName } from './Icon';
 import { Toggle } from './ListRow';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: { locked: '{title}. Always on and cannot be changed.' },
+  fr: { locked: '{title}. Toujours activé, ne peut pas être modifié.' },
+  tw: { locked: '{title}. Ɛda so bere nyinaa, wontumi nsesa.' },
+  gaa: { locked: '{title}. Etsɔɔ be fɛɛ be, onyɛŋ otsakeee.' },
+  ee: { locked: '{title}. Ele dɔ wɔm ɣesiaɣi, màte ŋu atrɔe o.' },
+  ha: { locked: '{title}. Kullum a kunne, ba za a iya canzawa ba.' },
+});
 
 export function SettingsGroup({
   label,
@@ -70,6 +80,7 @@ export function SettingsRow({
 }) {
   const t = useTokens();
   const { d } = useDesignScale();
+  const tr = useT(S);
   return (
     <View
       style={{
@@ -97,7 +108,7 @@ export function SettingsRow({
             value={locked ? true : value}
             onValueChange={locked ? undefined : onValueChange}
             disabled={disabled}
-            label={locked ? `${title}. Always on and cannot be changed.` : title}
+            label={locked ? tr('locked', { title }) : title}
           />
         ) : null)}
     </View>

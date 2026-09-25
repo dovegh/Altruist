@@ -23,12 +23,65 @@ import { Text } from '@/components/ui/Text';
 import { Icon } from '@/components/ui/Icon';
 import { TERMS_SECTIONS as SECTIONS, termsStamp } from '@/lib/legal';
 import { TERMS_URL } from './legal';
+import { defineStrings, useLocale, useT } from '@/i18n';
+
+// Screen chrome only: the terms themselves, and their section chips, stay in
+// English — the published English text is the one that binds.
+const S = defineStrings({
+  en: {
+    title: 'Terms of Service',
+    more: 'More options',
+    updated: 'Last updated {date} · {count} sections',
+    viewA11y: 'View the published version in your browser',
+    view: 'View the published version',
+  },
+  fr: {
+    title: "Conditions d'utilisation",
+    more: "Plus d'options",
+    updated: 'Dernière mise à jour le {date} · {count} sections',
+    viewA11y: 'Voir la version publiée dans votre navigateur',
+    view: 'Voir la version publiée',
+  },
+  tw: {
+    title: 'Nhyehyɛeɛ a ɛfa dwumadie ho',
+    more: 'Nneɛma foforɔ',
+    updated: 'Wɔsesaa no {date} · nkyekyɛmu {count}',
+    viewA11y: 'Hwɛ deɛ wɔatintim no wɔ wo browser mu',
+    view: 'Hwɛ deɛ wɔatintim no',
+  },
+  gaa: {
+    title: 'Nitsumɔ he mlai',
+    more: 'Nibii krokomɛi',
+    updated: 'Atsake yɛ {date} · kuii {count}',
+    viewA11y: 'Kwɛ nɔ ni afee kpo lɛ yɛ obrowser lɛ mli',
+    view: 'Kwɛ nɔ ni afee kpo lɛ',
+  },
+  ee: {
+    title: 'Zazã ƒe ɖoɖowo',
+    more: 'Tiatia bubuwo',
+    updated: 'Wotrɔe mamlɛtɔ le {date} · akpa {count}',
+    viewA11y: 'Kpɔ esi wota le wò browser me',
+    view: 'Kpɔ esi wota',
+  },
+  ha: {
+    title: 'Sharuɗɗan amfani',
+    more: 'Ƙarin zaɓuɓɓuka',
+    updated: 'An sabunta {date} · sassa {count}',
+    viewA11y: 'Duba sigar da aka wallafa a burauzarka',
+    view: 'Duba sigar da aka wallafa',
+  },
+});
+
+/** The date on the in-app copy of the terms. */
+const UPDATED = new Date(2026, 7, 23);
 
 
 export default function Terms() {
   const t = useTokens();
   const { d } = useDesignScale();
   const insets = useSafeAreaInsets();
+  const tr = useT(S);
+  const locale = useLocale();
   const scroller = useRef<ScrollView>(null);
   const offsets = useRef<number[]>([]);
   const [active, setActive] = useState(0);
@@ -45,10 +98,13 @@ export default function Terms() {
           paddingBottom: d(60) + insets.bottom,
         }}
       >
-        <TitleAppBar title="Terms of Service" actions={[{ icon: 'more', label: 'More options' }]} />
+        <TitleAppBar title={tr('title')} actions={[{ icon: 'more', label: tr('more') }]} />
 
         <Text variant="caption" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-          Last updated 23 August 2026 · {SECTIONS.length} sections
+          {tr('updated', {
+            date: UPDATED.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' }),
+            count: SECTIONS.length,
+          })}
         </Text>
 
         <ScrollView
@@ -93,7 +149,7 @@ export default function Terms() {
 
         <Pressable
           accessibilityRole="link"
-          accessibilityLabel="View the published version in your browser"
+          accessibilityLabel={tr('viewA11y')}
           onPress={() => Linking.openURL(TERMS_URL)}
           style={({ pressed }) => ({
             flexDirection: 'row',
@@ -107,7 +163,7 @@ export default function Terms() {
           })}
         >
           <Text variant="labelM" style={{ flex: 1, fontSize: d(14), lineHeight: d(18) }}>
-            View the published version
+            {tr('view')}
           </Text>
           <View
             style={{

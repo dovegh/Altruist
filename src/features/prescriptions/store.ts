@@ -16,7 +16,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { USING_FIXTURES, listPrescriptions } from '@/lib/api';
+import { USING_FIXTURES, listPrescriptions, setPrescriptionListState } from '@/lib/api';
 import { SUPABASE_CONFIGURED } from '@/lib/supabase';
 
 /** The subset of `LifecycleStatus` that a prescription can actually be in. */
@@ -37,6 +37,13 @@ export type Prescription = {
   imagePath?: string;
   /** The products this script covers. Empty = uploaded without a cart context. */
   productIds: string[];
+  /** Moved to "Archived" by the patient. Still covers its products. */
+  archived?: boolean;
+  /**
+   * Removed from the patient's list. Kept here, not dropped, because a verified
+   * script still covers what it covers — hiding it must not break a checkout.
+   */
+  hidden?: boolean;
 };
 
 /**
@@ -98,6 +105,8 @@ type PrescriptionsState = {
   review: (id: string, status: PrescriptionStatus, note: string) => void;
   /** Adopts the server's list wholesale — it is the record; this is a copy. */
   replaceAll: (items: Prescription[]) => void;
+  /** Local half of archive / unarchive / remove; `setListState` does both halves. */
+  patch: (id: string, change: Pick<Prescription, 'archived' | 'hidden'>) => void;
 };
 
 export const usePrescriptionStore = create<PrescriptionsState>()(
@@ -123,6 +132,11 @@ export const usePrescriptionStore = create<PrescriptionsState>()(
         })),
 
       replaceAll: (items) => set({ items, hydrated: true }),
+
+      patch: (id, change) =>
+        set((s) => ({
+          items: s.items.map((p) => (p.id === id ? { ...p, ...change } : p)),
+        })),
 
       review: (id, status, note) =>
         set((s) => ({
@@ -170,6 +184,26 @@ export function loadPrescriptions(): Promise<void> {
       });
   }
   return syncing;
+}
+
+/**
+ * Archives, unarchives or removes a prescription from this person's list.
+ * Applied at once and saved behind it; a failed save puts it back and throws.
+ */
+export async function setListState(
+  id: string,
+  change: { archived: boolean; hidden: boolean },
+): Promise<void> {
+  const { items, patch } = usePrescriptionStore.getState();
+  const before = items.find((p) => p.id === id);
+  if (!before) return;
+  patch(id, change);
+  try {
+    await setPrescriptionListState(id, change);
+  } catch (e) {
+    patch(id, { archived: before.archived, hidden: before.hidden });
+    throw e;
+  }
 }
 
 // ---------------------------------------------------------------------------

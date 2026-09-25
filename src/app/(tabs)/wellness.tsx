@@ -36,9 +36,140 @@ import {
   sessionsDoneFor,
   useWellnessStore,
 } from '@/features/wellness/store';
+import { defineStrings, useT } from '@/i18n';
+
+const S = defineStrings({
+  en: {
+    title: 'Wellness',
+    moreOptions: 'More options',
+    streakA11yOne: 'Current streak: {count} day on plan. See all activity.',
+    streakA11yMany: 'Current streak: {count} days on plan. See all activity.',
+    currentStreak: 'CURRENT STREAK',
+    dayOnPlan: 'day on plan',
+    daysOnPlan: 'days on plan',
+    heartRate: 'Resting heart rate',
+    hydration: 'Hydration',
+    goalReached: 'Goal reached',
+    glassToGo: '{count} glass to go',
+    glassesToGo: '{count} glasses to go',
+    todaysPlan: 'Today’s plan',
+    readNext: 'Read next',
+    disclaimer:
+      'General wellness guidance, not medical advice. Talk to your partner pharmacist or a clinician before changing how you take a prescribed medicine.',
+    kcalTarget: '{kcal} kcal target',
+    inProgress: 'In progress · {n} of {total}',
+    planMeta: '{min} min · {count} exercises',
+  },
+  fr: {
+    title: 'Bien-être',
+    moreOptions: "Plus d'options",
+    streakA11yOne: "Série en cours : {count} jour dans le programme. Voir toute l'activité.",
+    streakA11yMany: "Série en cours : {count} jours dans le programme. Voir toute l'activité.",
+    currentStreak: 'SÉRIE EN COURS',
+    dayOnPlan: 'jour dans le programme',
+    daysOnPlan: 'jours dans le programme',
+    heartRate: 'Fréquence cardiaque au repos',
+    hydration: 'Hydratation',
+    goalReached: 'Objectif atteint',
+    glassToGo: 'Encore {count} verre',
+    glassesToGo: 'Encore {count} verres',
+    todaysPlan: 'Programme du jour',
+    readNext: 'À lire ensuite',
+    disclaimer:
+      'Conseils généraux de bien-être, pas un avis médical. Parlez-en à votre pharmacien partenaire ou à un clinicien avant de changer la façon dont vous prenez un médicament prescrit.',
+    kcalTarget: 'Objectif : {kcal} kcal',
+    inProgress: 'En cours · {n} sur {total}',
+    planMeta: '{min} min · {count} exercices',
+  },
+  tw: {
+    title: 'Apɔmuden',
+    moreOptions: 'Nneɛma foforɔ',
+    streakA11yOne: 'Nna a woadi so: da {count} wɔ nhyehyɛeɛ so. Hwɛ wo dwumadie nyinaa.',
+    streakA11yMany: 'Nna a woadi so: nna {count} wɔ nhyehyɛeɛ so. Hwɛ wo dwumadie nyinaa.',
+    currentStreak: 'NNA A WOADI SO',
+    dayOnPlan: 'da wɔ nhyehyɛeɛ so',
+    daysOnPlan: 'nna wɔ nhyehyɛeɛ so',
+    heartRate: 'Koma bɔ bere a wogye w’ahome',
+    hydration: 'Nsuo nom',
+    goalReached: 'Woadu botaeɛ no ho',
+    glassToGo: 'Kuruwa {count} aka',
+    glassesToGo: 'Nkuruwa {count} aka',
+    todaysPlan: 'Nnɛ nhyehyɛeɛ',
+    readNext: 'Kenkan deɛ ɛdi so',
+    disclaimer:
+      'Apɔmuden ho afotuo kɛkɛ, ɛnyɛ ayaresa ho afotuo. Kasa kyerɛ wo nnuro ho ɔbenfoɔ anaa dɔkota ansa na woasesa sɛnea wonom aduro a wɔakyerɛw ama wo.',
+    kcalTarget: 'kcal {kcal} botaeɛ',
+    inProgress: 'Ɛrekɔ so · {n} wɔ {total} mu',
+    planMeta: 'simma {min} · apɔw-mu-tenten {count}',
+  },
+  gaa: {
+    title: 'Hewalɛ',
+    moreOptions: 'Nibii krokomɛi',
+    streakA11yOne: 'Gbii ni otsa: gbi {count} yɛ gbɛjianɔtoo lɛ nɔ. Kwɛ onitsumɔi fɛɛ.',
+    streakA11yMany: 'Gbii ni otsa: gbii {count} yɛ gbɛjianɔtoo lɛ nɔ. Kwɛ onitsumɔi fɛɛ.',
+    currentStreak: 'GBII NI OTSA',
+    dayOnPlan: 'gbi yɛ gbɛjianɔtoo lɛ nɔ',
+    daysOnPlan: 'gbii yɛ gbɛjianɔtoo lɛ nɔ',
+    heartRate: 'Bɔ ni otsui fãa kɛ ojɔɔ ohe',
+    hydration: 'Nu nɔmɔ',
+    goalReached: 'Oshɛ otsɔne lɛ he',
+    glassToGo: 'Kɔɔpu {count} shwɛ',
+    glassesToGo: 'Kɔɔpui {count} shwɛ',
+    todaysPlan: 'Ŋmɛnɛ gbɛjianɔtoo',
+    readNext: 'Kane nɔ ni nyiɛ sɛɛ',
+    disclaimer:
+      'Hewalɛ he ŋaawoo kɛkɛ, jeee helatsamɔ ŋaawoo. Kɛ o tsofatsɛ loo datrɛfonyo awie dani otsake bɔ ni onuɔ tsofa ni aŋma ha bo.',
+    kcalTarget: 'kcal {kcal} otsɔne',
+    inProgress: 'Eyaa nɔ · {n} yɛ {total} mli',
+    planMeta: 'miniti {min} · nitsumɔi {count}',
+  },
+  ee: {
+    title: 'Lãmesẽ',
+    moreOptions: 'Nu bubuwo',
+    streakA11yOne: 'Ŋkeke siwo nèwɔ yi edzi: ŋkeke {count} le ɖoɖoa dzi. Kpɔ wò dɔwɔwɔwo katã.',
+    streakA11yMany: 'Ŋkeke siwo nèwɔ yi edzi: ŋkeke {count} le ɖoɖoa dzi. Kpɔ wò dɔwɔwɔwo katã.',
+    currentStreak: 'ŊKEKE SIWO NÈWƆ YI EDZI',
+    dayOnPlan: 'ŋkeke le ɖoɖoa dzi',
+    daysOnPlan: 'ŋkekewo le ɖoɖoa dzi',
+    heartRate: 'Dzi ƒoƒo ne èle gbɔɖeme',
+    hydration: 'Tsinono',
+    goalReached: 'Èɖo taɖodzinu la gbɔ',
+    glassToGo: 'Kplu {count} susɔ',
+    glassesToGo: 'Kpluwo {count} susɔ',
+    todaysPlan: 'Egbe ƒe ɖoɖo',
+    readNext: 'Xlẽ esi kplɔe ɖo',
+    disclaimer:
+      'Lãmesẽ ŋuti aɖaŋuɖoɖo ko, menye atikewɔwɔ ƒe aɖaŋu o. Ƒo nu kple wò atikewɔla alo dɔyɔla hafi natrɔ ale si nèxɔa atike si woŋlɔ na wò.',
+    kcalTarget: 'kcal {kcal} taɖodzinu',
+    inProgress: 'Ele edzi yim · {n} le {total} me',
+    planMeta: 'miniti {min} · kamedefefe {count}',
+  },
+  ha: {
+    title: 'Lafiya',
+    moreOptions: 'Ƙarin zaɓuɓɓuka',
+    streakA11yOne: 'Jerin kwanaki: kwana {count} a kan shiri. Duba duk ayyuka.',
+    streakA11yMany: 'Jerin kwanaki: kwanaki {count} a kan shiri. Duba duk ayyuka.',
+    currentStreak: 'JERIN KWANAKI',
+    dayOnPlan: 'kwana a kan shiri',
+    daysOnPlan: 'kwanaki a kan shiri',
+    heartRate: 'Bugun zuciya a hutu',
+    hydration: 'Shan ruwa',
+    goalReached: 'An cimma buri',
+    glassToGo: 'Saura kofi {count}',
+    glassesToGo: 'Saura kofuna {count}',
+    todaysPlan: 'Shirin yau',
+    readNext: 'Karanta na gaba',
+    disclaimer:
+      'Shawarar lafiya ta gaba ɗaya, ba shawarar likita ba. Yi magana da mai harhaɗa magani abokin hulɗarka ko likita kafin ka canza yadda kake shan maganin da aka rubuta maka.',
+    kcalTarget: 'Burin kcal {kcal}',
+    inProgress: 'Ana ci gaba · {n} cikin {total}',
+    planMeta: 'minti {min} · motsa jiki {count}',
+  },
+});
 
 export default function Wellness() {
   const t = useTokens();
+  const tr = useT(S);
   const { d } = useDesignScale();
   const insets = useSafeAreaInsets();
 
@@ -61,7 +192,7 @@ export default function Wellness() {
    */
   const plans = PLAN_CARDS.map((card) => {
     if (card.id === 'nutrition') {
-      return { ...card, meta: `${formatThousands(NUTRITION.kcalTarget)} kcal target` };
+      return { ...card, meta: tr('kcalTarget', { kcal: formatThousands(NUTRITION.kcalTarget) }) };
     }
     const programme = programmeById(card.id);
     const done = sessionsDoneFor(history, programme.id);
@@ -73,8 +204,8 @@ export default function Wellness() {
       ...card,
       title: day.title,
       meta: mine
-        ? `In progress · ${mine.index + 1} of ${day.exerciseIds.length}`
-        : `${day.durationMin} min · ${day.exerciseIds.length} exercises`,
+        ? tr('inProgress', { n: mine.index + 1, total: day.exerciseIds.length })
+        : tr('planMeta', { min: day.durationMin, count: day.exerciseIds.length }),
     };
   });
 
@@ -154,15 +285,15 @@ export default function Wellness() {
         }}
       >
         <TitleAppBar
-          title="Wellness"
+          title={tr('title')}
           showBack={false}
-          actions={[{ icon: 'more', label: 'More options' }]}
+          actions={[{ icon: 'more', label: tr('moreOptions') }]}
         />
 
         {/* Streak hero — gold, radius 36 */}
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Current streak: ${streak} ${streak === 1 ? 'day' : 'days'} on plan. See all activity.`}
+          accessibilityLabel={tr(streak === 1 ? 'streakA11yOne' : 'streakA11yMany', { count: streak })}
           onPress={() => router.push('/wellness-activity')}
           style={{
             backgroundColor: t.colors.bg.accentGold,
@@ -178,7 +309,7 @@ export default function Wellness() {
               color={t.colors.text.onBrand}
               style={{ flex: 1, opacity: 0.7, fontSize: d(11), lineHeight: d(14) }}
             >
-              CURRENT STREAK
+              {tr('currentStreak')}
             </Text>
             <View
               style={{
@@ -207,7 +338,7 @@ export default function Wellness() {
               color={t.colors.text.onBrand}
               style={{ fontSize: d(18), lineHeight: d(24) }}
             >
-              {streak === 1 ? 'day on plan' : 'days on plan'}
+              {streak === 1 ? tr('dayOnPlan') : tr('daysOnPlan')}
             </Text>
           </View>
 
@@ -249,7 +380,7 @@ export default function Wellness() {
             icon="heart"
             value={String(NUTRITION.restingBpm.value)}
             unit="bpm"
-            title="Resting heart rate"
+            title={tr('heartRate')}
             meta={NUTRITION.restingBpm.meta}
           />
           <StatCard
@@ -257,13 +388,17 @@ export default function Wellness() {
             icon="wellness"
             value={String(glasses)}
             unit={`/${NUTRITION.hydrationGoal}`}
-            title="Hydration"
-            meta={toGo === 0 ? 'Goal reached' : `${toGo} ${toGo === 1 ? 'glass' : 'glasses'} to go`}
+            title={tr('hydration')}
+            meta={
+              toGo === 0
+                ? tr('goalReached')
+                : tr(toGo === 1 ? 'glassToGo' : 'glassesToGo', { count: toGo })
+            }
             onPress={() => router.push('/nutrition')}
           />
         </View>
 
-        <SectionHeader title="Today’s plan" onAction={() => router.push('/wellness-activity')} />
+        <SectionHeader title={tr('todaysPlan')} onAction={() => router.push('/wellness-activity')} />
 
         <View style={{ gap: d(14) }}>
           {[plans.slice(0, 2), plans.slice(2, 4)].map((row, i) => (
@@ -315,7 +450,7 @@ export default function Wellness() {
           ))}
         </View>
 
-        <SectionHeader title="Read next" onAction={() => router.push('/health-tips')} />
+        <SectionHeader title={tr('readNext')} onAction={() => router.push('/health-tips')} />
 
         {READS.map((r) => (
           <Pressable
@@ -360,8 +495,7 @@ export default function Wellness() {
         ))}
 
         <Text variant="caption" tone="tertiary" style={{ fontSize: d(12), lineHeight: d(16) }}>
-          General wellness guidance, not medical advice. Talk to your partner pharmacist or a
-          clinician before changing how you take a prescribed medicine.
+          {tr('disclaimer')}
         </Text>
       </ScrollView>
     </View>
