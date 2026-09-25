@@ -25,23 +25,40 @@ type MinimalCrypto = {
   subtle?: { digest?: (algorithm: string | { name: string }, data: BufferSource) => Promise<ArrayBuffer> };
 };
 
-const g = globalThis as { crypto?: MinimalCrypto };
-const cryptoObject: MinimalCrypto = g.crypto ?? {};
+const digest: NonNullable<MinimalCrypto['subtle']>['digest'] = (algorithm, data) => {
+  const name = typeof algorithm === 'string' ? algorithm : algorithm.name;
+  const mapped = DIGESTS[name.toUpperCase()];
+  if (!mapped) return Promise.reject(new Error(`webcrypto: unsupported digest ${name}`));
+  return ExpoCrypto.digest(mapped, data);
+};
 
-if (!cryptoObject.getRandomValues) {
-  cryptoObject.getRandomValues = ExpoCrypto.getRandomValues;
+/**
+ * Some runtimes ship a `crypto` that is frozen or read-only. Writing to it in
+ * a release build would throw at import time and close the app on launch, so
+ * every write is guarded, and a read-only global is replaced by a new object
+ * only where that is allowed.
+ */
+try {
+  const g = globalThis as { crypto?: MinimalCrypto };
+  const existing = g.crypto;
+  const needsRandom = !existing?.getRandomValues;
+  const needsDigest = !existing?.subtle?.digest;
+
+  if (needsRandom || needsDigest) {
+    const patched: MinimalCrypto = {
+      getRandomValues: existing?.getRandomValues?.bind(existing) ?? ExpoCrypto.getRandomValues,
+      subtle: { ...(existing?.subtle ?? {}), digest: existing?.subtle?.digest ?? digest },
+    };
+    try {
+      Object.defineProperty(globalThis, 'crypto', {
+        value: patched,
+        configurable: true,
+        writable: true,
+      });
+    } catch {
+      // Not configurable: supabase-js falls back to a plain PKCE challenge.
+    }
+  }
+} catch {
+  // Never let a missing crypto stop the app from starting.
 }
-
-if (!cryptoObject.subtle?.digest) {
-  cryptoObject.subtle = {
-    ...cryptoObject.subtle,
-    digest: (algorithm, data) => {
-      const name = typeof algorithm === 'string' ? algorithm : algorithm.name;
-      const mapped = DIGESTS[name.toUpperCase()];
-      if (!mapped) return Promise.reject(new Error(`webcrypto: unsupported digest ${name}`));
-      return ExpoCrypto.digest(mapped, data);
-    },
-  };
-}
-
-g.crypto = cryptoObject;

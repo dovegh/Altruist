@@ -29,11 +29,23 @@ import './webcrypto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const url = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
-const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
+/**
+ * Build-time values, tidied: a key pasted into a CI secret with its quotes or
+ * a trailing newline would otherwise reach `createClient`, which throws on an
+ * invalid URL — and in a release build a throw here closes the app on launch.
+ */
+const clean = (v: string | undefined) => (v ?? '').trim().replace(/^['"]|['"]$/g, '').trim();
 
-/** True when both halves of the connection are configured. */
-export const SUPABASE_CONFIGURED = url.length > 0 && anonKey.length > 0;
+const url = clean(process.env.EXPO_PUBLIC_SUPABASE_URL);
+const anonKey = clean(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY);
+
+/** True when both halves of the connection are present and well-formed. */
+export const SUPABASE_CONFIGURED =
+  /^https:\/\/[^\s'"]+$/.test(url) && anonKey.length > 20 && !/\s/.test(anonKey);
+
+if ((url || anonKey) && !SUPABASE_CONFIGURED) {
+  console.error('Supabase URL or key is malformed — running without a backend.');
+}
 
 /**
  * Null until configured, so the app falls back to fixtures rather than crashing

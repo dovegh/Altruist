@@ -66,7 +66,22 @@ jobs:
             echo "::error::Set the EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY repository secrets."
             exit 1
           fi
-          printf 'EXPO_PUBLIC_SUPABASE_URL=%s\nEXPO_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$SUPABASE_URL" "$SUPABASE_KEY" > .env
+          # Tidy what a copy-paste leaves behind (quotes, spaces, newlines)
+          # and refuse values the app cannot use: a malformed URL makes the
+          # release app close on launch instead of showing an error.
+          tidy() { printf '%s' "$1" | tr -d '\r\n' | sed -e 's/^[[:space:]"'\'']*//' -e 's/[[:space:]"'\'']*$//'; }
+          URL=$(tidy "$SUPABASE_URL"); KEY=$(tidy "$SUPABASE_KEY")
+          case "$URL" in
+            https://*.supabase.co|https://*.supabase.co/) ;;
+            *) echo "::error title=Secret::EXPO_PUBLIC_SUPABASE_URL must look like https://<ref>.supabase.co (got ${#URL} characters starting '${URL:0:12}')."; exit 1 ;;
+          esac
+          case "$KEY" in
+            sb_publishable_*|eyJ*) ;;
+            sb_secret_*) echo "::error title=Secret::EXPO_PUBLIC_SUPABASE_ANON_KEY is a SECRET key. Use the publishable key (sb_publishable_...) — anything in EXPO_PUBLIC_* ships inside the app."; exit 1 ;;
+            *) echo "::error title=Secret::EXPO_PUBLIC_SUPABASE_ANON_KEY should start with sb_publishable_ (got ${#KEY} characters)."; exit 1 ;;
+          esac
+          printf 'EXPO_PUBLIC_SUPABASE_URL=%s\nEXPO_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$URL" "$KEY" > .env
+          echo "::notice title=Secrets::Supabase URL and publishable key look well-formed."
 
       - name: Generate the native project
         run: npx expo prebuild --platform android --clean --no-install
@@ -177,7 +192,22 @@ jobs:
             echo "::error::Set the EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY repository secrets."
             exit 1
           fi
-          printf 'EXPO_PUBLIC_SUPABASE_URL=%s\nEXPO_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$SUPABASE_URL" "$SUPABASE_KEY" > .env
+          # Tidy what a copy-paste leaves behind (quotes, spaces, newlines)
+          # and refuse values the app cannot use: a malformed URL makes the
+          # release app close on launch instead of showing an error.
+          tidy() { printf '%s' "$1" | tr -d '\r\n' | sed -e 's/^[[:space:]"'\'']*//' -e 's/[[:space:]"'\'']*$//'; }
+          URL=$(tidy "$SUPABASE_URL"); KEY=$(tidy "$SUPABASE_KEY")
+          case "$URL" in
+            https://*.supabase.co|https://*.supabase.co/) ;;
+            *) echo "::error title=Secret::EXPO_PUBLIC_SUPABASE_URL must look like https://<ref>.supabase.co (got ${#URL} characters starting '${URL:0:12}')."; exit 1 ;;
+          esac
+          case "$KEY" in
+            sb_publishable_*|eyJ*) ;;
+            sb_secret_*) echo "::error title=Secret::EXPO_PUBLIC_SUPABASE_ANON_KEY is a SECRET key. Use the publishable key (sb_publishable_...) — anything in EXPO_PUBLIC_* ships inside the app."; exit 1 ;;
+            *) echo "::error title=Secret::EXPO_PUBLIC_SUPABASE_ANON_KEY should start with sb_publishable_ (got ${#KEY} characters)."; exit 1 ;;
+          esac
+          printf 'EXPO_PUBLIC_SUPABASE_URL=%s\nEXPO_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$URL" "$KEY" > .env
+          echo "::notice title=Secrets::Supabase URL and publishable key look well-formed."
 
       - name: Generate the native project and install pods
         run: npx expo prebuild --platform ios --clean
