@@ -243,6 +243,31 @@ jobs:
           cp -R "$APP" build/Payload/
           (cd build && zip -qry Altruist-unsigned.ipa Payload)
 
+      - name: Check what is inside the IPA
+        # A sideloaded app that opens and closes at once is usually missing
+        # something here: an embedded framework, or the JS bundle. Reported
+        # as annotations so it can be read without a GitHub sign-in.
+        shell: bash
+        run: |
+          APP=$(ls -d build/Payload/*.app | head -1)
+          BIN="$APP/$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$APP/Info.plist")"
+          MIN=$(/usr/libexec/PlistBuddy -c 'Print :MinimumOSVersion' "$APP/Info.plist")
+          BUNDLE=$(ls -la "$APP/main.jsbundle" 2>/dev/null | awk '{print $5}')
+          FRAMEWORKS=$(ls "$APP/Frameworks" 2>/dev/null | tr '\n' ' ')
+          echo "::notice title=IPA::min iOS $MIN · main.jsbundle ${BUNDLE:-MISSING} bytes · Frameworks: ${FRAMEWORKS:-none}"
+          # Every dynamic library the app needs at launch must ship inside it.
+          missing=""
+          for lib in $(otool -L "$BIN" | awk 'NR>1 && /@rpath/ {print $1}'); do
+            name=${lib#@rpath/}
+            [ -e "$APP/Frameworks/$name" ] || missing="$missing $name"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error title=IPA::Linked but not embedded (the app will crash at launch):$missing"
+          else
+            echo "::notice title=IPA::Every @rpath library the app links is embedded."
+          fi
+          [ -n "$BUNDLE" ] || echo "::error title=IPA::main.jsbundle is missing — the JS was not bundled into the release build."
+
       - name: Build for the iOS Simulator
         shell: bash
         run: |
