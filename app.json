@@ -1,0 +1,75 @@
+{
+  "expo": {
+    "name": "Altruist",
+    "slug": "altruist",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "altruist",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "gh.altruist.app",
+      "supportsTablet": false
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#093F3F",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "gh.altruist.app"
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#093F3F",
+          "image": "./assets/images/brand-wordmark.png",
+          "imageWidth": 190,
+          "resizeMode": "contain",
+          "dark": {
+            "backgroundColor": "#041A1A",
+            "image": "./assets/images/brand-wordmark.png"
+          }
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Altruist needs access to your photos so you can attach a prescription for a pharmacist to review."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Altruist uses the camera so you can photograph a prescription for a pharmacist to review."
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Altruist uses Face ID to unlock the app so your prescriptions stay private."
+        }
+      ],
+      "expo-sharing",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Altruist uses your location to pin your delivery address."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "backgroundColor": "#041A1A"
+  }
+}

@@ -1,0 +1,202 @@
+# Builds the Android APK and the iOS app on GitHub's machines — no Expo account.
+#
+# Runs on every push to main, on version tags (v1.2.3), and by hand from the
+# Actions tab ("Run workflow"). Download the results from the run's
+# "Artifacts" section.
+#
+# Repository secrets (Settings → Secrets and variables → Actions):
+#   EXPO_PUBLIC_SUPABASE_URL        required — https://<ref>.supabase.co
+#   EXPO_PUBLIC_SUPABASE_ANON_KEY   required — the PUBLISHABLE key (sb_publishable_…)
+#                                   Never the service_role key: EXPO_PUBLIC_* ends
+#                                   up readable inside the app.
+#
+# Optional — a proper Android release key instead of the shared debug key:
+#   ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
+#
+# What comes out:
+#   altruist-android-apk   Installable on any Android phone. Signed with the debug
+#                          key unless the ANDROID_KEYSTORE_* secrets are set —
+#                          fine for testing, not for the Play Store.
+#   altruist-ios-unsigned  An unsigned .ipa. Apple only installs signed apps; sign
+#                          it for your own devices with Sideloadly / AltStore and
+#                          a free Apple ID, or add Apple signing to this job later.
+#   altruist-ios-simulator The .app for the iOS Simulator on a Mac.
+
+name: Build apps
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    name: Android APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Write .env from secrets
+        env:
+          SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
+            echo "::error::Set the EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY repository secrets."
+            exit 1
+          fi
+          printf 'EXPO_PUBLIC_SUPABASE_URL=%s\nEXPO_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$SUPABASE_URL" "$SUPABASE_KEY" > .env
+
+      - name: Generate the native project
+        run: npx expo prebuild --platform android --clean --no-install
+
+      - name: Use the release key, if one is configured
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "No release key configured — the APK is signed with the debug key."
+            exit 0
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > android/app/release.keystore
+          cat >> android/gradle.properties <<EOF
+          ALTRUIST_RELEASE_STORE_FILE=release.keystore
+          ALTRUIST_RELEASE_STORE_PASSWORD=$KEYSTORE_PASSWORD
+          ALTRUIST_RELEASE_KEY_ALIAS=$KEY_ALIAS
+          ALTRUIST_RELEASE_KEY_PASSWORD=$KEY_PASSWORD
+          EOF
+          # Point the release build at it (the generated file signs release with debug).
+          python3 - <<'PY'
+          import re
+          p = "android/app/build.gradle"
+          s = open(p).read()
+          s = s.replace(
+              "signingConfigs {",
+              """signingConfigs {
+                  release {
+                      storeFile file(ALTRUIST_RELEASE_STORE_FILE)
+                      storePassword ALTRUIST_RELEASE_STORE_PASSWORD
+                      keyAlias ALTRUIST_RELEASE_KEY_ALIAS
+                      keyPassword ALTRUIST_RELEASE_KEY_PASSWORD
+                  }""",
+              1,
+          )
+          s = re.sub(r"(release \{[^{}]*?)signingConfig signingConfigs\.debug", r"\1signingConfig signingConfigs.release", s, count=1, flags=re.S)
+          open(p, "w").write(s)
+          PY
+
+      - name: Build the APK
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: altruist-android-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+
+  ios:
+    name: iOS (unsigned IPA + simulator)
+    runs-on: macos-15
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Write .env from secrets
+        env:
+          SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
+            echo "::error::Set the EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY repository secrets."
+            exit 1
+          fi
+          printf 'EXPO_PUBLIC_SUPABASE_URL=%s\nEXPO_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$SUPABASE_URL" "$SUPABASE_KEY" > .env
+
+      - name: Generate the native project and install pods
+        run: npx expo prebuild --platform ios --clean
+
+      - name: Find the workspace and scheme
+        id: xc
+        run: |
+          WS=$(ls -d ios/*.xcworkspace | head -1)
+          SCHEME=$(basename "$WS" .xcworkspace)
+          echo "workspace=$WS" >> "$GITHUB_OUTPUT"
+          echo "scheme=$SCHEME" >> "$GITHUB_OUTPUT"
+
+      - name: Build for devices (unsigned) and package an IPA
+        run: |
+          xcodebuild archive \
+            -workspace "${{ steps.xc.outputs.workspace }}" \
+            -scheme "${{ steps.xc.outputs.scheme }}" \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/Altruist.xcarchive \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            | tail -n 40
+          APP=$(ls -d build/Altruist.xcarchive/Products/Applications/*.app | head -1)
+          mkdir -p build/Payload
+          cp -R "$APP" build/Payload/
+          (cd build && zip -qry Altruist-unsigned.ipa Payload)
+
+      - name: Build for the iOS Simulator
+        run: |
+          xcodebuild build \
+            -workspace "${{ steps.xc.outputs.workspace }}" \
+            -scheme "${{ steps.xc.outputs.scheme }}" \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/sim \
+            CODE_SIGNING_ALLOWED=NO \
+            | tail -n 40
+          APP=$(ls -d build/sim/Build/Products/Release-iphonesimulator/*.app | head -1)
+          (cd "$(dirname "$APP")" && zip -qry "$GITHUB_WORKSPACE/build/Altruist-simulator.zip" "$(basename "$APP")")
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: altruist-ios-unsigned
+          path: build/Altruist-unsigned.ipa
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: altruist-ios-simulator
+          path: build/Altruist-simulator.zip
+          if-no-files-found: error
