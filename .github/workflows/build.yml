@@ -111,7 +111,16 @@ jobs:
 
       - name: Build the APK
         working-directory: android
-        run: ./gradlew assembleRelease --no-daemon
+        shell: bash
+        run: |
+          set -o pipefail
+          if ! ./gradlew assembleRelease --no-daemon 2>&1 | tee ../gradle.log; then
+            # Logs need a GitHub sign-in to read; annotations do not.
+            grep -E "error:|FAILURE:|What went wrong|> " ../gradle.log | head -25 | while IFS= read -r line; do
+              echo "::error title=Gradle::${line}"
+            done
+            exit 1
+          fi
 
       - uses: actions/upload-artifact@v4
         with:
@@ -160,8 +169,45 @@ jobs:
           echo "workspace=$WS" >> "$GITHUB_OUTPUT"
           echo "scheme=$SCHEME" >> "$GITHUB_OUTPUT"
 
-      - name: Build for devices (unsigned) and package an IPA
+      - name: Prebuild ExpoModulesJSI (device + simulator)
+        # Expo builds this framework in a nested, quiet xcodebuild during the
+        # app build, so its errors get buried. Building it here, on its own,
+        # surfaces them; when it succeeds the app build reuses the result.
+        shell: bash
         run: |
+          set -o pipefail
+          export PODS_ROOT="$GITHUB_WORKSPACE/ios/Pods"
+          export DEVELOPER_DIR="$(xcode-select -p)"
+          for platform in iphoneos iphonesimulator; do
+            echo "::group::ExpoModulesJSI for $platform"
+            if ! PLATFORM_NAME=$platform bash node_modules/expo-modules-jsi/apple/scripts/build-xcframework.sh 2>&1 | tee "jsi-$platform.log"; then
+              echo "::endgroup::"
+              grep -E "error|Error|failed|FAILED" "jsi-$platform.log" | head -30 | while IFS= read -r line; do
+                echo "::error title=ExpoModulesJSI ($platform)::${line}"
+              done
+              exit 1
+            fi
+            echo "::endgroup::"
+          done
+
+      - name: Show the toolchain
+        run: |
+          xcodebuild -version
+          echo "::notice title=Toolchain::$(xcodebuild -version | tr '\n' ' ') node $(node -v)"
+
+      - name: Build for devices (unsigned) and package an IPA
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p build
+          fail() {
+            # Logs need a GitHub sign-in to read; annotations do not.
+            grep -E "error:|fatal error|The following build commands failed|xcodebuild: error" "$1" | head -25 | while IFS= read -r line; do
+              echo "::error title=Xcode::${line}"
+            done
+            tail -n 60 "$1"
+            exit 1
+          }
           xcodebuild archive \
             -workspace "${{ steps.xc.outputs.workspace }}" \
             -scheme "${{ steps.xc.outputs.scheme }}" \
@@ -169,14 +215,17 @@ jobs:
             -destination 'generic/platform=iOS' \
             -archivePath build/Altruist.xcarchive \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
-            | tail -n 40
+            > build/device.log 2>&1 || fail build/device.log
+          tail -n 20 build/device.log
           APP=$(ls -d build/Altruist.xcarchive/Products/Applications/*.app | head -1)
           mkdir -p build/Payload
           cp -R "$APP" build/Payload/
           (cd build && zip -qry Altruist-unsigned.ipa Payload)
 
       - name: Build for the iOS Simulator
+        shell: bash
         run: |
+          set -o pipefail
           xcodebuild build \
             -workspace "${{ steps.xc.outputs.workspace }}" \
             -scheme "${{ steps.xc.outputs.scheme }}" \
@@ -185,7 +234,12 @@ jobs:
             -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath build/sim \
             CODE_SIGNING_ALLOWED=NO \
-            | tail -n 40
+            > build/sim.log 2>&1 || {
+              grep -E "error:|fatal error|The following build commands failed" build/sim.log | head -25 | while IFS= read -r line; do
+                echo "::error title=Xcode (simulator)::${line}"
+              done
+              exit 1
+            }
           APP=$(ls -d build/sim/Build/Products/Release-iphonesimulator/*.app | head -1)
           (cd "$(dirname "$APP")" && zip -qry "$GITHUB_WORKSPACE/build/Altruist-simulator.zip" "$(basename "$APP")")
 
