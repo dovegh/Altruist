@@ -1,0 +1,20 @@
+/* The order link sits above the row's stretched refund link so both work. */
+.orderLink {
+  position: relative;
+  z-index: 1;
+  color: var(--text-brand);
+  font-weight: 600;
+}
+.orderLink:hover {
+  text-decoration: underline;
+}
+.reason {
+  max-width: 260px;
+}
+.left {
+  margin-top: 6px;
+}
+.urgent {
+  color: var(--text-warning);
+  font-weight: 600;
+}

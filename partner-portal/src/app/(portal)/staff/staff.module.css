@@ -1,0 +1,332 @@
+/* Staff — Figma 150:659. Colours from tokens.css only. */
+
+.readOnly {
+  margin: 8px 0 0;
+  max-width: 280px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+  text-align: right;
+}
+
+/* ---- Approval rule (gold notice) --------------------------------------- */
+
+.rule {
+  padding: 18px 20px;
+  font-size: 13px;
+}
+.rule strong {
+  margin-bottom: 4px;
+}
+.rule > span {
+  opacity: 0.92;
+}
+
+/* ---- Tables ------------------------------------------------------------ */
+
+.tableWrap {
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  overflow-x: auto;
+}
+/* The design's table sits on the card with no header band and no row rules. */
+.table.staffTable {
+  min-width: 860px;
+  background: none;
+}
+.table.staffTable th {
+  background: none;
+  padding: 24px 24px 10px;
+}
+.table.staffTable td {
+  border-top: none;
+  padding: 12px 24px;
+}
+.table.staffTable tbody tr:last-child td {
+  padding-bottom: 20px;
+}
+.table.staffTable th:first-child,
+.table.staffTable td:first-child {
+  width: 32%;
+}
+
+.person {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.person > span:nth-child(2) {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.avatar {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--bg-brand-subtle);
+  color: var(--text-brand);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+.avatarPending {
+  background: var(--bg-surface-raised);
+  color: var(--text-secondary);
+}
+.name {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+.you {
+  font-weight: 400;
+  color: var(--text-tertiary);
+}
+.email {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  overflow-wrap: anywhere;
+}
+.cellMain {
+  font-size: 15px;
+}
+.cellSub {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.lastActive {
+  font-size: 15px;
+  white-space: nowrap;
+}
+.manageCell {
+  text-align: right;
+  white-space: nowrap;
+}
+.manageCell :global(.btn-link) {
+  font-size: 15px;
+}
+
+/* Access removed: the person stays listed (their approvals are on record) but reads as off. */
+.inactive .dim,
+.inactive .avatar {
+  opacity: 0.45;
+}
+
+.approval {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+}
+.approvalOff {
+  max-width: 180px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+  line-height: 1.4;
+}
+.box {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: var(--radius-xs);
+  border: 1.5px solid var(--border-default);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.boxOn {
+  background: var(--bg-brand);
+  border-color: var(--bg-brand);
+  color: var(--text-on-brand);
+}
+
+/* ---- Manage editor ----------------------------------------------------- */
+
+.table.staffTable tr.editRow td {
+  padding: 0 24px 20px;
+}
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface-raised);
+  max-width: 760px;
+  margin-left: 44px;
+}
+
+.fieldRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.select {
+  appearance: none;
+  cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 22px) 50%, calc(100% - 17px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 40px;
+}
+.select:disabled,
+.fieldRow :global(.input:disabled) {
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
+
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+}
+.check input {
+  width: 20px;
+  height: 20px;
+  margin: 1px 0 0;
+  flex-shrink: 0;
+  accent-color: var(--bg-brand);
+  cursor: inherit;
+}
+.check > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.checkOff {
+  cursor: not-allowed;
+}
+.checkOff .checkLabel {
+  color: var(--text-tertiary);
+}
+.checkLabel {
+  font-weight: 600;
+  font-size: 14px;
+}
+.checkHelp {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.formActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ---- Invite dialog ----------------------------------------------------- */
+
+.dialog {
+  width: min(640px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  padding: 0;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  overflow: auto;
+}
+.dialog::backdrop {
+  background: var(--bg-overlay);
+  opacity: 0.8;
+}
+.dialogHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 24px 0;
+}
+.dialogTitle {
+  font-size: 22px;
+  font-weight: 700;
+}
+.dialogBody {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 24px 24px;
+}
+.close {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg-surface-raised);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.close:hover {
+  background: var(--border-default);
+}
+.dialog :global(.notice) {
+  font-size: 14px;
+}
+.link {
+  color: var(--text-brand);
+  font-weight: 600;
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+
+/* ---- Pending invites --------------------------------------------------- */
+
+.invites {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 700;
+}
+.count {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface-raised);
+  color: var(--text-secondary);
+}
+.sectionSub {
+  margin: -4px 0 4px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.confirm {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+.confirmButtons {
+  display: inline-flex;
+  gap: 8px;
+}
+.inlineError {
+  font-size: 12px;
+  color: var(--text-danger);
+  white-space: normal;
+  max-width: 260px;
+  text-align: right;
+}
+
+@media (max-width: 1100px) {
+  .editor {
+    margin-left: 0;
+  }
+}

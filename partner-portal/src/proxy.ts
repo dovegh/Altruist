@@ -1,9 +1,13 @@
 /**
  * The gate in front of every page.
  *
- *   no session            → /login
- *   password only (aal1)  → /two-factor
- *   two-factor done       → the portal (and /login, /two-factor bounce inward)
+ *   no session            → /login (except the pages that work signed out)
+ *   password only (aal1)  → /two-factor, carrying where they were going
+ *   two-factor done       → the portal (and the sign-in pages bounce inward)
+ *
+ * Setting a new password after a reset link is allowed at aal1 only for an
+ * account with no authenticator yet; anyone with one passes two-factor first
+ * (Supabase also refuses a password change below aal2 for them).
  *
  * This is convenience routing. The real enforcement is in the database: the
  * portal functions and the image policy refuse anything short of aal2, so a
@@ -11,6 +15,9 @@
  */
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+
+/** Pages that work without a session. */
+const SIGNED_OUT = ['/login', '/forgot-password', '/join'];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -32,8 +39,10 @@ export async function proxy(request: NextRequest) {
   );
 
   const path = request.nextUrl.pathname;
-  const onLogin = path === '/login';
-  const onTwoFactor = path === '/two-factor';
+  const signedOutPage = SIGNED_OUT.includes(path);
+
+  // The email-link callback and the dev previews handle themselves.
+  if (path.startsWith('/auth/') || path.startsWith('/dev/')) return response;
 
   /** A redirect that keeps any refreshed session cookies. */
   const go = (to: string) => {
@@ -45,12 +54,17 @@ export async function proxy(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return onLogin ? response : go('/login');
+  if (!user) return signedOutPage ? response : go('/login');
 
   const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  if (aal?.currentLevel !== 'aal2') return onTwoFactor ? response : go('/two-factor');
+  if (aal?.currentLevel !== 'aal2') {
+    if (path === '/two-factor') return response;
+    if (path === '/reset-password' && aal?.nextLevel !== 'aal2') return response;
+    if (path === '/reset-password') return go('/two-factor?next=/reset-password');
+    return go('/two-factor');
+  }
 
-  if (onLogin || onTwoFactor) return go('/prescriptions');
+  if (signedOutPage || path === '/two-factor') return go('/dashboard');
   return response;
 }
 

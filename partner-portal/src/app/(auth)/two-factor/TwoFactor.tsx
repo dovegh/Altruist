@@ -75,7 +75,9 @@ export function TwoFactor() {
       setError('That code didn’t match. Codes change every 30 seconds — enter the one showing now.');
       return;
     }
-    router.replace('/dashboard');
+    // Where the gate was taking them (only /reset-password today), else home.
+    const next = new URLSearchParams(window.location.search).get('next');
+    router.replace(next && next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard');
     router.refresh();
   };
 

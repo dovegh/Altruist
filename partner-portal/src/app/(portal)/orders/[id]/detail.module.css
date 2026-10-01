@@ -215,3 +215,46 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ---- Start refund ------------------------------------------------------- */
+
+.refundWrap {
+  position: relative;
+}
+.refundPanel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 5;
+  width: 340px;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--border-default);
+}
+.refundFields {
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.refundFields legend {
+  padding: 0;
+  margin-bottom: 14px;
+}
+.refundFields :global(.input),
+.refundFields :global(.textarea) {
+  background: var(--bg-surface);
+}
+.refundButtons {
+  display: flex;
+  gap: 10px;
+}
+.refundConfirm {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-primary);
+}

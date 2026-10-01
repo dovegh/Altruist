@@ -46,7 +46,7 @@ export function Sidebar({
 
   return (
     <nav className={styles.sidebar} aria-label="Portal">
-      <Link href="/prescriptions" className={`display ${styles.wordmark}`}>
+      <Link href="/dashboard" className={`display ${styles.wordmark}`}>
         Altruist
       </Link>
 

@@ -26,6 +26,9 @@ import { useOrderStore } from '@/features/orders/store';
 import { usePartnerPharmacy } from '@/features/profile/store';
 import { defineStrings, useT } from '@/i18n';
 import { formLabel } from '@/lib/formLabels';
+import { requestRefund } from '@/lib/api';
+import { showDialog } from '@/components/ui/Dialog';
+import { describeFailure } from '@/components/ui/FormMessage';
 
 const S = defineStrings({
   en: {
@@ -204,6 +207,7 @@ export default function RefundReview() {
   const t = useTokens();
   const { d } = useDesignScale();
   const [acknowledged, setAcknowledged] = useState(false);
+  const [sending, setSending] = useState(false);
   const params = useLocalSearchParams<{
     id?: string;
     amount?: string;
@@ -364,10 +368,26 @@ export default function RefundReview() {
         <Button
           label={tr('submit')}
           size="large"
-          disabled={!acknowledged}
-          onPress={() =>
-            router.replace(`/refund-status?id=${order?.id ?? ''}&amount=${refund}`)
-          }
+          disabled={!acknowledged || sending}
+          loading={sending}
+          onPress={async () => {
+            if (!order) return;
+            setSending(true);
+            try {
+              // The pharmacy refunds the goods; the service-fee share is Altruist's.
+              await requestRefund({ orderId: order.id, reason: params.reason || 'Something else', amount: goods });
+              router.replace(`/refund-status?id=${order.id}&amount=${refund}`);
+            } catch (e) {
+              setSending(false);
+              showDialog({
+                icon: 'danger',
+                tone: 'danger',
+                title: tr('title'),
+                message: describeFailure(e),
+                actions: [{ label: 'OK' }],
+              });
+            }
+          }}
         />
         <Text variant="caption" tone="tertiary" center style={{ fontSize: d(12), lineHeight: d(16) }}>
           {acknowledged ? tr('repliesIn') : tr('tick')}

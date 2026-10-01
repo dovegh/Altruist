@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-// The queue is where a pharmacist starts. The Dashboard comes later.
+// The Dashboard is where a pharmacist starts: what is waiting, what is late.
 export default function Home() {
-  redirect('/prescriptions');
+  redirect('/dashboard');
 }

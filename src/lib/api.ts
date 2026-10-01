@@ -519,6 +519,36 @@ export type PaymentResult = {
   next?: string;
 };
 
+/**
+ * Sends a refund request to the pharmacy (0021 `refund_requests`). The
+ * database accepts it only for this person's own delivered order and for no
+ * more than the goods cost; the pharmacist decides in the partner portal.
+ * Returns the RF number, or undefined under fixtures.
+ */
+export async function requestRefund(p: {
+  orderId: string;
+  reason: string;
+  amount: number;
+}): Promise<string | undefined> {
+  if (!SUPABASE_CONFIGURED) return settle(undefined, 600);
+  const client = db();
+  const { data: auth } = await client.auth.getUser();
+  const userId = auth?.user?.id;
+  if (!userId) throw new ApiError(401, 'requestRefund');
+  const { data, error } = await client
+    .from('refund_requests')
+    .insert({ order_id: p.orderId, user_id: userId, reason: p.reason, amount_requested: p.amount })
+    .select('id')
+    .single();
+  if (error) {
+    if (error.code === '42501') {
+      throw new DeclinedError('A refund can be requested once the order has been delivered.');
+    }
+    rethrow(error, 'requestRefund');
+  }
+  return (data as { id: string }).id;
+}
+
 export type ServerOrderStatus = {
   id: string;
   status: string;

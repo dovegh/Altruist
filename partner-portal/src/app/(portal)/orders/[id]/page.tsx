@@ -3,7 +3,8 @@
  *
  * Left: items (with RX REQUIRED / OVER THE COUNTER chips), delivery, status
  * history. Right: patient, prescription, payment, settlement. Header actions:
- * contact the patient, move the order one step on.
+ * contact the patient, start a refund (delivered orders, pharmacists only),
+ * move the order one step on.
  *
  * Settlement shows the pharmacy's own arithmetic: order total, delivery (kept
  * by Altruist for the rider), commission on the goods, and the payout.
@@ -14,20 +15,33 @@ import { notFound } from 'next/navigation';
 import { AdvanceButton } from '@/components/AdvanceButton';
 import { Icon } from '@/components/Icon';
 import { StatusPill } from '@/components/StatusPill';
-import { cedis, dateTime, initials, time, type OrderDetail } from '@/lib/portal';
+import { cedis, dateTime, getMe, initials, time, type OrderDetail } from '@/lib/portal';
 import { supabaseServer } from '@/lib/supabase/server';
+import type { RefundRow } from '../../refunds/types';
 import styles from './detail.module.css';
+import { StartRefund } from './StartRefund';
 
 export const metadata: Metadata = { title: 'Order' };
 
 export default async function OrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await supabaseServer();
-  const { data, error } = await supabase.rpc('portal_order', { p_id: id });
+  const [me, { data, error }] = await Promise.all([getMe(), supabase.rpc('portal_order', { p_id: id })]);
   if (error || !data) notFound();
   const o = data as OrderDetail;
   const units = o.items.reduce((n, i) => n + i.qty, 0);
   const rx = o.prescription;
+
+  // A pharmacist may refund a delivered order, up to the goods total less what
+  // earlier refunds already returned (the database checks the same ceiling).
+  let refundable = 0;
+  if (o.status === 'DELIVERED' && me?.can_approve) {
+    const { data: refunds } = await supabase.rpc('portal_refunds');
+    const already = ((refunds ?? []) as RefundRow[])
+      .filter((r) => r.order_id === o.id && (r.status === 'APPROVED' || r.status === 'PARTIAL'))
+      .reduce((n, r) => n + Number(r.amount_approved ?? 0), 0);
+    refundable = Math.max(0, Math.round((Number(o.subtotal) - already) * 100) / 100);
+  }
 
   return (
     <div className="page">
@@ -53,6 +67,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
               Contact patient
             </a>
           ) : null}
+          {refundable > 0 ? <StartRefund orderId={o.id} max={refundable} /> : null}
           <AdvanceButton id={o.id} status={o.status} size="md" block={false} />
         </div>
       </header>

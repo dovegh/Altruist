@@ -1,0 +1,348 @@
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.crumbs {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+.crumbs a:hover {
+  color: var(--text-primary);
+}
+.crumbHere {
+  color: var(--text-brand);
+}
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.countdown {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--text-warning);
+  background: var(--bg-warning-subtle);
+  color: var(--text-warning);
+  font-size: 13px;
+  font-weight: 600;
+}
+.overdue {
+  border-color: var(--border-danger);
+  background: var(--bg-danger-subtle);
+  color: var(--text-danger);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(340px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.main,
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+.card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.fine {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.link {
+  color: var(--text-brand);
+  font-weight: 600;
+}
+.link:hover {
+  text-decoration: underline;
+}
+
+/* ---- Items -------------------------------------------------------------- */
+
+.items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 40px 14px 16px;
+  min-height: 64px;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-raised);
+}
+.itemIcon {
+  flex-shrink: 0;
+  display: inline-flex;
+  color: var(--icon-brand);
+}
+.itemBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.itemName {
+  font-weight: 600;
+  font-size: 15px;
+}
+.itemMeta {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.itemPrice {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+}
+.itemRx {
+  background: var(--bg-warning-subtle);
+}
+.itemRx .itemIcon,
+.itemRx .itemMeta {
+  color: var(--text-warning);
+}
+.itemRx .itemPrice {
+  color: var(--text-disabled);
+}
+
+/* ---- Reason & evidence -------------------------------------------------- */
+
+.quote {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--border-brand);
+  background: var(--bg-surface-raised);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.quoteTitle {
+  margin: 0;
+  font-weight: 600;
+  font-size: 15px;
+}
+.quoteLabel {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.quoteText {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+.photos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.photo {
+  height: 110px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface-raised);
+  color: var(--icon-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---- Order context ------------------------------------------------------ */
+
+.context {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.context div {
+  display: grid;
+  grid-template-columns: 136px minmax(0, 1fr);
+  gap: 16px;
+}
+.context dt {
+  color: var(--text-secondary);
+}
+.context dd {
+  margin: 0;
+}
+
+/* ---- Decision ----------------------------------------------------------- */
+
+.fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.legend {
+  padding: 0;
+  margin-bottom: 16px;
+}
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.option {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-raised);
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.option[data-checked='true'] {
+  border-color: var(--border-brand);
+}
+.option:has(input:focus-visible) {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.fieldset:disabled .option {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.radio {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-strong);
+  margin-top: 1px;
+  position: relative;
+}
+.option[data-checked='true'] .radio {
+  border-color: var(--border-brand);
+  background: var(--bg-brand);
+}
+.option[data-checked='true'] .radio::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: var(--text-on-brand);
+}
+.optionBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.optionTitle {
+  font-weight: 600;
+  font-size: 15px;
+}
+.optionSub {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.money {
+  position: relative;
+  display: block;
+}
+.moneySign {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 17px;
+  pointer-events: none;
+}
+.moneyInput {
+  padding-left: 34px;
+  font-size: 17px;
+}
+.moneyInput[readonly] {
+  color: var(--text-secondary);
+}
+
+.settleCard {
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background: var(--bg-brand-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.settle {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.settle div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.settle dt {
+  color: var(--text-success);
+  font-size: 13px;
+}
+.settle dd {
+  margin: 0;
+  font-weight: 700;
+  font-size: 14px;
+}
+.side .card > .settle dt {
+  color: var(--text-secondary);
+}
+
+.confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.confirmText {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.decidedHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

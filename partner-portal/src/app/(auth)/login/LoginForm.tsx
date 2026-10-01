@@ -11,18 +11,22 @@
  * is asked for on every sign-in until device trust exists server-side.
  */
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Icon } from '@/components/Icon';
 import { supabaseBrowser } from '@/lib/supabase/client';
 import styles from '../auth.module.css';
 
-export function LoginForm() {
+export function LoginForm({ linkExpired = false }: { linkExpired?: boolean }) {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [reveal, setReveal] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Back from an email link that had already been used or had expired.
+  const [error, setError] = useState<string | null>(
+    linkExpired ? 'That link has expired or was already used. Request a new one.' : null,
+  );
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,9 +111,9 @@ export function LoginForm() {
 
       <div className={styles.row}>
         <span />
-        <a className="btn-link" href="mailto:partners@altruist.gh?subject=Partner%20portal%20password%20reset">
+        <Link className="btn-link" href="/forgot-password">
           Forgot password?
-        </a>
+        </Link>
       </div>
 
       {error ? (
@@ -132,6 +136,11 @@ export function LoginForm() {
       </div>
 
       <p className={styles.footer}>
+        Invited by your pharmacy?{' '}
+        <Link className="btn-link" href="/join">
+          Create your account
+        </Link>
+        <br />
         Not a partner yet?{' '}
         <a className="btn-link" href="mailto:partners@altruist.gh?subject=Partner%20application">
           Apply to join

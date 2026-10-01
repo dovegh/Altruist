@@ -9,14 +9,28 @@ Next.js 16 (App Router), Supabase auth. Designs: Figma *Partner Portal* page
 
 ## What is built
 
-| Screen | Route | Status |
+| Screen | Route | Figma |
 | --- | --- | --- |
-| Sign in | `/login` | Built |
-| Two-factor (authenticator app) | `/two-factor` | Built |
-| Prescription queue | `/prescriptions` | Built |
-| Review prescription | `/prescriptions/[id]` | Built |
-| Incoming orders | `/orders` | Built (read-only) |
-| Dashboard, Fulfilment, Inventory, Payouts, Staff, Settings | `/[section]` | "Coming next" page |
+| Sign in · forgot password · reset password | `/login` `/forgot-password` `/reset-password` | 147:182 |
+| Two-factor (authenticator app) | `/two-factor` | 147:232 |
+| Accept a staff invite | `/join` | — |
+| Dashboard | `/dashboard` | 149:207 |
+| Incoming orders · order detail | `/orders` `/orders/[id]` | 46:2 · 87:60 |
+| Prescription queue · review | `/prescriptions` `/prescriptions/[id]` | 46:100 |
+| Fulfilment board | `/fulfilment` | 75:41 |
+| Refunds · refund decision | `/refunds` `/refunds/[id]` | 105:104 |
+| Inventory | `/inventory` | 149:410 |
+| Payouts (+ CSV statement per week) | `/payouts` | 150:326 |
+| Staff (invite, roles, approval rights) | `/staff` | 150:659 |
+| Settings & licence | `/settings` | 150:510 |
+
+Who may do what (enforced in the database, migrations 0018–0021):
+
+| | Any staff | Registered pharmacist (`can_approve`) | Superintendent |
+| --- | --- | --- | --- |
+| See everything, move orders on the board, update stock | ✓ | ✓ | ✓ |
+| Approve / reject prescriptions, decide refunds, change prices | | ✓ | ✓ (with a PC number) |
+| Invite and manage staff, edit pharmacy settings, upload licence | | | ✓ |
 
 ## How it is kept safe
 
@@ -34,7 +48,7 @@ readable for 15 minutes after that, by the person who opened it, through a
 
 ## Setup
 
-1. **Apply the migration** `supabase/migrations/0018_partner_portal.sql`
+1. **Apply the migrations** `supabase/migrations/0018` to `0021`
    (Supabase dashboard → SQL editor, or `npx supabase db push`).
 
 2. **Create the pharmacist's login**: Supabase dashboard → Authentication →
@@ -52,7 +66,12 @@ readable for 15 minutes after that, by the person who opened it, through a
    Roles: `superintendent`, `pharmacist`, `locum` (may approve with a PC number),
    `counter`, `dispatch` (may never approve).
 
-4. **Run it**: create `.env.local` with the same public values the app uses:
+4. **Allow the portal's email links**: Supabase dashboard → Authentication →
+   URL Configuration → Redirect URLs → add `http://localhost:3100/auth/callback`
+   (and the live portal's `/auth/callback` when it is deployed). Password reset
+   and staff invites need it.
+
+5. **Run it**: create `.env.local` with the same public values the app uses:
 
    ```
    NEXT_PUBLIC_SUPABASE_URL=...

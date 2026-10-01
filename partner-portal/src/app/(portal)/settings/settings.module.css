@@ -1,0 +1,259 @@
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(320px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.main,
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+.fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.fieldset:disabled :global(.input):not([readonly]) {
+  color: var(--text-secondary);
+}
+
+.card {
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.formCard {
+  background: var(--bg-surface);
+}
+
+/* ---- Availability rows -------------------------------------------------- */
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-raised);
+  min-height: 62px;
+}
+.rowIcon {
+  flex-shrink: 0;
+  color: var(--icon-secondary);
+  display: inline-flex;
+}
+.rowBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.rowTitle {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+.rowSub {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.rowInput {
+  height: 44px;
+  margin-top: 6px;
+}
+.kmField {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.kmField .rowInput {
+  width: 120px;
+}
+.rowEdit {
+  flex-shrink: 0;
+  padding: 8px 12px;
+}
+.rowEdit:disabled {
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
+
+.switch {
+  flex-shrink: 0;
+  position: relative;
+  width: 52px;
+  height: 30px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-surface-sunken);
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 180ms cubic-bezier(0.2, 0, 0, 1);
+}
+.knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+  transition: transform 180ms cubic-bezier(0.2, 0, 0, 1), background-color 180ms;
+}
+.switch[aria-checked='true'] {
+  background: var(--bg-brand);
+  border-color: var(--border-brand);
+}
+.switch[aria-checked='true'] .knob {
+  transform: translateX(22px);
+  background: var(--text-on-brand);
+}
+.switch:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.saveRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.saved {
+  color: var(--text-success);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* ---- Licence ------------------------------------------------------------ */
+
+.licence {
+  background: var(--bg-warning-subtle);
+}
+.licenceTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-warning);
+}
+.licenceTitle svg {
+  flex-shrink: 0;
+}
+.facts {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.facts div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+}
+.facts dt {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+.facts dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.status_ok {
+  color: var(--text-primary);
+}
+.facts .status_warning {
+  color: var(--text-warning);
+}
+.facts .status_danger {
+  color: var(--text-danger);
+}
+.facts .status_muted {
+  color: var(--text-tertiary);
+}
+.submission,
+.submissionBad {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--bg-surface-sunken);
+  color: var(--text-warning);
+}
+.submissionBad {
+  color: var(--text-danger);
+}
+.fine {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.upload {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface-sunken);
+}
+.file {
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.file::file-selector-button {
+  font: inherit;
+  font-weight: 600;
+  margin-right: 12px;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface-raised);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.uploadActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ---- Leaving ------------------------------------------------------------ */
+
+.leaving {
+  background: var(--bg-danger-subtle);
+}
+.leavingTitle {
+  color: var(--text-danger);
+}
+.leavingBody {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-danger);
+}
+
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
