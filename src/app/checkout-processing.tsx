@@ -177,6 +177,13 @@ export default function CheckoutProcessing() {
           addressId: address.id,
           speedId: speed.id,
           prescriptionId: snapshot.prescriptionIds[0],
+          delivery: {
+            addressLabel: address.title,
+            addressLine: address.subtitle,
+            speedLabel: speed.title,
+            speedEta: speed.subtitle,
+            methodLabel: method.title,
+          },
         });
         if (cancelled.current) return;
         setReference(psk);

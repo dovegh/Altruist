@@ -28,7 +28,7 @@ import { StatusScreen } from '@/components/ui/StatusScreen';
 import { Button } from '@/components/ui/Button';
 import { Text } from '@/components/ui/Text';
 import { cedis } from '@/lib/money';
-import { useOrderStore, IN_MOTION, type Order } from '@/features/orders/store';
+import { useOrderStore, useOrderSync, IN_MOTION, type Order } from '@/features/orders/store';
 import { usePartnerPharmacy } from '@/features/profile/store';
 import { defineStrings, translate, useLocale, useT } from '@/i18n';
 
@@ -214,6 +214,9 @@ export default function OrderTracking() {
 
   const order = useOrderStore((s) => s.items.find((o) => o.id === (id ?? s.lastOrderId)));
   const hydrated = useOrderStore((s) => s.hydrated);
+  // The pharmacy moves the order on from the partner portal; check every 15 s
+  // while this screen is open so each step lands without a pull-to-refresh.
+  useOrderSync(15_000);
 
   if (!order) {
     // Silence while storage is still being read, rather than a "not found" that

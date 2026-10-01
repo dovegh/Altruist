@@ -30,7 +30,7 @@ import { Stagger } from '@/components/ui/Motion';
 import { Text } from '@/components/ui/Text';
 import { Icon } from '@/components/ui/Icon';
 import { cedis } from '@/lib/money';
-import { useOrderStore, IN_MOTION, type Order } from '@/features/orders/store';
+import { useOrderStore, useOrderSync, IN_MOTION, type Order } from '@/features/orders/store';
 import { useCartStore } from '@/features/cart/store';
 import { defineStrings, translate, useLocale, useT } from '@/i18n';
 
@@ -174,6 +174,7 @@ export default function OrderHistory() {
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>('filterAll');
 
   const orders = useOrderStore((s) => s.items);
+  useOrderSync();
   const addToCart = useCartStore((s) => s.add);
 
   const visible = useMemo(() => {

@@ -10,11 +10,14 @@
  * Tracking's timeline needs — a status enum alone cannot say when each step
  * happened, and the timeline is drawn with a timestamp per step.
  */
+import { useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { LifecycleStatus } from '@/components/ui/PrescriptionCard';
 import type { CartLine } from '../cart/useCart';
+import { listOrderStatuses, type ServerOrderStatus } from '@/lib/api';
 
 export type OrderLine = {
   productId: string;
@@ -76,6 +79,8 @@ type OrdersState = {
   lastOrderId?: string;
   place: (order: Order) => void;
   setStatus: (id: string, status: LifecycleStatus) => void;
+  /** Adopts what the pharmacy has recorded (see `syncOrders`). */
+  applyServer: (rows: ServerOrderStatus[]) => void;
 };
 
 export const useOrderStore = create<OrdersState>()(
@@ -112,6 +117,14 @@ export const useOrderStore = create<OrdersState>()(
             };
           }),
         })),
+
+      applyServer: (rows) =>
+        set((s) => ({
+          items: s.items.map((o) => {
+            const row = rows.find((r) => r.id === o.id);
+            return row ? withServer(o, row) : o;
+          }),
+        })),
     }),
     {
       name: 'altruist.orders',
@@ -127,6 +140,67 @@ export const useOrderStore = create<OrdersState>()(
     },
   ),
 );
+
+/**
+ * Folds the pharmacy's record into the local order: its status, and the real
+ * time of each step on the timeline. The local titles stay (they are the ones
+ * the timeline was drawn with); only `at` and `state` come from the server.
+ *
+ * A cancellation made on this phone wins over a stale RECEIVED from the server
+ * until the server catches up — the patient pressed cancel, they must not see
+ * the order spring back.
+ */
+function withServer(o: Order, row: ServerOrderStatus): Order {
+  const status = row.status as LifecycleStatus;
+  if (o.status === 'CANCELLED' && status === 'RECEIVED') return o;
+  const step = STEP_OF[status];
+  if (step === undefined) return { ...o, status };
+  const firstAt = (s: number) =>
+    row.events.find((e) => STEP_OF[e.status as LifecycleStatus] === s)?.at;
+  return {
+    ...o,
+    status,
+    events: o.events.map((e, i) => ({
+      ...e,
+      at: i <= step ? firstAt(i) ?? e.at ?? Date.now() : e.at,
+      state: i < step ? 'complete' : i === step ? (status === 'DELIVERED' ? 'complete' : 'current') : 'upcoming',
+    })),
+  };
+}
+
+let syncing: Promise<void> | null = null;
+
+/**
+ * Pulls status for the orders this phone holds. Never throws: offline, the
+ * local copy is shown as it was.
+ */
+export function syncOrders(): Promise<void> {
+  if (!syncing) {
+    const ids = useOrderStore.getState().items.map((o) => o.id);
+    syncing = listOrderStatuses(ids)
+      .then((rows) => useOrderStore.getState().applyServer(rows))
+      .catch(() => {})
+      .finally(() => {
+        syncing = null;
+      });
+  }
+  return syncing;
+}
+
+/**
+ * Keeps orders in step with the pharmacy while a screen is open: once on
+ * focus, then every `everyMs` (omit to sync only on focus).
+ */
+export function useOrderSync(everyMs?: number): void {
+  useFocusEffect(
+    useCallback(() => {
+      void syncOrders();
+      if (!everyMs) return undefined;
+      const id = setInterval(() => void syncOrders(), everyMs);
+      return () => clearInterval(id);
+    }, [everyMs]),
+  );
+}
 
 /** Builds the order's line snapshot from the live cart. */
 export const snapshotLines = (lines: CartLine[]): OrderLine[] =>

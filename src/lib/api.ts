@@ -519,6 +519,38 @@ export type PaymentResult = {
   next?: string;
 };
 
+export type ServerOrderStatus = {
+  id: string;
+  status: string;
+  events: { status: string; title: string; subtitle: string | null; at: number }[];
+};
+
+/**
+ * Where each of this person's orders is, as the pharmacy has recorded it — the
+ * partner portal's fulfilment board writes these. Ids only for orders this
+ * phone already knows; the full record (lines, prices) stays the local copy.
+ */
+export async function listOrderStatuses(ids: string[]): Promise<ServerOrderStatus[]> {
+  if (!SUPABASE_CONFIGURED || ids.length === 0) return [];
+  const { data, error } = await db()
+    .from('orders')
+    .select('id, status, order_status_events(status, title, subtitle, created_at)')
+    .in('id', ids);
+  if (error) rethrow(error, 'listOrderStatuses');
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    status: row.status,
+    events: (row.order_status_events ?? [])
+      .map((e: any) => ({
+        status: e.status,
+        title: e.title,
+        subtitle: e.subtitle,
+        at: Date.parse(e.created_at),
+      }))
+      .sort((a: { at: number }, b: { at: number }) => a.at - b.at),
+  }));
+}
+
 /**
  * Creates the order. Returns the id the pharmacy and the user will both quote.
  *
@@ -531,6 +563,17 @@ export async function createOrder(payload: {
   addressId: string;
   speedId: string;
   prescriptionId?: string;
+  /**
+   * What the pharmacy needs to deliver it: where, how fast, paid how. Labels
+   * only — every amount on the order is still priced here from the catalogue.
+   */
+  delivery?: {
+    addressLabel: string;
+    addressLine: string;
+    speedLabel: string;
+    speedEta: string;
+    methodLabel: string;
+  };
 }): Promise<{ orderId: string; reference: string }> {
   if (SUPABASE_CONFIGURED) {
     const client = db();
@@ -579,6 +622,11 @@ export async function createOrder(payload: {
       delivery_fee: 0,
       service_fee: 0,
       total: subtotal,
+      address_label: payload.delivery?.addressLabel ?? null,
+      address_line: payload.delivery?.addressLine ?? null,
+      speed_label: payload.delivery?.speedLabel ?? null,
+      speed_eta: payload.delivery?.speedEta ?? null,
+      method_label: payload.delivery?.methodLabel ?? null,
     });
     if (error) rethrow(error, 'createOrder');
 

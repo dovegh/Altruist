@@ -1,0 +1,137 @@
+.page {
+  min-height: 100vh;
+}
+.sla {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: var(--radius-full);
+  background: var(--bg-warning-subtle);
+  color: var(--text-warning);
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(220px, 1fr));
+  gap: 18px;
+  align-items: start;
+  overflow-x: auto;
+}
+.column {
+  min-height: 560px;
+  padding: 14px;
+  border-radius: var(--radius-xl);
+  background: var(--bg-surface-sunken);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.colHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 2px 4px;
+}
+.colTitle {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+}
+.count {
+  min-width: 26px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface-raised);
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.none {
+  margin: 8px 2px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.card {
+  position: relative;
+  padding: 14px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  border: 1.5px solid transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.late {
+  border-color: var(--bg-accent-gold);
+}
+.cardLink {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+/* The whole card opens the order; the button sits above the stretched link. */
+.cardLink::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.cardLink:focus-visible {
+  outline: none;
+}
+.cardLink:focus-visible::after {
+  outline: 2px solid var(--border-focus);
+}
+.trx {
+  font-weight: 600;
+  font-size: 13px;
+}
+.patient {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.lateTime {
+  color: var(--text-warning);
+  font-weight: 600;
+}
+.blocked {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-warning);
+  position: relative;
+  z-index: 1;
+}
+.card :global(.btn) {
+  position: relative;
+  z-index: 1;
+}
+
+.footnote {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+@media (max-width: 1200px) {
+  .board {
+    grid-template-columns: repeat(4, 260px);
+  }
+}

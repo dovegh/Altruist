@@ -1,0 +1,332 @@
+/* Two-factor — setup (first sign-in) and code entry (every sign-in after). */
+
+.card {
+  width: 100%;
+  max-width: 480px;
+  padding: 40px;
+  border-radius: var(--radius-2xl);
+  background: var(--bg-surface);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.cardWide {
+  max-width: 600px;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+}
+.back:hover {
+  color: var(--text-primary);
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+.sub {
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ---- Steps ------------------------------------------------------------- */
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.step {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 16px;
+  padding-bottom: 24px;
+  position: relative;
+}
+.step:last-child {
+  padding-bottom: 0;
+}
+/* The rail joining the step numbers. */
+.step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 36px;
+  bottom: 4px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--border-default);
+}
+.stepNum {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  background: var(--bg-brand-subtle);
+  color: var(--text-brand);
+}
+.stepNumDone {
+  background: var(--bg-brand);
+  color: var(--text-on-brand);
+}
+.stepBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding-top: 4px;
+}
+.stepTitle {
+  font-weight: 600;
+  font-size: 15px;
+}
+.stepText {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.apps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.app {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface-raised);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ---- QR ---------------------------------------------------------------- */
+
+.scan {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 20px;
+  align-items: center;
+}
+.qrTile {
+  width: 168px;
+  height: 168px;
+  padding: 10px;
+  border-radius: var(--radius-lg);
+  /* A QR code needs a light quiet zone to scan, whatever the theme. */
+  background: #ffffff;
+  box-shadow: 0 0 0 4px var(--bg-brand-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.qrTile img {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+.qrPlaceholder {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-md);
+  background: repeating-linear-gradient(45deg, #e7eded 0 6px, #f4f7f7 6px 12px);
+}
+.scanAside {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.keyToggle {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text-brand);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+.key {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 10px 10px 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-sunken);
+  border: 1px solid var(--border-default);
+}
+.keyText {
+  flex: 1;
+  min-width: 0;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  word-spacing: 4px;
+  overflow-wrap: anywhere;
+}
+.copy {
+  flex-shrink: 0;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface-raised);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ---- Code -------------------------------------------------------------- */
+
+.codeRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr) 12px repeat(3, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+.codeGap {
+  height: 2px;
+  border-radius: 1px;
+  background: var(--border-strong);
+}
+.codeBox {
+  width: 100%;
+  height: 60px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border-default);
+  background: var(--bg-surface-raised);
+  color: var(--text-primary);
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  caret-color: var(--border-focus);
+  transition: border-color 120ms, background-color 120ms;
+}
+.codeBox:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  background: var(--bg-surface);
+}
+.codeBoxFilled {
+  border-color: var(--border-strong);
+}
+.codeBoxError {
+  border-color: var(--border-danger);
+}
+.codeMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.ring {
+  width: 18px;
+  height: 18px;
+  transform: rotate(-90deg);
+}
+.ringTrack {
+  stroke: var(--border-default);
+}
+.ringFill {
+  stroke: var(--border-brand);
+  transition: stroke-dashoffset 1s linear;
+}
+
+.warning {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-warning-subtle);
+  color: var(--text-warning);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.warning svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.warning strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--border-default);
+  border-top-color: var(--border-brand);
+  animation: spin 800ms linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 560px) {
+  .card {
+    padding: 28px 20px;
+  }
+  .scan {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+  .codeBox {
+    height: 52px;
+    font-size: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2s;
+  }
+  .ringFill {
+    transition: none;
+  }
+}

@@ -1,0 +1,22 @@
+/* The whole row is the link: the TrxID link's ::after stretches over the row. */
+.row {
+  position: relative;
+}
+.stretch::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+.stretch:focus-visible {
+  outline: none;
+}
+.stretch:focus-visible::after {
+  outline: 2px solid var(--border-focus);
+  outline-offset: -2px;
+  border-radius: var(--radius-sm);
+}
+.age {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
